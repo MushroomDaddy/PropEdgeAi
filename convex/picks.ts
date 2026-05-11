@@ -69,10 +69,11 @@ export const removePick = mutation({
   returns: v.null(),
   handler: async (ctx, { pickId }) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+    if (!userId) throw new Error("Not authenticated");
 
     const pick = await ctx.db.get(pickId);
-    if (!pick) return null;
+    if (!pick) throw new Error("Pick not found");
+    if (pick.userId !== userId) throw new Error("Not authorized");
 
     await ctx.db.delete(pickId);
     return null;
@@ -103,7 +104,14 @@ export const createEntry = mutation({
   returns: v.union(v.id("entries"), v.null()),
   handler: async (ctx, { pickIds, platform, entryType, stake }) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+    if (!userId) throw new Error("Not authenticated");
+
+    // Verify every pick belongs to the authenticated user
+    for (const pickId of pickIds) {
+      const pick = await ctx.db.get(pickId);
+      if (!pick) throw new Error(`Pick ${pickId} not found`);
+      if (pick.userId !== userId) throw new Error("Not authorized — pick belongs to another user");
+    }
 
     return await ctx.db.insert("entries", {
       userId,

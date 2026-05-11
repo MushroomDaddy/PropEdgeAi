@@ -9,3 +9,6 @@ export { PickBuilderPage } from "./PickBuilderPage";
 export { MyPicksPage } from "./MyPicksPage";
 export { LeaderboardPage } from "./LeaderboardPage";
 export { BankrollPage } from "./BankrollPage";
+export { ResultsPage } from "./ResultsPage";
+export { ModelLabPage } from "./ModelLabPage";
+export { PlayerIntelPage } from "./PlayerIntelPage";

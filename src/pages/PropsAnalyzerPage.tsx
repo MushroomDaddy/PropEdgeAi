@@ -106,12 +106,15 @@ export function PropsAnalyzerPage() {
     <div className="space-y-5 max-w-[1500px]">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Search className="size-6 text-[#00D4FF]" />
-          Prop Analyzer
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Search className="size-6 text-[#00D4FF]" />
+            Prop Analyzer
+          </h1>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">DEMO DATA</span>
+        </div>
         <p className="text-sm text-muted-foreground mt-1">
-          Search, filter, and analyze player props with deep statistical insights
+          Search, filter, and analyze player props with deep statistical insights · Edge = Model Prob − Market Implied Prob
         </p>
       </div>
 
@@ -279,7 +282,10 @@ export function PropsAnalyzerPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-4">
             <MiniStat label="Line" value={selectedProp.line} />
             <MiniStat label="Projection" value={selectedProp.projection} />
-            <MiniStat label="Edge" value={`${selectedProp.edge > 0 ? "+" : ""}${selectedProp.edge}%`} color={selectedProp.edge > 0 ? "#00FF88" : "#FF4466"} />
+            <MiniStat label="Proj Diff" value={`${selectedProp.projectionDiff != null ? (selectedProp.projectionDiff > 0 ? "+" : "") + selectedProp.projectionDiff + "%" : "—"}`} color="#00D4FF" />
+            <MiniStat label="Model Prob" value={`${selectedProp.modelProb ?? "—"}%`} color="#A855F7" />
+            <MiniStat label="Mkt Implied" value={`${selectedProp.marketImpliedProb ?? "—"}%`} color="#FFB800" />
+            <MiniStat label="Edge (M−I)" value={`${selectedProp.edge > 0 ? "+" : ""}${selectedProp.edge}%`} color={selectedProp.edge > 0 ? "#00FF88" : "#FF4466"} />
             <MiniStat label="Confidence" value={`${selectedProp.confidence}%`} color="#00D4FF" />
             <MiniStat label="Hit Rate" value={`${selectedProp.hitRate}%`} color="#FFB800" />
             <MiniStat label="Bust Risk" value={`${selectedProp.bustRisk ?? "?"}%`} color={(selectedProp.bustRisk || 40) <= 30 ? "#00FF88" : (selectedProp.bustRisk || 40) <= 55 ? "#FFB800" : "#FF4466"} />
@@ -512,6 +518,9 @@ export function PropsAnalyzerPage() {
             </div>
           )}
 
+          {/* R8: Line Movement Timeline */}
+          <LineMovementSection propId={selectedProp._id} playerName={selectedProp.playerName} />
+
           {/* Correlated Stats */}
           {selectedProp.correlatedWith && selectedProp.correlatedWith.length > 0 && (
             <div>
@@ -642,6 +651,81 @@ function MiniStat({ label, value, color }: { label: string; value: string | numb
     <div className="bg-[#0A0E17] rounded-lg p-3 border border-[#1E293B]">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="text-lg font-bold font-mono" style={{ color: color || "#E8ECF4" }}>{value}</div>
+    </div>
+  );
+}
+
+function LineMovementSection({ propId, playerName }: { propId: string; playerName: string }) {
+  const snapshots = useQuery(api.playerIntel.lineMovement, { propId: propId });
+  if (!snapshots || snapshots.length === 0) return null;
+
+  const opening = snapshots.find((s: any) => s.snapshotType === "opening");
+  const current = snapshots.find((s: any) => s.snapshotType === "current");
+  const closing = snapshots.find((s: any) => s.snapshotType === "closing");
+
+  return (
+    <div className="bg-[#0A0E17] rounded-lg border border-[#00D4FF]/20 p-4 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="size-4 text-[#00D4FF]" />
+          <span className="text-sm font-semibold text-white">Line Movement</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">DEMO</span>
+        </div>
+        <a href={`/players?q=${encodeURIComponent(playerName)}`} className="text-[10px] text-[#00FF88] hover:underline">
+          View Full Player Intel →
+        </a>
+      </div>
+
+      {/* Opening / Current / Closing */}
+      <div className="grid grid-cols-3 gap-3 mb-3">
+        <div className="text-center p-2 rounded bg-white/5">
+          <div className="text-[10px] text-muted-foreground">Opening</div>
+          <div className="text-lg font-bold font-mono">{opening?.line ?? "—"}</div>
+          <div className="text-[10px] text-muted-foreground">Edge: {opening?.edge?.toFixed(1) ?? "—"}%</div>
+        </div>
+        <div className="text-center p-2 rounded bg-[#00FF88]/5 border border-[#00FF88]/20">
+          <div className="text-[10px] text-muted-foreground">Current</div>
+          <div className="text-lg font-bold font-mono text-[#00FF88]">{current?.line ?? "—"}</div>
+          <div className="text-[10px] text-muted-foreground">Edge: {current?.edge?.toFixed(1) ?? "—"}%</div>
+        </div>
+        <div className="text-center p-2 rounded bg-white/5">
+          <div className="text-[10px] text-muted-foreground">Closing</div>
+          <div className="text-lg font-bold font-mono">{closing?.line ?? "TBD"}</div>
+          <div className="text-[10px] text-muted-foreground">Edge: {closing?.edge?.toFixed(1) ?? "—"}%</div>
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="space-y-1">
+        {snapshots.map((s: any, i: number) => {
+          const prevLine = i > 0 ? snapshots[i - 1].line : s.line;
+          const lineDelta = s.line - prevLine;
+          return (
+            <div key={i} className="flex items-center gap-3 text-xs py-1 border-b border-white/5 last:border-0">
+              <span className="text-muted-foreground w-24 shrink-0">
+                {new Date(s.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+              </span>
+              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                s.snapshotType === "opening" ? "bg-blue-500/10 text-blue-400" :
+                s.snapshotType === "closing" ? "bg-purple-500/10 text-purple-400" :
+                s.snapshotType === "current" ? "bg-[#00FF88]/10 text-[#00FF88]" :
+                "bg-white/5 text-muted-foreground"
+              }`}>{s.snapshotType}</span>
+              <span className="font-mono">Line: {s.line}</span>
+              {lineDelta !== 0 && (
+                <span className={`font-mono ${lineDelta > 0 ? "text-red-400" : "text-[#00FF88]"}`}>
+                  {lineDelta > 0 ? "▲" : "▼"}{Math.abs(lineDelta).toFixed(1)}
+                </span>
+              )}
+              <span className="font-mono text-muted-foreground">Proj: {s.projection?.toFixed(1)}</span>
+              <span className={`font-mono ${(s.edge || 0) > 0 ? "text-[#00FF88]" : "text-red-400"}`}>
+                Edge: {s.edge?.toFixed(1)}%
+              </span>
+              <span className="font-mono text-muted-foreground">Odds: {s.odds}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

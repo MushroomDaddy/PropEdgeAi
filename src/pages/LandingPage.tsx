@@ -47,7 +47,7 @@ export function LandingPage() {
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-[#7B8BA8] max-w-2xl mx-auto leading-relaxed">
             The ultimate sports analyst for PrizePicks, Underdog, Sleeper & more.
-            AI-driven projections, real-time edges, and optimized entries — all in one platform.
+            AI-driven projections, demo edge estimates, and optimized entries — all in one platform.
           </p>
 
           {/* CTA */}
@@ -120,7 +120,7 @@ export function LandingPage() {
               Every Tool You Need
             </h2>
             <p className="text-[#7B8BA8] text-lg max-w-xl mx-auto">
-              From projection aggregation to optimized entries — dominate every platform.
+              From projection aggregation to optimized entries — compare opportunities across platforms.
             </p>
           </div>
 
@@ -209,7 +209,7 @@ export function LandingPage() {
             Ready to Find Your Edge?
           </h2>
           <p className="text-[#7B8BA8] text-lg mb-8">
-            Join thousands of sharp bettors using AI to dominate pick'em platforms.
+            Join thousands of sports analytics users using AI to compare opportunities across platforms.
           </p>
           {!isAuthenticated && !isLoading && (
             <Button

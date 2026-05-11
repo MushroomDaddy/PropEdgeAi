@@ -1,7 +1,7 @@
-import { internalMutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-export const seedAll = internalMutation({
+export const seedAll = mutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
@@ -226,17 +226,27 @@ export const seedAll = internalMutation({
         const rawLine = Math.round((baseProj + (pseudoRandom(player.name + stat.type + "line") - 0.5) * stat.variance) * 2) / 2;
         const line = Math.max(rawLine, 0.5);
         const projection = Math.round(Math.max(baseProj, 0.1) * 10) / 10;
-        const edge = Math.round(((projection - line) / line) * 1000) / 10;
-        const confidence = Math.min(95, Math.max(25, Math.round(50 + edge * 2 + pseudoRandom(player.name + "conf") * 20)));
-        const hitRate = Math.min(85, Math.max(35, Math.round(55 + edge * 1.5 + (pseudoRandom(player.name + "hit") - 0.5) * 15)));
+        // Edge engine: model probability - market implied probability
+        // projectionDiff = percentage gap between projection and line (raw stat difference)
+        const projectionDiff = Math.round(((projection - line) / line) * 1000) / 10;
+        // modelProb: probability the model assigns to hitting the line (based on projection + variance)
+        const zScore = (projection - line) / Math.max(stat.variance, 0.5);
+        // Approximate normal CDF for model probability
+        const modelProb = Math.min(95, Math.max(5, Math.round(50 + (zScore / (1 + Math.abs(zScore) * 0.2)) * 25)));
+        // marketImpliedProb: what the market line implies (derived from vig-adjusted pricing)
+        const marketImpliedProb = Math.min(85, Math.max(15, Math.round(50 + pseudoRandom(player.name + "mip") * 10 - 5)));
+        // True edge = model probability - market implied probability
+        const edge = Math.round((modelProb - marketImpliedProb) * 10) / 10;
+        const confidence = Math.min(95, Math.max(25, Math.round(50 + edge * 0.3 + pseudoRandom(player.name + "conf") * 20)));
+        const hitRate = Math.min(85, Math.max(35, Math.round(55 + projectionDiff * 1.5 + (pseudoRandom(player.name + "hit") - 0.5) * 15)));
         const opponent = getOpponentTeam(player.team, game);
         const dvpRank = dvpRankings[opponent] || (15 + Math.floor(pseudoRandom(player.name + "dvp") * 15));
         const matchupRating = Math.min(10, Math.max(1, Math.round(10 - dvpRank / 3.5 + (pseudoRandom(player.name + "match") - 0.5) * 3)));
 
         const trendRand = pseudoRandom(player.name + stat.type + "trend");
         const last10Trend = player.recentForm === "hot" ? "up" : player.recentForm === "cold" ? "down" : (trendRand > 0.5 ? "up" : "stable");
-        const last10Hits = Math.min(10, Math.max(2, Math.round(5 + edge * 0.3 + (pseudoRandom(player.name + "l10") - 0.3) * 4)));
-        const impliedProb = Math.min(90, Math.max(15, Math.round(50 + edge * 1.5 + pseudoRandom(player.name + "ip") * 10)));
+        const last10Hits = Math.min(10, Math.max(2, Math.round(5 + projectionDiff * 0.3 + (pseudoRandom(player.name + "l10") - 0.3) * 4)));
+        const impliedProb = marketImpliedProb;
 
         const isKalshi = platform === "Kalshi";
         const kalshiPayout = isKalshi ? {
@@ -309,6 +319,9 @@ export const seedAll = internalMutation({
           projectionSources: sources,
           platform,
           edge,
+          modelProb,
+          marketImpliedProb,
+          projectionDiff,
           confidence,
           hitRate,
           overUnder: edge > 0 ? "over" : "under",
@@ -347,6 +360,10 @@ export const seedAll = internalMutation({
             sampleSize: histSampleSize,
             vsTeam: vsTeamHit,
           },
+          // Audit: data source tracking
+          dataSource: "demo" as const,
+          lastUpdated: Date.now(),
+          provider: sources[0]?.source || "PropEdge Model",
         });
       }
     }
@@ -363,9 +380,13 @@ export const seedAll = internalMutation({
         { statType: "1st Quarter Winner", line: 0.5, projection: 0.65, playerName: "Boston Celtics", team: "Boston Celtics" },
       ];
       for (const km of kalshiSpecials) {
-        const edge = Math.round(((km.projection - km.line) / km.line) * 1000) / 10;
-        const impliedProb = Math.min(85, Math.max(20, Math.round(50 + edge * 2)));
-        const simHitRate = Math.min(88, Math.max(18, Math.round(50 + edge * 1.5)));
+        const kalshiProjDiff = Math.round(((km.projection - km.line) / km.line) * 1000) / 10;
+        const kalshiZScore = (km.projection - km.line) / 8; // 8 = variance for Kalshi specials
+        const kalshiModelProb = Math.min(90, Math.max(10, Math.round(50 + (kalshiZScore / (1 + Math.abs(kalshiZScore) * 0.2)) * 25)));
+        const kalshiMarketImplied = Math.min(85, Math.max(20, Math.round(50 + pseudoRandom(km.statType + "kmip") * 10 - 5)));
+        const edge = Math.round((kalshiModelProb - kalshiMarketImplied) * 10) / 10;
+        const impliedProb = kalshiMarketImplied;
+        const simHitRate = Math.min(88, Math.max(18, kalshiModelProb));
         await ctx.db.insert("props", {
           playerId: firstNBAPlayer._id,
           gameId: celticsMiamiGame,
@@ -382,7 +403,10 @@ export const seedAll = internalMutation({
           ],
           platform: "Kalshi",
           edge,
-          confidence: Math.min(90, Math.max(30, Math.round(55 + edge * 1.8))),
+          modelProb: kalshiModelProb,
+          marketImpliedProb: kalshiMarketImplied,
+          projectionDiff: kalshiProjDiff,
+          confidence: Math.min(90, Math.max(30, Math.round(55 + edge * 0.3))),
           hitRate: Math.round(50 + (pseudoRandom(km.statType + "hr") - 0.3) * 20),
           overUnder: edge > 0 ? "over" : "under",
           variance: 8,
@@ -397,11 +421,14 @@ export const seedAll = internalMutation({
             yesPayout: Math.round((100 / impliedProb) * 100) / 100,
             noPayout: Math.round((100 / (100 - impliedProb)) * 100) / 100,
           },
-          bustRisk: Math.min(70, Math.max(15, Math.round(40 - edge * 0.8))),
+          bustRisk: Math.min(70, Math.max(15, Math.round(40 - edge * 0.1))),
           projectionConsensus: { avg: km.projection, numSources: 3, numOverLine: edge > 0 ? 2 : 1, spread: 3.5 },
           hotColdStreak: { type: "neutral", games: 0, label: "➡️ Neutral" },
           monteCarloSim: { simulations: 10000, hitRate: simHitRate, p10: km.projection - 8, p50: km.projection, p90: km.projection + 8, stdDev: 6.2 },
-          historicalHitRate: { similarLines: Math.round(50 + edge * 1.2), sampleSize: 30, vsTeam: Math.round(50 + edge * 1.5) },
+          historicalHitRate: { similarLines: Math.round(50 + edge * 0.2), sampleSize: 30, vsTeam: Math.round(50 + edge * 0.25) },
+          dataSource: "demo" as const,
+          lastUpdated: Date.now(),
+          provider: "PropEdge Model",
         });
       }
     }
@@ -430,7 +457,7 @@ export const seedAll = internalMutation({
 });
 
 // ===== SEED BANKROLL DATA (R3) =====
-export const seedBankroll = internalMutation({
+export const seedBankroll = mutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
@@ -526,7 +553,7 @@ function shuffle<T>(arr: T[], seed: string): T[] {
   return result;
 }
 
-export const clearAndReseed = internalMutation({
+export const clearAndReseed = mutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {

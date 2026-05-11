@@ -96,13 +96,16 @@ export function DashboardPage() {
                   <Crown className="size-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">Today's Best Bets</h2>
+                  <h2 className="text-lg font-bold text-white">Today's Best Edges</h2>
                   <p className="text-xs text-muted-foreground">Top Value Score picks across all platforms</p>
                 </div>
               </div>
-              <Link to="/props" className="text-xs text-[#A855F7] hover:underline flex items-center gap-1">
-                See All Props <ChevronRight className="size-3" />
-              </Link>
+              <div className="flex items-center gap-3">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">DEMO DATA</span>
+                <Link to="/props" className="text-xs text-[#A855F7] hover:underline flex items-center gap-1">
+                  See All Props <ChevronRight className="size-3" />
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">

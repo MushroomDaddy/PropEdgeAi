@@ -18,7 +18,7 @@ const PRESETS = [
   { icon: "⚾", label: "MLB Picks", query: "Top MLB edges today with pitcher matchup analysis" },
   { icon: "🏗️", label: "Build 6-Pick", query: "Build me a 6-pick PrizePicks flex entry with diversification" },
   { icon: "💹", label: "Kalshi Markets", query: "Kalshi market analysis — best YES and NO positions with payouts" },
-  { icon: "🛡️", label: "Safe Plays", query: "Show me the safest low bust risk picks with highest confidence" },
+  { icon: "🛡️", label: "Lower Variance", query: "Show me the lowest bust risk picks with highest confidence" },
   { icon: "🔥", label: "Hot Streaks", query: "Which players are on hot streaks with positive edge?" },
   { icon: "🎲", label: "Monte Carlo", query: "Show me the Monte Carlo simulation analysis for top props" },
   { icon: "⚖️", label: "Compare Values", query: "Compare the best overs vs best unders — which side has more value?" },

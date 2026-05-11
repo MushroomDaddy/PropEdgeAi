@@ -1,13 +1,26 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 
-// Value Score formula: combines Edge%, Consensus, Hit Rate, and Bust Risk (0-100)
+/**
+ * Value Score (0-100) — Production formula
+ * 
+ * Components:
+ *   1. Edge Score (0-40): Based on |edge| = |modelProb - marketImpliedProb|
+ *      - 40 pts max at 16%+ edge
+ *   2. Consensus Score (0-25): Projection source agreement with the pick direction
+ *      - Over picks: higher when more sources project over the line
+ *      - Under picks: higher when fewer sources project over the line
+ *   3. Hit Rate Score (0-20): Historical hit rate on similar lines
+ *   4. Bust Risk Score (0-15): Inverse of bust risk — lower risk = more points
+ * 
+ * Total = min(100, edgeScore + consensusScore + hitRateScore + bustRiskScore)
+ */
 function computeValueScore(prop: any): number {
+  // Edge = modelProb - marketImpliedProb (or raw edge field for legacy data)
   const absEdge = Math.abs(prop.edge || 0);
   const edgeScore = Math.min(40, absEdge * 2.5); // 0-40 points (16% edge = max)
 
   const cons = prop.projectionConsensus;
-  // Simplified consensus: for overs, more sources over = higher; for unders, fewer over = higher
   const consensusFinal = cons
     ? prop.edge > 0
       ? Math.min(25, (cons.numOverLine / cons.numSources) * 25)
@@ -62,7 +75,7 @@ export const getTopEdges = query({
   },
 });
 
-// NEW R4: Get top picks by Value Score for "Today's Best Bets"
+// NEW R4: Get top picks by Value Score for "Today's Top Value Spots"
 export const getTopValuePicks = query({
   args: { limit: v.optional(v.number()) },
   returns: v.array(v.any()),

@@ -11,6 +11,9 @@ import {
   Trophy,
   Wallet,
   Zap,
+  ClipboardCheck,
+  FlaskConical,
+  UserSearch,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { APP_NAME } from "@/lib/constants";
@@ -42,6 +45,12 @@ const mainNav = [
   { href: "/props", label: "Prop Analyzer", icon: Search },
   { href: "/chat", label: "AI Analyst", icon: Bot },
   { href: "/builder", label: "Pick Builder", icon: ShoppingCart },
+];
+
+const intelligenceNav = [
+  { href: "/players", label: "Player Intel", icon: UserSearch },
+  { href: "/results", label: "Results", icon: ClipboardCheck },
+  { href: "/model-lab", label: "Model Lab", icon: FlaskConical },
 ];
 
 const trackingNav = [
@@ -87,6 +96,25 @@ function SidebarNav() {
         <SidebarGroupContent>
           <SidebarMenu>
             {mainNav.map((item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                isActive={location.pathname === item.href}
+              />
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+
+      <SidebarGroup>
+        <SidebarGroupLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+          Intelligence
+        </SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {intelligenceNav.map((item) => (
               <NavLink
                 key={item.href}
                 href={item.href}

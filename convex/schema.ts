@@ -52,13 +52,12 @@ const schema = defineSchema({
     quarter: v.optional(v.string()),
     gameClock: v.optional(v.string()),
     broadcast: v.optional(v.string()),
-    // R5: Game detail fields
     playByPlay: v.optional(v.array(v.object({
       time: v.string(),
       quarter: v.string(),
       description: v.string(),
       team: v.string(),
-      type: v.string(), // "score", "foul", "turnover", "timeout", "substitution"
+      type: v.string(),
       points: v.optional(v.number()),
     }))),
     boxScore: v.optional(v.object({
@@ -96,17 +95,11 @@ const schema = defineSchema({
     roster: v.optional(v.object({
       home: v.object({
         active: v.array(v.string()),
-        out: v.array(v.object({
-          name: v.string(),
-          reason: v.string(),
-        })),
+        out: v.array(v.object({ name: v.string(), reason: v.string() })),
       }),
       away: v.object({
         active: v.array(v.string()),
-        out: v.array(v.object({
-          name: v.string(),
-          reason: v.string(),
-        })),
+        out: v.array(v.object({ name: v.string(), reason: v.string() })),
       }),
     })),
   })
@@ -124,54 +117,38 @@ const schema = defineSchema({
     statType: v.string(),
     line: v.number(),
     projection: v.number(),
-    projectionSources: v.array(v.object({
-      source: v.string(),
-      value: v.number(),
-    })),
+    projectionSources: v.array(v.object({ source: v.string(), value: v.number() })),
     platform: v.string(),
     edge: v.number(),
+    modelProb: v.optional(v.number()),
+    marketImpliedProb: v.optional(v.number()),
+    projectionDiff: v.optional(v.number()),
     confidence: v.number(),
     hitRate: v.number(),
     overUnder: v.string(),
-    propType: v.optional(v.string()), // "over_under", "moneyline", "spread", "total", "first_scorer", "alt_line", etc.
+    propType: v.optional(v.string()),
+    dataSource: v.optional(v.string()),
+    lastUpdated: v.optional(v.number()),
+    provider: v.optional(v.string()),
     variance: v.number(),
     matchupRating: v.number(),
-    // R2 fields
     last10Trend: v.optional(v.string()),
     last10Hits: v.optional(v.number()),
     dvpRank: v.optional(v.number()),
     correlatedWith: v.optional(v.array(v.string())),
     impliedProb: v.optional(v.number()),
     isKalshiMarket: v.optional(v.boolean()),
-    kalshiPayout: v.optional(v.object({
-      yesPayout: v.number(),
-      noPayout: v.number(),
-    })),
-    // R3 fields — Deeper Analytics
-    bustRisk: v.optional(v.number()), // 0-100 bust probability
+    kalshiPayout: v.optional(v.object({ yesPayout: v.number(), noPayout: v.number() })),
+    bustRisk: v.optional(v.number()),
     projectionConsensus: v.optional(v.object({
-      avg: v.number(),
-      numSources: v.number(),
-      numOverLine: v.number(),
-      spread: v.number(), // max - min of sources
+      avg: v.number(), numSources: v.number(), numOverLine: v.number(), spread: v.number(),
     })),
-    hotColdStreak: v.optional(v.object({
-      type: v.string(), // "hot", "cold", "neutral"
-      games: v.number(), // streak length
-      label: v.string(), // "🔥 5G Hot", "❄️ 3G Cold"
-    })),
+    hotColdStreak: v.optional(v.object({ type: v.string(), games: v.number(), label: v.string() })),
     monteCarloSim: v.optional(v.object({
-      simulations: v.number(),
-      hitRate: v.number(), // % that hit the line
-      p10: v.number(), // 10th percentile outcome
-      p50: v.number(), // median outcome
-      p90: v.number(), // 90th percentile outcome
-      stdDev: v.number(),
+      simulations: v.number(), hitRate: v.number(), p10: v.number(), p50: v.number(), p90: v.number(), stdDev: v.number(),
     })),
     historicalHitRate: v.optional(v.object({
-      similarLines: v.number(), // % hit on similar lines historically
-      sampleSize: v.number(),
-      vsTeam: v.optional(v.number()), // % hit vs this specific team
+      similarLines: v.number(), sampleSize: v.number(), vsTeam: v.optional(v.number()),
     })),
   })
     .index("by_sport", ["sport"])
@@ -202,7 +179,7 @@ const schema = defineSchema({
     .index("by_userId", ["userId"])
     .index("by_userId_status", ["userId", "status"]),
 
-  // User entries (groups of picks submitted to platforms)
+  // User entries
   entries: defineTable({
     userId: v.id("users"),
     platform: v.string(),
@@ -235,7 +212,7 @@ const schema = defineSchema({
     defaultBankroll: v.optional(v.number()),
   }).index("by_userId", ["userId"]),
 
-  // Leaderboard entries (mock)
+  // Leaderboard
   leaderboard: defineTable({
     username: v.string(),
     avatar: v.string(),
@@ -247,7 +224,7 @@ const schema = defineSchema({
     tier: v.string(),
   }).index("by_rank", ["rank"]),
 
-  // Bankroll tracker (R3)
+  // Bankroll tracker
   bankroll: defineTable({
     userId: v.id("users"),
     platform: v.string(),
@@ -258,24 +235,24 @@ const schema = defineSchema({
     totalWagered: v.number(),
     totalWon: v.number(),
     totalLost: v.number(),
-    roi: v.number(), // percentage
+    roi: v.number(),
     winRate: v.number(),
     totalEntries: v.number(),
     wonEntries: v.number(),
     lostEntries: v.number(),
     bestWin: v.number(),
     worstLoss: v.number(),
-    currentStreak: v.number(), // positive = winning, negative = losing
+    currentStreak: v.number(),
     lastUpdated: v.number(),
   })
     .index("by_userId", ["userId"])
     .index("by_userId_platform", ["userId", "platform"]),
 
-  // Bankroll transactions (R3)
+  // Bankroll transactions
   bankrollTransactions: defineTable({
     userId: v.id("users"),
     platform: v.string(),
-    type: v.string(), // "win", "loss", "deposit", "withdrawal"
+    type: v.string(),
     amount: v.number(),
     entryId: v.optional(v.id("entries")),
     sport: v.optional(v.string()),
@@ -284,6 +261,123 @@ const schema = defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_userId_platform", ["userId", "platform"]),
+
+  // ─── R8: Pick Results (grading) ───
+  pickResults: defineTable({
+    userId: v.id("users"),
+    pickId: v.optional(v.id("picks")),
+    propId: v.optional(v.id("props")),
+    playerName: v.string(),
+    statType: v.string(),
+    sport: v.string(),
+    platform: v.string(),
+    propType: v.optional(v.string()),
+    // Pick-time snapshot
+    pickLine: v.number(),
+    pickProjection: v.number(),
+    pickEdge: v.number(),
+    pickModelProb: v.optional(v.number()),
+    pickMarketImpliedProb: v.optional(v.number()),
+    overUnder: v.string(),
+    pickedAt: v.number(),
+    // Result
+    resultStatus: v.string(), // "won" | "lost" | "push" | "void" | "pending"
+    actualStat: v.optional(v.number()),
+    closingLine: v.optional(v.number()),
+    closingOdds: v.optional(v.number()),
+    clv: v.optional(v.number()), // closing line value
+    ev: v.optional(v.number()),
+    roi: v.optional(v.number()),
+    gradedAt: v.optional(v.number()),
+    // Data tracking
+    dataSource: v.string(), // "demo" | "live"
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_status", ["userId", "resultStatus"])
+    .index("by_sport", ["sport"])
+    .index("by_platform", ["platform"])
+    .index("by_playerName", ["playerName"]),
+
+  // ─── R8: Prop Snapshots (line movement history) ───
+  propSnapshots: defineTable({
+    propId: v.id("props"),
+    playerName: v.string(),
+    statType: v.string(),
+    line: v.number(),
+    projection: v.number(),
+    edge: v.number(),
+    modelProb: v.optional(v.number()),
+    marketImpliedProb: v.optional(v.number()),
+    odds: v.optional(v.number()),
+    snapshotType: v.string(), // "opening" | "current" | "closing" | "update"
+    timestamp: v.number(),
+    dataSource: v.string(),
+  })
+    .index("by_propId", ["propId"])
+    .index("by_propId_type", ["propId", "snapshotType"]),
+
+  // ─── R8: Player Game Logs ───
+  playerGameLogs: defineTable({
+    playerId: v.id("players"),
+    playerName: v.string(),
+    sport: v.string(),
+    team: v.string(),
+    opponent: v.string(),
+    gameDate: v.number(),
+    homeAway: v.string(), // "home" | "away"
+    // Stats (flexible — different per sport)
+    points: v.optional(v.number()),
+    rebounds: v.optional(v.number()),
+    assists: v.optional(v.number()),
+    steals: v.optional(v.number()),
+    blocks: v.optional(v.number()),
+    turnovers: v.optional(v.number()),
+    threePointers: v.optional(v.number()),
+    minutes: v.optional(v.number()),
+    fg: v.optional(v.string()),
+    // MLB
+    hits: v.optional(v.number()),
+    rbi: v.optional(v.number()),
+    runs: v.optional(v.number()),
+    strikeoutsP: v.optional(v.number()), // pitcher Ks
+    inningsPitched: v.optional(v.number()),
+    // NHL
+    goals: v.optional(v.number()),
+    shotsOnGoal: v.optional(v.number()),
+    saves: v.optional(v.number()),
+    dataSource: v.string(),
+  })
+    .index("by_playerId", ["playerId"])
+    .index("by_playerName", ["playerName"])
+    .index("by_playerId_date", ["playerId", "gameDate"]),
+
+  // ─── R8: Model Predictions (track model accuracy) ───
+  modelPredictions: defineTable({
+    propId: v.optional(v.id("props")),
+    playerName: v.string(),
+    statType: v.string(),
+    sport: v.string(),
+    platform: v.string(),
+    propType: v.optional(v.string()),
+    line: v.number(),
+    modelProb: v.number(),
+    marketImpliedProb: v.number(),
+    edge: v.number(),
+    confidenceBucket: v.string(), // "50-60", "60-70", "70-80", "80-90", "90+"
+    edgeBucket: v.string(), // "0-5", "5-10", "10-15", "15+"
+    overUnder: v.string(),
+    predictedAt: v.number(),
+    // Result (filled after grading)
+    resultStatus: v.optional(v.string()),
+    actualStat: v.optional(v.number()),
+    hit: v.optional(v.boolean()),
+    gradedAt: v.optional(v.number()),
+    dataSource: v.string(),
+  })
+    .index("by_sport", ["sport"])
+    .index("by_confidenceBucket", ["confidenceBucket"])
+    .index("by_edgeBucket", ["edgeBucket"])
+    .index("by_platform", ["platform"]),
 });
 
 export default schema;

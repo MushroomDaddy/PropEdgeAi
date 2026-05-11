@@ -58,7 +58,12 @@ export const askAnalyst = action({
   args: { question: v.string() },
   returns: v.string(),
   handler: async (ctx, { question }): Promise<string> => {
+    // Get authenticated userId via internal query
+    const userId = await ctx.runQuery(internal.chat.getAuthenticatedUserId);
+    if (!userId) throw new Error("Not authenticated");
+
     await ctx.runMutation(internal.chat.saveMessageInternal, {
+      userId,
       role: "user",
       content: question,
     });
@@ -73,7 +78,7 @@ export const askAnalyst = action({
         const cons = p.projectionConsensus;
         const streak = p.hotColdStreak;
         const hist = p.historicalHitRate;
-        let line = `${p.playerName} (${p.team}) - ${p.statType}: Line ${p.line}, Proj ${p.projection}, Edge ${p.edge}%, ${p.overUnder.toUpperCase()}, Conf ${p.confidence}%, Hit Rate ${p.hitRate}%, Matchup ${p.matchupRating}/10, L10 Trend: ${p.last10Trend || "N/A"}, L10 Hits: ${p.last10Hits || "N/A"}/10, DvP Rank: ${p.dvpRank || "N/A"}, Platform: ${p.platform}`;
+        let line = `${p.playerName} (${p.team}) - ${p.statType}: Line ${p.line}, Proj ${p.projection}, ProjDiff ${p.projectionDiff ?? "N/A"}%, ModelProb ${p.modelProb ?? "N/A"}%, MarketImplied ${p.marketImpliedProb ?? "N/A"}%, Edge ${p.edge}% (model-market), ${p.overUnder.toUpperCase()}, Conf ${p.confidence}%, Hit Rate ${p.hitRate}%, Matchup ${p.matchupRating}/10, L10 Trend: ${p.last10Trend || "N/A"}, L10 Hits: ${p.last10Hits || "N/A"}/10, DvP Rank: ${p.dvpRank || "N/A"}, Platform: ${p.platform}, Source: ${p.dataSource || "demo"}`;
         if (p.bustRisk != null) line += `, Bust Risk: ${p.bustRisk}%`;
         if (mc) line += `, MC Sim: ${mc.hitRate}% hit rate (P10:${mc.p10}, P50:${mc.p50}, P90:${mc.p90}, σ=${mc.stdDev})`;
         if (cons) line += `, Consensus: ${cons.numOverLine}/${cons.numSources} over (avg ${cons.avg}, spread ±${cons.spread})`;
@@ -90,21 +95,31 @@ export const askAnalyst = action({
       )
       .join("\n");
 
-    const systemPrompt: string = `You are PropEdge AI, an elite sports analyst. Use step-by-step reasoning with data citations.
+    const systemPrompt: string = `You are PropEdge AI, an analytical sports projection assistant. Use step-by-step reasoning, citing only the data provided below. NEVER invent stats, injuries, odds, or sources not present in the data.
+
+IMPORTANT RULES:
+- Only reference data explicitly provided in GAMES and PROPS below
+- If data is missing for a question, say "Data not available for that query"
+- All data shown is DEMO DATA — state this clearly in responses
+- Always include a responsible disclaimer at the end
+- Show edge as: Model Probability vs Market Implied Probability
+- Show projection difference separately from EV/edge
+- Cite data freshness: "Based on demo projections (not real-time)"
 
 GAMES:
 ${gamesContext}
 
-PROPS (top 40 by edge):
+PROPS (top 40 by edge — Edge = Model Prob - Market Implied Prob):
 ${propsContext}
 
 FORMAT: Use ## headers, bullet points with **bold** data, and step-by-step analysis:
-Step 1: Data Review — cite projection numbers
-Step 2: Edge Analysis — explain edge sources  
-Step 3: Risk Assessment — bust risk, matchup, streaks
-Step 4: Recommendation — final verdict with confidence
+Step 1: Data Review — cite exact projection numbers from the data above
+Step 2: Edge Analysis — show model probability vs market implied probability
+Step 3: Risk Assessment — bust risk, matchup, streaks from data
+Step 4: Recommendation — verdict with confidence level
 
-Always cite: Monte Carlo hit rates, consensus ratios, historical hit rates, DvP rankings, and bust risk %.`;
+Always cite: Monte Carlo hit rates, consensus ratios, historical hit rates, DvP rankings, and bust risk %. End every response with:
+⚠️ *Demo data only — not real-time. Not financial advice. Always verify with live sources before placing entries.*`;
 
     try {
       const result: { text?: string; response_text?: string } = await callTool<{ text?: string; response_text?: string }>("coworker_ai_search", {
@@ -114,6 +129,7 @@ Always cite: Monte Carlo hit rates, consensus ratios, historical hit rates, DvP 
       const answer: string = result.text || result.response_text || "I couldn't process that request. Please try rephrasing your question.";
 
       await ctx.runMutation(internal.chat.saveMessageInternal, {
+        userId,
         role: "assistant",
         content: answer,
       });
@@ -122,6 +138,7 @@ Always cite: Monte Carlo hit rates, consensus ratios, historical hit rates, DvP 
     } catch {
       const fallback: string = generateStatisticalResponse(question, props, games);
       await ctx.runMutation(internal.chat.saveMessageInternal, {
+        userId,
         role: "assistant",
         content: fallback,
       });
@@ -131,14 +148,20 @@ Always cite: Monte Carlo hit rates, consensus ratios, historical hit rates, DvP 
 });
 
 export const saveMessageInternal = internalMutation({
-  args: { role: v.string(), content: v.string() },
+  args: { userId: v.id("users"), role: v.string(), content: v.string() },
   returns: v.null(),
-  handler: async (ctx, { role, content }) => {
-    const users = await ctx.db.query("users").collect();
-    const user = users[0];
-    if (!user) return null;
-    await ctx.db.insert("chatMessages", { userId: user._id, role, content, timestamp: Date.now() });
+  handler: async (ctx, { userId, role, content }) => {
+    await ctx.db.insert("chatMessages", { userId, role, content, timestamp: Date.now() });
     return null;
+  },
+});
+
+export const getAuthenticatedUserId = internalQuery({
+  args: {},
+  returns: v.union(v.id("users"), v.null()),
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    return userId;
   },
 });
 
@@ -160,6 +183,8 @@ export const getGamesContext = internalQuery({
   },
 });
 
+const DISCLAIMER = `\n\n---\n⚠️ *All projections shown use demo data — not real-time odds or stats. This is not financial advice. Always verify with live sources before placing entries.*`;
+
 function generateStatisticalResponse(question: string, props: any[], games: any[]): string {
   const q = question.toLowerCase();
 
@@ -178,15 +203,15 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
       resp += `\n`;
     }
     resp += `\n*Step 2: Hot streaks + positive edge = high-confidence overs. But beware regression to the mean.*`;
-    return resp;
+    return resp + DISCLAIMER;
   }
 
   // ===== LOW BUST RISK =====
   if (q.includes("bust") || q.includes("safe") || q.includes("low risk")) {
     const safeProps = props.filter((p: any) => (p.bustRisk || 100) <= 30 && Math.abs(p.edge) > 3 && isFinite(p.edge)).sort((a: any, b: any) => (a.bustRisk || 0) - (b.bustRisk || 0));
-    if (safeProps.length === 0) return "No ultra-safe picks with low bust risk and positive edge found right now.";
+    if (safeProps.length === 0) return "No lower-variance picks with low bust risk and positive edge found right now." + DISCLAIMER;
 
-    let resp = `## 🛡️ Low Bust Risk Picks — Safe Plays\n\n`;
+    let resp = `## 🛡️ Lower Variance Picks — Risk-Adjusted Selections\n\n`;
     resp += `*Step 1: Filtering for bust risk ≤ 30% AND edge > 3%*\n\n`;
     for (const p of safeProps.slice(0, 6)) {
       resp += `**${p.playerName}** ${p.overUnder.toUpperCase()} ${p.line} ${p.statType}\n`;
@@ -194,8 +219,8 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
       if (p.monteCarloSim) resp += `• MC: **${p.monteCarloSim.hitRate}%** hit rate | Floor: ${p.monteCarloSim.p10} | Ceiling: ${p.monteCarloSim.p90}\n`;
       resp += `\n`;
     }
-    resp += `*Step 2: These are your "lock" plays — low variance, high floor. Ideal for flex play insurance legs.*`;
-    return resp;
+    resp += `*Step 2: Low variance, high floor selections. Ideal for flex play insurance legs.*\n\n⚠️ *Disclaimer: All projections are model-based estimates using demo data. Not financial advice. Past performance does not guarantee future results.*`;
+    return resp + DISCLAIMER;
   }
 
   // ===== MONTE CARLO =====
@@ -212,7 +237,7 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
       resp += `• Distribution: P10 **${mc.p10}** → P50 **${mc.p50}** → P90 **${mc.p90}** (σ = ${mc.stdDev})\n`;
       resp += `• ${mc.hitRate >= 60 ? "✅ Strong probability" : mc.hitRate >= 45 ? "⚠️ Coin flip zone" : "🚫 Against the odds"}\n\n`;
     }
-    return resp;
+    return resp + DISCLAIMER;
   }
 
   // ===== BEST OVERS =====
@@ -248,7 +273,7 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
       if (streak?.type === "hot") resp += `• 🔥 ${streak.label}\n`;
       resp += `• Risk: ${p.confidence >= 75 ? "🟢 Low" : p.confidence >= 55 ? "🟡 Medium" : "🔴 High"}\n\n---\n\n`;
     }
-    return resp;
+    return resp + DISCLAIMER;
   }
 
   // ===== BEST UNDERS =====
@@ -283,7 +308,7 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
       resp += `• Defense: DvP #${p.dvpRank || "?"} ${(p.dvpRank || 15) >= 20 ? "(elite D — supports under)" : "(avg defense)"}\n`;
       resp += `• Bust Risk: **${p.bustRisk || "?"}%**\n\n---\n\n`;
     }
-    return resp;
+    return resp + DISCLAIMER;
   }
 
   // ===== BUILD ENTRY =====
@@ -322,7 +347,7 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
     resp += `\n*Step 2: Entry Stats*\n`;
     resp += `• Avg Edge: **${avgEdge}%** | Sports: **${[...new Set(selected.map(p => p.sport))].length}** | Games: **${new Set(selected.map(p => p.gameId?.toString() || p.team)).size}**\n`;
     resp += `• Recommended: ${numPicks >= 5 ? "**Flex Play** (insurance)" : "**Standard** (all must hit)"}\n`;
-    return resp;
+    return resp + DISCLAIMER;
   }
 
   // ===== KALSHI =====
@@ -338,7 +363,7 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
       resp += `• YES: ${p.kalshiPayout?.yesPayout?.toFixed(2) || "—"}x | NO: ${p.kalshiPayout?.noPayout?.toFixed(2) || "—"}x\n`;
       resp += `• ${p.edge > 5 ? "✅ Buy YES" : p.edge < -5 ? "✅ Buy NO" : "⚠️ Near fair value"}\n\n`;
     }
-    return resp;
+    return resp + DISCLAIMER;
   }
 
   // ===== LIVE / TONIGHT =====
@@ -360,7 +385,7 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
       resp += `\n### 🎯 Top Edges\n`;
       for (const p of topEdges) resp += `• **${p.playerName}** ${p.overUnder.toUpperCase()} ${p.line} ${p.statType} — **${p.edge > 0 ? "+" : ""}${p.edge}%**\n`;
     }
-    return resp;
+    return resp + DISCLAIMER;
   }
 
   // ===== COMPARE =====
@@ -375,7 +400,132 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
     for (const p of topEdges.filter(p => p.edge < 0).slice(0, 4)) {
       resp += `• **${p.playerName}** ${p.statType} UNDER ${p.line} — **${p.edge}%** (DvP: ${p.dvpRank || "?"}/30)\n`;
     }
-    return resp;
+    return resp + DISCLAIMER;
+  }
+
+  // ===== BEST HISTORICAL PROP TYPE =====
+  if (q.includes("best prop type") || q.includes("best historical") || q.includes("most profitable prop")) {
+    const typeMap: Record<string, { hits: number; total: number }> = {};
+    for (const p of props) {
+      const t = p.propType || "over_under";
+      if (!typeMap[t]) typeMap[t] = { hits: 0, total: 0 };
+      typeMap[t].total++;
+      if (p.hitRate > 55) typeMap[t].hits++;
+    }
+    let resp = `## 📊 Best Historical Prop Types\n\n`;
+    resp += `*Analyzing ${props.length} props by type performance (demo data)*\n\n`;
+    const sorted = Object.entries(typeMap).sort(([, a], [, b]) => (b.hits / b.total) - (a.hits / a.total));
+    for (const [type, d] of sorted) {
+      const rate = d.total > 0 ? Math.round((d.hits / d.total) * 100) : 0;
+      resp += `• **${type.replace(/_/g, " ")}**: ${rate}% high-hit-rate (${d.hits}/${d.total} props)\n`;
+    }
+    resp += `\n*Step 2: Focus on prop types with highest historical hit rates for your entries.*`;
+    return resp + DISCLAIMER;
+  }
+
+  // ===== MOST PROFITABLE SPORT =====
+  if (q.includes("most profitable sport") || q.includes("which sport") || (q.includes("profitable") && q.includes("sport"))) {
+    const sportMap: Record<string, { totalEdge: number; count: number }> = {};
+    for (const p of props) {
+      if (!sportMap[p.sport]) sportMap[p.sport] = { totalEdge: 0, count: 0 };
+      sportMap[p.sport].totalEdge += p.edge;
+      sportMap[p.sport].count++;
+    }
+    let resp = `## 🏆 Sport Profitability Analysis\n\n`;
+    resp += `*Step 1: Aggregating edge across all props by sport (demo data)*\n\n`;
+    const sorted = Object.entries(sportMap).sort(([, a], [, b]) => (b.totalEdge / b.count) - (a.totalEdge / a.count));
+    for (const [sport, d] of sorted) {
+      const avgEdge = Math.round((d.totalEdge / d.count) * 10) / 10;
+      resp += `• **${sport}**: Avg Edge ${avgEdge > 0 ? "+" : ""}${avgEdge}% across ${d.count} props\n`;
+    }
+    resp += `\n*Step 2: Higher average edge suggests better model performance in that sport.*`;
+    return resp + DISCLAIMER;
+  }
+
+  // ===== BEST EDGE BUCKET =====
+  if (q.includes("edge bucket") || q.includes("which edge") || q.includes("best edge range")) {
+    const buckets: Record<string, { hits: number; total: number }> = { "0-5": { hits: 0, total: 0 }, "5-10": { hits: 0, total: 0 }, "10-15": { hits: 0, total: 0 }, "15+": { hits: 0, total: 0 } };
+    for (const p of props) {
+      const absEdge = Math.abs(p.edge);
+      const bucket = absEdge >= 15 ? "15+" : absEdge >= 10 ? "10-15" : absEdge >= 5 ? "5-10" : "0-5";
+      buckets[bucket].total++;
+      if (p.hitRate > 55) buckets[bucket].hits++;
+    }
+    let resp = `## 📈 Edge Bucket Performance\n\n`;
+    resp += `*Step 1: Grouping by edge magnitude (demo data)*\n\n`;
+    for (const [bucket, d] of Object.entries(buckets)) {
+      const rate = d.total > 0 ? Math.round((d.hits / d.total) * 100) : 0;
+      resp += `• **${bucket}% edge**: ${rate}% high-hit-rate (${d.total} props)\n`;
+    }
+    resp += `\n*Step 2: Wider edges should yield higher hit rates — check if calibration holds.*`;
+    return resp + DISCLAIMER;
+  }
+
+  // ===== MOST RELIABLE PLAYERS =====
+  if (q.includes("reliable") || q.includes("most consistent") || q.includes("best player")) {
+    const playerMap: Record<string, { totalHit: number; count: number; avgEdge: number }> = {};
+    for (const p of props) {
+      if (!playerMap[p.playerName]) playerMap[p.playerName] = { totalHit: 0, count: 0, avgEdge: 0 };
+      playerMap[p.playerName].totalHit += p.hitRate;
+      playerMap[p.playerName].avgEdge += p.edge;
+      playerMap[p.playerName].count++;
+    }
+    let resp = `## ⭐ Most Reliable Players\n\n`;
+    resp += `*Step 1: Ranking by average hit rate across all props (demo data)*\n\n`;
+    const sorted = Object.entries(playerMap)
+      .filter(([, d]) => d.count >= 2)
+      .sort(([, a], [, b]) => (b.totalHit / b.count) - (a.totalHit / a.count))
+      .slice(0, 8);
+    for (const [name, d] of sorted) {
+      const avgHit = Math.round(d.totalHit / d.count);
+      const avgEdge = Math.round((d.avgEdge / d.count) * 10) / 10;
+      resp += `• **${name}**: ${avgHit}% avg hit rate | Avg Edge: ${avgEdge > 0 ? "+" : ""}${avgEdge}% | ${d.count} props\n`;
+    }
+    return resp + DISCLAIMER;
+  }
+
+  // ===== SIMILAR PAST PICKS =====
+  if (q.includes("similar") || q.includes("past pick") || q.includes("historical")) {
+    const highConf = props.filter((p: any) => p.confidence >= 70 && p.historicalHitRate).sort((a: any, b: any) => (b.historicalHitRate?.similarLines || 0) - (a.historicalHitRate?.similarLines || 0)).slice(0, 6);
+    let resp = `## 📚 Similar Past Picks Analysis\n\n`;
+    resp += `*Step 1: Finding props with strong historical hit rates on similar lines (demo data)*\n\n`;
+    if (highConf.length === 0) { resp += "No props with historical hit rate data found."; return resp + DISCLAIMER; }
+    for (const p of highConf) {
+      resp += `**${p.playerName}** ${p.statType} ${p.overUnder.toUpperCase()} ${p.line}\n`;
+      resp += `• Historically: **${p.historicalHitRate.similarLines}%** hit rate on similar lines (n=${p.historicalHitRate.sampleSize})\n`;
+      if (p.historicalHitRate.vsTeam) resp += `• vs Opponent: **${p.historicalHitRate.vsTeam}%**\n`;
+      resp += `• Current Edge: **${p.edge > 0 ? "+" : ""}${p.edge}%** | Conf: **${p.confidence}%**\n\n`;
+    }
+    return resp + DISCLAIMER;
+  }
+
+  // ===== CLOSING LINE VALUE =====
+  if (q.includes("closing line") || q.includes("clv") || q.includes("beat closing")) {
+    let resp = `## 📉 Closing Line Value (CLV) Insight\n\n`;
+    resp += `*Step 1: CLV measures whether your pick beat the closing line — a key skill indicator.*\n\n`;
+    resp += `• **Positive CLV**: You got the line at a better price than where it closed → long-term edge\n`;
+    resp += `• **Negative CLV**: Market moved against you → may indicate late info or public line movement\n\n`;
+    resp += `*Step 2: Check your Results page for CLV on each graded pick. Target CLV > 0 on average.*\n\n`;
+    resp += `To view your CLV data, go to **Results & Grading** in the sidebar. Each graded pick shows the CLV column.\n\n`;
+    resp += `*Note: CLV data in this demo uses mock closing lines. With live APIs, this becomes a powerful metric.*`;
+    return resp + DISCLAIMER;
+  }
+
+  // ===== STRONG EDGE + HISTORICAL HIT RATE =====
+  if ((q.includes("strong") && q.includes("edge")) || (q.includes("edge") && q.includes("hit rate")) || q.includes("best combo")) {
+    const combo = props.filter((p: any) => Math.abs(p.edge) >= 5 && p.hitRate >= 60 && isFinite(p.edge))
+      .sort((a: any, b: any) => (Math.abs(b.edge) + b.hitRate) - (Math.abs(a.edge) + a.hitRate))
+      .slice(0, 8);
+    let resp = `## 🎯 Strong Edge + High Hit Rate Picks\n\n`;
+    resp += `*Step 1: Filtering for |edge| ≥ 5% AND hit rate ≥ 60% (demo data)*\n\n`;
+    if (combo.length === 0) { resp += "No props currently match this criteria."; return resp + DISCLAIMER; }
+    for (const p of combo) {
+      resp += `**${p.playerName}** ${p.statType} ${p.overUnder.toUpperCase()} ${p.line}\n`;
+      resp += `• Edge: **${p.edge > 0 ? "+" : ""}${p.edge}%** | Hit Rate: **${p.hitRate}%** | Conf: **${p.confidence}%**\n`;
+      resp += `• Model Prob: ${p.modelProb || "?"}% vs Mkt: ${p.marketImpliedProb || "?"}% | Bust: ${p.bustRisk || "?"}%\n\n`;
+    }
+    resp += `*Step 2: These picks combine statistical edge with demonstrated reliability.*`;
+    return resp + DISCLAIMER;
   }
 
   // ===== DEFAULT =====
@@ -397,5 +547,5 @@ function generateStatisticalResponse(question: string, props: any[], games: any[
     resp += `• L10: ${p.last10Hits || "?"}/10 | Matchup: ${p.matchupRating}/10 | ${p.platform}\n\n`;
   }
   resp += `\nAsk me to *"build a 6-pick entry"*, *"best unders"*, *"Kalshi markets"*, or *"who's on a hot streak?"* 🎯`;
-  return resp;
+  return resp + DISCLAIMER;
 }

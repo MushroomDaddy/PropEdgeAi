@@ -19,6 +19,9 @@ import {
   MyPicksPage,
   LeaderboardPage,
   BankrollPage,
+  ResultsPage,
+  ModelLabPage,
+  PlayerIntelPage,
 } from "./pages";
 import { GameDetailPage } from "./pages/GameDetailPage";
 
@@ -44,6 +47,9 @@ function App() {
               <Route path="/chat" element={<AIChatPage />} />
               <Route path="/builder" element={<PickBuilderPage />} />
               <Route path="/my-picks" element={<MyPicksPage />} />
+              <Route path="/results" element={<ResultsPage />} />
+              <Route path="/model-lab" element={<ModelLabPage />} />
+              <Route path="/players" element={<PlayerIntelPage />} />
               <Route path="/bankroll" element={<BankrollPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/settings" element={<SettingsPage />} />

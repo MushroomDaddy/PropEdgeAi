@@ -133,10 +133,15 @@ export const seedGameDetails = internalMutation({
       }
     }
 
-    // Insert all new props
+    // Insert all new props — edge = modelProb - marketImpliedProb
     const allNewProps = [...moneylines, ...spreads, ...totals];
     for (const np of allNewProps) {
-      const conf = Math.min(92, Math.max(35, Math.round(55 + Math.abs(np.edge) * 1.5)));
+      // Derive modelProb and marketImpliedProb so edge = modelProb - marketImpliedProb
+      const projDiff = np.line !== 0 ? Math.round(((np.projection - np.line) / Math.abs(np.line)) * 1000) / 10 : 0;
+      const zScore = np.line !== 0 ? (np.projection - np.line) / 8 : 0; // 8 = variance
+      const modelProb = Math.min(90, Math.max(10, Math.round(50 + (zScore / (1 + Math.abs(zScore) * 0.2)) * 25)));
+      const marketImpliedProb = Math.round(modelProb - np.edge); // so edge = modelProb - marketImpliedProb
+      const conf = Math.min(92, Math.max(35, Math.round(55 + Math.abs(np.edge) * 0.3)));
       await ctx.db.insert("props", {
         playerId: firstPlayer._id,
         gameId: np.gameId,
@@ -149,6 +154,9 @@ export const seedGameDetails = internalMutation({
         projectionSources: [{ source: "Consensus", value: np.projection }, { source: "Model", value: np.projection * 1.02 }],
         platform: np.platform,
         edge: np.edge,
+        modelProb,
+        marketImpliedProb,
+        projectionDiff: projDiff,
         confidence: conf,
         hitRate: Math.round(50 + np.edge * 0.8),
         overUnder: np.edge > 0 ? "over" : "under",
@@ -157,11 +165,18 @@ export const seedGameDetails = internalMutation({
         matchupRating: 6,
         bustRisk: Math.round(40 - Math.abs(np.edge) * 0.5),
         projectionConsensus: { avg: np.projection, numSources: 2, numOverLine: np.edge > 0 ? 2 : 0, spread: 2 },
+        dataSource: "demo",
+        lastUpdated: Date.now(),
+        provider: "PropEdge Model",
       });
     }
 
     for (const sp of sportProps) {
-      const conf = Math.min(90, Math.max(30, Math.round(50 + Math.abs(sp.edge) * 1.2)));
+      const spProjDiff = sp.line !== 0 ? Math.round(((sp.projection - sp.line) / Math.abs(sp.line)) * 1000) / 10 : 0;
+      const spZScore = sp.line !== 0 ? (sp.projection - sp.line) / 10 : 0; // 10 = variance
+      const spModelProb = Math.min(90, Math.max(10, Math.round(50 + (spZScore / (1 + Math.abs(spZScore) * 0.2)) * 25)));
+      const spMarketImplied = Math.round(spModelProb - sp.edge);
+      const conf = Math.min(90, Math.max(30, Math.round(50 + Math.abs(sp.edge) * 0.2)));
       await ctx.db.insert("props", {
         playerId: firstPlayer._id,
         gameId: sp.gameId,
@@ -174,6 +189,9 @@ export const seedGameDetails = internalMutation({
         projectionSources: [{ source: "Consensus", value: sp.projection }],
         platform: sp.platform,
         edge: sp.edge,
+        modelProb: spModelProb,
+        marketImpliedProb: spMarketImplied,
+        projectionDiff: spProjDiff,
         confidence: conf,
         hitRate: Math.round(50 + sp.edge * 0.6),
         overUnder: sp.edge > 0 ? "over" : "under",
@@ -181,6 +199,9 @@ export const seedGameDetails = internalMutation({
         variance: 10,
         matchupRating: 5,
         bustRisk: Math.round(45 - Math.abs(sp.edge) * 0.3),
+        dataSource: "demo",
+        lastUpdated: Date.now(),
+        provider: "PropEdge Model",
       });
     }
 
