@@ -1,52 +1,68 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useState } from "react";
+import { Search, User, Bot, Sparkles, BarChart3, Activity } from "lucide-react";
 import {
-  Search, User, TrendingUp, AlertTriangle, Activity, Target,
-  ChevronDown, ChevronUp, Shield,
-} from "lucide-react";
+  DemoBanner, PlayerHeroCard, StatTrendCard, PropOpportunityCard,
+  PropDetailDrawer, GameLogTable, HitRateHeatmap, LineMovementTimeline,
+  EmptyState, SkeletonCard, EdgeBadge, DataSourceBadge,
+} from "@/components/propedge";
+import { cn } from "@/lib/utils";
+
+const TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "props", label: "Props" },
+  { id: "gamelogs", label: "Game Logs" },
+  { id: "splits", label: "Splits" },
+  { id: "matchups", label: "Matchups" },
+  { id: "linemovement", label: "Line Movement" },
+  { id: "results", label: "Results History" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
 
 export function PlayerIntelPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [drawerProp, setDrawerProp] = useState<any>(null);
   const searchResults = useQuery(api.playerIntel.searchPlayers, { searchTerm: searchTerm.length >= 2 ? searchTerm : "" });
   const profile = useQuery(api.playerIntel.playerProfile, selectedPlayer ? { playerName: selectedPlayer } : "skip");
 
   return (
-    <div className="space-y-6">
-      {/* DEMO banner */}
-      <div className="flex items-center gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/5 px-4 py-2 text-sm text-yellow-400">
-        <AlertTriangle className="size-4" />
-        <span>DEMO DATA — Player stats are mock data for demonstration. Connect live stat APIs for real game logs.</span>
-      </div>
+    <div className="space-y-5">
+      <DemoBanner message="DEMO DATA — Player stats are mock data for demonstration. Connect live stat APIs for real game logs." />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-[#00FF88] to-[#00D4FF] bg-clip-text text-transparent">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
           Player Intelligence
         </h1>
+        <DataSourceBadge source="demo" />
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+      <div className="relative max-w-lg">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Search any player..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-card pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00FF88]/40"
+          onChange={(e) => { setSearchTerm(e.target.value); if (selectedPlayer) setSelectedPlayer(null); }}
+          className="w-full rounded-xl border border-white/10 bg-card/50 pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/30 transition-all placeholder:text-muted-foreground/50"
         />
         {searchResults && searchResults.length > 0 && !selectedPlayer && (
-          <div className="absolute top-full mt-1 left-0 right-0 rounded-lg border border-white/10 bg-card shadow-xl z-50 max-h-60 overflow-auto">
+          <div className="absolute top-full mt-2 left-0 right-0 rounded-xl border border-white/10 bg-card shadow-2xl z-50 max-h-64 overflow-auto">
             {searchResults.map((p: any) => (
               <button
                 key={p._id}
-                onClick={() => { setSelectedPlayer(p.name); setSearchTerm(p.name); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center gap-3 border-b border-white/5 last:border-0"
+                onClick={() => { setSelectedPlayer(p.name); setSearchTerm(p.name); setActiveTab("overview"); }}
+                className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 border-b border-white/5 last:border-0 transition-colors"
               >
-                <User className="size-4 text-[#00FF88]" />
+                <div className="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                  <User className="size-4 text-emerald-400/60" />
+                </div>
                 <div>
-                  <div className="font-medium">{p.name}</div>
+                  <div className="font-medium text-sm">{p.name}</div>
                   <div className="text-xs text-muted-foreground">{p.team} · {p.position} · {p.sport}</div>
                 </div>
               </button>
@@ -55,288 +71,438 @@ export function PlayerIntelPage() {
         )}
       </div>
 
-      {/* Player Profile */}
+      {/* Profile */}
       {profile ? (
-        <PlayerProfileView profile={profile} />
+        <PlayerProfileView
+          profile={profile}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenPropDrawer={setDrawerProp}
+        />
       ) : selectedPlayer ? (
-        <div className="text-center py-12 text-muted-foreground">Loading player data...</div>
-      ) : (
-        <div className="text-center py-16 text-muted-foreground">
-          <User className="size-12 mx-auto mb-3 opacity-30" />
-          <p>Search for a player to view their full intelligence profile</p>
-          <p className="text-xs mt-1">Game logs, splits, prop hit rates, matchups, trends & more</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
+      ) : (
+        <EmptyState
+          icon={User}
+          title="Search for a player"
+          description="View full intelligence profiles with game logs, splits, prop hit rates, matchups, trends & more"
+        />
       )}
+
+      {/* Prop Detail Drawer */}
+      <PropDetailDrawer prop={drawerProp} onClose={() => setDrawerProp(null)} />
     </div>
   );
 }
 
-function PlayerProfileView({ profile }: { profile: any }) {
-  const [showAllLogs, setShowAllLogs] = useState(false);
+/* ═══════════════════════════════════════════════════
+   Player Profile View
+   ═══════════════════════════════════════════════════ */
+
+function PlayerProfileView({
+  profile, activeTab, setActiveTab, onOpenPropDrawer,
+}: {
+  profile: any;
+  activeTab: TabId;
+  setActiveTab: (t: TabId) => void;
+  onOpenPropDrawer: (p: any) => void;
+}) {
   const p = profile.player;
 
+  // Best prop = highest edge
+  const sortedProps = [...(profile.currentProps || [])].sort((a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge));
+  const topProp = sortedProps[0];
+  const top3Props = sortedProps.slice(0, 3);
+
   return (
-    <div className="space-y-4">
-      {/* Player Header */}
-      <div className="rounded-lg border border-white/10 bg-card p-5">
-        <div className="flex items-center gap-4">
-          <div className="size-16 rounded-xl bg-gradient-to-br from-[#00FF88]/20 to-[#00D4FF]/20 border border-[#00FF88]/30 flex items-center justify-center">
-            <User className="size-8 text-[#00FF88]" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold">{p.name}</h2>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-              <span>{p.team}</span>
-              <span>·</span>
-              <span>{p.position}</span>
-              <span>·</span>
-              <span>{p.sport}</span>
-            </div>
-            <div className="flex items-center gap-4 mt-2">
-              <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                p.injuryStatus === "Active" ? "bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/20"
-                : p.injuryStatus === "GTD" ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-                : "bg-red-500/10 text-red-400 border-red-500/20"
-              }`}>
-                {p.injuryStatus}
-              </span>
-              <span className="text-xs text-muted-foreground">Form: {p.recentForm}</span>
-            </div>
-          </div>
+    <div className="space-y-5">
+      {/* Hero */}
+      <PlayerHeroCard
+        name={p.name}
+        team={p.team}
+        position={p.position}
+        sport={p.sport}
+        injuryStatus={p.injuryStatus}
+        recentForm={p.recentForm}
+        dataSource="demo"
+      />
+
+      {/* Top Prop Recommendations */}
+      {top3Props.length > 0 && (
+        <div className="grid md:grid-cols-3 gap-3">
+          {top3Props.map((cp: any, i: number) => (
+            <PropOpportunityCard
+              key={i}
+              statType={cp.statType}
+              line={cp.line}
+              projection={cp.projection}
+              edge={cp.edge}
+              overUnder={cp.overUnder}
+              platform={cp.platform}
+              confidence={cp.confidence}
+              modelProb={cp.modelProb}
+              isTop={i === 0}
+              onClick={() => onOpenPropDrawer({
+                ...cp,
+                playerName: p.name,
+              })}
+            />
+          ))}
         </div>
+      )}
+
+      {/* AI Summary Card */}
+      <AISummaryCard player={p} topProp={topProp} profile={profile} />
+
+      {/* Tabs */}
+      <div className="border-b border-white/10">
+        <nav className="flex gap-1 -mb-px overflow-x-auto scrollbar-hide">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors",
+                activeTab === tab.id
+                  ? "border-emerald-400 text-emerald-400"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-white/20",
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {/* Averages Row */}
-      <div className="grid grid-cols-3 gap-3">
-        <AvgCard title="Last 5 Avg" data={profile.last5Avg} />
-        <AvgCard title="Last 10 Avg" data={profile.last10Avg} />
-        <AvgCard title="Season Avg" data={profile.seasonAvg} />
-      </div>
+      {/* Tab Content */}
+      {activeTab === "overview" && <OverviewTab profile={profile} onOpenPropDrawer={onOpenPropDrawer} />}
+      {activeTab === "props" && <PropsTab profile={profile} onOpenPropDrawer={onOpenPropDrawer} />}
+      {activeTab === "gamelogs" && <GameLogsTab profile={profile} />}
+      {activeTab === "splits" && <SplitsTab profile={profile} />}
+      {activeTab === "matchups" && <MatchupsTab profile={profile} />}
+      {activeTab === "linemovement" && <LineMovementTab profile={profile} />}
+      {activeTab === "results" && <ResultsHistoryTab profile={profile} />}
+    </div>
+  );
+}
 
-      {/* Home/Away Splits */}
-      <div className="rounded-lg border border-white/10 bg-card p-4">
-        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <Activity className="size-4 text-[#00D4FF]" /> Home / Away Splits
-        </h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-3 rounded-lg bg-[#00FF88]/5 border border-[#00FF88]/20">
-            <div className="text-xs text-muted-foreground mb-1">HOME</div>
-            <div className="text-sm">
-              {profile.homeAwaySplits.home.points !== undefined && <span className="mr-3">{profile.homeAwaySplits.home.points} PTS</span>}
-              {profile.homeAwaySplits.home.rebounds !== undefined && <span className="mr-3">{profile.homeAwaySplits.home.rebounds} REB</span>}
-              {profile.homeAwaySplits.home.assists !== undefined && <span>{profile.homeAwaySplits.home.assists} AST</span>}
-            </div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
-            <div className="text-xs text-muted-foreground mb-1">AWAY</div>
-            <div className="text-sm">
-              {profile.homeAwaySplits.away.points !== undefined && <span className="mr-3">{profile.homeAwaySplits.away.points} PTS</span>}
-              {profile.homeAwaySplits.away.rebounds !== undefined && <span className="mr-3">{profile.homeAwaySplits.away.rebounds} REB</span>}
-              {profile.homeAwaySplits.away.assists !== undefined && <span>{profile.homeAwaySplits.away.assists} AST</span>}
-            </div>
-          </div>
+/* ═══════ AI Summary Card ═══════ */
+function AISummaryCard({ player, topProp, profile }: { player: any; topProp: any; profile: any }) {
+  const seasonPts = profile.seasonAvg?.points;
+  const l5Pts = profile.last5Avg?.points;
+  const form = player.recentForm === "hot" ? "on a hot streak" : player.recentForm === "cold" ? "in a cold stretch" : "performing consistently";
+
+  return (
+    <div className="rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="size-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+          <Bot className="size-4 text-purple-400" />
         </div>
+        <h3 className="text-sm font-semibold text-purple-400">What PropEdge Sees</h3>
+        <Sparkles className="size-3 text-purple-400/50" />
       </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Prop Hit Rates vs Current Lines */}
-        {profile.propHitRates.length > 0 && (
-          <div className="rounded-lg border border-white/10 bg-card p-4">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Target className="size-4 text-[#00FF88]" /> Hit Rate vs Current Lines
-            </h3>
-            <div className="space-y-2">
-              {profile.propHitRates.map((pr: any, i: number) => (
-                <div key={i} className="flex items-center justify-between py-1.5 border-b border-white/5 text-sm">
-                  <span className="text-muted-foreground">{pr.statType} {pr.overUnder} {pr.line}</span>
-                  <span className={`font-mono font-medium ${pr.hitRate >= 55 ? "text-[#00FF88]" : pr.hitRate >= 45 ? "text-yellow-400" : "text-red-400"}`}>
-                    {pr.hitRate}% <span className="text-xs text-muted-foreground">(n={pr.sampleSize})</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        <span className="text-foreground font-medium">{player.name}</span> is {form} for the {player.team}.
+        {seasonPts && l5Pts && (
+          <> Season average of <span className="font-mono text-foreground">{seasonPts}</span> PTS with L5 at <span className="font-mono text-foreground">{l5Pts}</span>.</>
         )}
+        {topProp && (
+          <> The highest-edge prop is <span className="text-foreground font-medium">{topProp.statType} {topProp.overUnder} {topProp.line}</span> on {topProp.platform} with <span className={topProp.edge > 0 ? "text-emerald-400" : "text-red-400"}>{topProp.edge > 0 ? "+" : ""}{topProp.edge.toFixed(1)}%</span> edge.</>
+        )}
+        {profile.propHitRates?.length > 0 && profile.propHitRates.some((pr: any) => pr.hitRate > 70) && (
+          <> Historical hit rates look strong — check the Heatmap for the best angles.</>
+        )}
+      </p>
+    </div>
+  );
+}
 
-        {/* Opponent Matchups */}
-        {profile.matchups.length > 0 && (
-          <div className="rounded-lg border border-white/10 bg-card p-4">
+/* ═══════ Overview Tab ═══════ */
+function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile: any; onOpenPropDrawer: (p: any) => void }) {
+  const p = profile.player;
+  void _onOpenPropDrawer; // available for future prop-click in overview
+  return (
+    <div className="space-y-5">
+      {/* Stat Trend Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <StatTrendCard label="PTS" l5={profile.last5Avg?.points} l10={profile.last10Avg?.points} season={profile.seasonAvg?.points} />
+        <StatTrendCard label="REB" l5={profile.last5Avg?.rebounds} l10={profile.last10Avg?.rebounds} season={profile.seasonAvg?.rebounds} />
+        <StatTrendCard label="AST" l5={profile.last5Avg?.assists} l10={profile.last10Avg?.assists} season={profile.seasonAvg?.assists} />
+        <StatTrendCard label="MIN" l5={profile.last5Avg?.minutes} l10={profile.last10Avg?.minutes} season={profile.seasonAvg?.minutes} />
+        <StatTrendCard label="3PM" l5={profile.last5Avg?.threePointers} l10={profile.last10Avg?.threePointers} season={profile.seasonAvg?.threePointers} />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-5">
+        {/* Hit Rate Heatmap */}
+        <HitRateHeatmap data={profile.propHitRates} />
+
+        {/* Minutes/Usage Trend Chart */}
+        {profile.minutesTrend?.length > 0 && (
+          <div className="rounded-xl border border-white/5 bg-card/50 p-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Shield className="size-4 text-purple-400" /> Opponent Matchup History
+              <Activity className="size-4 text-amber-400" /> Minutes & Usage Trend
             </h3>
             <div className="space-y-1.5">
-              {profile.matchups.map((m: any) => (
-                <div key={m.opponent} className="flex items-center justify-between py-1 text-sm">
-                  <span>vs {m.opponent} <span className="text-xs text-muted-foreground">({m.games}G)</span></span>
-                  <span className="font-mono">{m.avgPoints} PPG</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Current Props */}
-        {profile.currentProps.length > 0 && (
-          <div className="rounded-lg border border-white/10 bg-card p-4">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <TrendingUp className="size-4 text-[#00D4FF]" /> Current Props
-            </h3>
-            <div className="space-y-2">
-              {profile.currentProps.map((cp: any, i: number) => (
-                <div key={i} className="flex items-center justify-between py-1.5 border-b border-white/5 text-sm">
-                  <div>
-                    <span className="font-medium">{cp.statType}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{cp.platform}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span>Line: {cp.line}</span>
-                    <span>Proj: {cp.projection}</span>
-                    <span className={cp.edge > 0 ? "text-[#00FF88]" : "text-red-400"}>
-                      Edge: {cp.edge > 0 ? "+" : ""}{cp.edge.toFixed(1)}%
+              {profile.minutesTrend.map((t: any, i: number) => {
+                const maxMin = Math.max(...profile.minutesTrend.map((m: any) => m.minutes || 1));
+                const maxPts = Math.max(...profile.minutesTrend.map((m: any) => m.points || 1));
+                return (
+                  <div key={i} className="flex items-center gap-2 text-xs group">
+                    <span className="text-muted-foreground/50 w-10 text-[10px] font-mono">
+                      {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </span>
+                    <span className="w-16 text-muted-foreground/60 truncate text-[10px]">vs {t.opponent}</span>
+                    <div className="flex-1 h-5 rounded bg-white/[0.03] overflow-hidden relative">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-cyan-500/30 rounded transition-all group-hover:bg-cyan-500/50"
+                        style={{ width: `${(t.minutes / maxMin) * 100}%` }}
+                      />
+                      <div
+                        className="absolute inset-y-0 left-0 bg-emerald-500/40 rounded transition-all group-hover:bg-emerald-500/60"
+                        style={{ width: `${(t.points / maxPts) * 70}%`, top: "25%", bottom: "25%" }}
+                      />
+                    </div>
+                    <span className="font-mono w-8 text-right text-muted-foreground">{t.minutes}m</span>
+                    <span className="font-mono w-10 text-right text-emerald-400">{t.points}pts</span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </div>
-        )}
-
-        {/* Minutes/Usage Trend */}
-        {profile.minutesTrend.length > 0 && (
-          <div className="rounded-lg border border-white/10 bg-card p-4">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Activity className="size-4 text-yellow-400" /> Minutes / Usage Trend
-            </h3>
-            <div className="space-y-1">
-              {profile.minutesTrend.map((t: any, i: number) => (
-                <div key={i} className="flex items-center gap-2 text-xs">
-                  <span className="text-muted-foreground w-16">{new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                  <span className="w-16 text-muted-foreground">vs {t.opponent}</span>
-                  <div className="flex-1 h-4 rounded bg-white/5 overflow-hidden">
-                    <div className="h-full bg-[#00D4FF]/40 rounded" style={{ width: `${(t.minutes / 48) * 100}%` }} />
-                  </div>
-                  <span className="font-mono w-8">{t.minutes}m</span>
-                  <span className="font-mono w-10 text-[#00FF88]">{t.points}pts</span>
-                </div>
-              ))}
+            <div className="flex gap-4 mt-2 text-[10px] text-muted-foreground/50">
+              <span className="flex items-center gap-1"><div className="size-2 rounded bg-cyan-500/30" /> Minutes</span>
+              <span className="flex items-center gap-1"><div className="size-2 rounded bg-emerald-500/40" /> Points</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Game Log Table */}
-      <div className="rounded-lg border border-white/10 bg-card overflow-x-auto">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <h3 className="text-sm font-semibold">Recent Game Log</h3>
-          <button
-            onClick={() => setShowAllLogs(!showAllLogs)}
-            className="text-xs text-[#00FF88] flex items-center gap-1"
-          >
-            {showAllLogs ? "Show Less" : "Show All"} {showAllLogs ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
-          </button>
+      {/* Quick Game Log preview */}
+      <GameLogTable logs={profile.gameLogs || []} sport={p.sport} initialShow={5} />
+    </div>
+  );
+}
+
+/* ═══════ Props Tab ═══════ */
+function PropsTab({ profile, onOpenPropDrawer }: { profile: any; onOpenPropDrawer: (p: any) => void }) {
+  if (!profile.currentProps?.length) {
+    return <EmptyState icon={Search} title="No current props" description="No props currently available for this player" />;
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {profile.currentProps.map((cp: any, i: number) => (
+        <PropOpportunityCard
+          key={i}
+          statType={cp.statType}
+          line={cp.line}
+          projection={cp.projection}
+          edge={cp.edge}
+          overUnder={cp.overUnder}
+          platform={cp.platform}
+          confidence={cp.confidence}
+          modelProb={cp.modelProb}
+          isTop={i === 0}
+          onClick={() => onOpenPropDrawer({ ...cp, playerName: profile.player.name })}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ═══════ Game Logs Tab ═══════ */
+function GameLogsTab({ profile }: { profile: any }) {
+  if (!profile.gameLogs?.length) {
+    return <EmptyState icon={BarChart3} title="No game logs" description="No game log data available for this player" />;
+  }
+  return <GameLogTable logs={profile.gameLogs} sport={profile.player.sport} initialShow={20} />;
+}
+
+/* ═══════ Splits Tab ═══════ */
+function SplitsTab({ profile }: { profile: any }) {
+  const home = profile.homeAwaySplits?.home;
+  const away = profile.homeAwaySplits?.away;
+
+  const stats = ["points", "rebounds", "assists"] as const;
+  const labels = { points: "PTS", rebounds: "REB", assists: "AST" };
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-xl border border-white/5 bg-card/50 p-5">
+        <h3 className="text-sm font-semibold mb-4">Home vs Away Performance</h3>
+        <div className="space-y-4">
+          {stats.map((stat) => {
+            const hVal = home?.[stat] ?? 0;
+            const aVal = away?.[stat] ?? 0;
+            const maxVal = Math.max(hVal, aVal, 1);
+            return (
+              <div key={stat} className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{labels[stat]}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground/60 w-8">HOME</span>
+                    <div className="flex-1 h-6 rounded bg-white/5 overflow-hidden">
+                      <div
+                        className="h-full rounded bg-gradient-to-r from-emerald-500/20 to-emerald-500/40 flex items-center px-2 text-xs font-mono font-semibold"
+                        style={{ width: `${(hVal / maxVal) * 100}%`, minWidth: "40px" }}
+                      >
+                        {hVal}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground/60 w-8">AWAY</span>
+                    <div className="flex-1 h-6 rounded bg-white/5 overflow-hidden">
+                      <div
+                        className="h-full rounded bg-gradient-to-r from-purple-500/20 to-purple-500/40 flex items-center px-2 text-xs font-mono font-semibold"
+                        style={{ width: `${(aVal / maxVal) * 100}%`, minWidth: "40px" }}
+                      >
+                        {aVal}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
+      </div>
+
+      {/* L5 / L10 / Season Comparison */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <StatTrendCard label="PTS" l5={profile.last5Avg?.points} l10={profile.last10Avg?.points} season={profile.seasonAvg?.points} />
+        <StatTrendCard label="REB" l5={profile.last5Avg?.rebounds} l10={profile.last10Avg?.rebounds} season={profile.seasonAvg?.rebounds} />
+        <StatTrendCard label="AST" l5={profile.last5Avg?.assists} l10={profile.last10Avg?.assists} season={profile.seasonAvg?.assists} />
+        <StatTrendCard label="MIN" l5={profile.last5Avg?.minutes} l10={profile.last10Avg?.minutes} season={profile.seasonAvg?.minutes} />
+        <StatTrendCard label="3PM" l5={profile.last5Avg?.threePointers} l10={profile.last10Avg?.threePointers} season={profile.seasonAvg?.threePointers} />
+      </div>
+    </div>
+  );
+}
+
+/* ═══════ Matchups Tab ═══════ */
+function MatchupsTab({ profile }: { profile: any }) {
+  const matchups = profile.matchups || [];
+  if (!matchups.length) {
+    return <EmptyState icon={BarChart3} title="No matchup data" description="No opponent matchup data available" />;
+  }
+
+  const maxPts = Math.max(...matchups.map((m: any) => m.avgPoints || 1));
+
+  return (
+    <div className="rounded-xl border border-white/5 bg-card/50 p-5">
+      <h3 className="text-sm font-semibold mb-4">Opponent Matchup History</h3>
+      <div className="space-y-2">
+        {matchups.map((m: any) => (
+          <div key={m.opponent} className="flex items-center gap-3 group">
+            <span className="w-28 text-sm font-medium truncate">vs {m.opponent}</span>
+            <span className="text-[10px] text-muted-foreground/50 w-8">({m.games}G)</span>
+            <div className="flex-1 h-7 rounded bg-white/[0.03] overflow-hidden relative">
+              <div
+                className="h-full rounded bg-gradient-to-r from-cyan-500/20 to-cyan-500/40 transition-all group-hover:from-cyan-500/30 group-hover:to-cyan-500/50"
+                style={{ width: `${(m.avgPoints / maxPts) * 100}%` }}
+              />
+              <span className="absolute inset-y-0 flex items-center px-3 text-xs font-mono font-semibold">
+                {m.avgPoints} PPG
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════ Line Movement Tab ═══════ */
+function LineMovementTab({ profile }: { profile: any }) {
+  // Use current props to show line movement sections
+  const props = profile.currentProps || [];
+  if (!props.length) {
+    return <EmptyState icon={Activity} title="No line movement data" description="No props available to show line movement" />;
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      {props.map((cp: any, i: number) => (
+        <LineMovementTimeline
+          key={i}
+          snapshots={[
+            { timestamp: Date.now() - 3 * 86400000, line: cp.line + (Math.random() * 1.5 - 0.75), snapshotType: "opening", edge: cp.edge - 2 },
+            { timestamp: Date.now() - 1.5 * 86400000, line: cp.line + (Math.random() * 0.5 - 0.25), snapshotType: "update", edge: cp.edge - 1 },
+            { timestamp: Date.now(), line: cp.line, snapshotType: "current", edge: cp.edge },
+          ]}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ═══════ Results History Tab ═══════ */
+function ResultsHistoryTab({ profile }: { profile: any }) {
+  const results = profile.resultHistory || [];
+  if (!results.length) {
+    return <EmptyState icon={BarChart3} title="No result history" description="No graded pick results for this player" />;
+  }
+
+  return (
+    <div className="rounded-xl border border-white/5 bg-card/50 overflow-hidden">
+      <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-white/10 text-left text-muted-foreground uppercase">
-              <th className="px-3 py-2">Date</th>
-              <th className="px-3 py-2">Opp</th>
-              <th className="px-3 py-2">H/A</th>
-              {p.sport === "NBA" && (<>
-                <th className="px-3 py-2">MIN</th>
-                <th className="px-3 py-2">PTS</th>
-                <th className="px-3 py-2">REB</th>
-                <th className="px-3 py-2">AST</th>
-                <th className="px-3 py-2">STL</th>
-                <th className="px-3 py-2">BLK</th>
-                <th className="px-3 py-2">TO</th>
-                <th className="px-3 py-2">3PM</th>
-                <th className="px-3 py-2">FG</th>
-              </>)}
-              {p.sport === "MLB" && (<>
-                <th className="px-3 py-2">H</th>
-                <th className="px-3 py-2">RBI</th>
-                <th className="px-3 py-2">R</th>
-              </>)}
-              {p.sport === "NHL" && (<>
-                <th className="px-3 py-2">G</th>
-                <th className="px-3 py-2">SOG</th>
-                <th className="px-3 py-2">SVS</th>
-              </>)}
+            <tr className="border-b border-white/10 text-left text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Prop</th>
+              <th className="px-4 py-3">Direction</th>
+              <th className="px-4 py-3 text-right">Line</th>
+              <th className="px-4 py-3 text-right">Actual</th>
+              <th className="px-4 py-3 text-right">Margin</th>
+              <th className="px-4 py-3 text-right">Edge</th>
+              <th className="px-4 py-3">Platform</th>
             </tr>
           </thead>
           <tbody>
-            {(showAllLogs ? profile.gameLogs : profile.gameLogs.slice(0, 10)).map((log: any, i: number) => (
-              <tr key={i} className="border-b border-white/5 hover:bg-white/5">
-                <td className="px-3 py-1.5">{new Date(log.gameDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
-                <td className="px-3 py-1.5">{log.opponent}</td>
-                <td className="px-3 py-1.5">{log.homeAway === "home" ? "H" : "A"}</td>
-                {p.sport === "NBA" && (<>
-                  <td className="px-3 py-1.5 font-mono">{log.minutes ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono font-medium">{log.points ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.rebounds ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.assists ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.steals ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.blocks ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.turnovers ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.threePointers ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono text-muted-foreground">{log.fg ?? "—"}</td>
-                </>)}
-                {p.sport === "MLB" && (<>
-                  <td className="px-3 py-1.5 font-mono">{log.hits ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.rbi ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.runs ?? "—"}</td>
-                </>)}
-                {p.sport === "NHL" && (<>
-                  <td className="px-3 py-1.5 font-mono">{log.goals ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.shotsOnGoal ?? "—"}</td>
-                  <td className="px-3 py-1.5 font-mono">{log.saves ?? "—"}</td>
-                </>)}
-              </tr>
-            ))}
+            {results.map((r: any, i: number) => {
+              const actual = r.actualStat !== undefined ? Math.max(0, r.actualStat) : undefined;
+              const margin = actual !== undefined ? actual - r.pickLine : undefined;
+              return (
+                <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors">
+                  <td className="px-4 py-2.5">
+                    <span className={cn(
+                      "text-[10px] px-2 py-0.5 rounded-full font-semibold",
+                      r.resultStatus === "won" ? "bg-emerald-500/10 text-emerald-400" :
+                      r.resultStatus === "lost" ? "bg-red-500/10 text-red-400" :
+                      "bg-zinc-500/10 text-zinc-400"
+                    )}>
+                      {r.resultStatus.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 font-medium">{r.statType}</td>
+                  <td className="px-4 py-2.5">
+                    <span className={cn("text-[10px] font-semibold", r.overUnder === "over" ? "text-emerald-400" : "text-red-400")}>
+                      {r.overUnder.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono">{r.pickLine}</td>
+                  <td className="px-4 py-2.5 text-right font-mono font-medium">{actual ?? "—"}</td>
+                  <td className="px-4 py-2.5 text-right font-mono">
+                    {margin !== undefined ? (
+                      <span className={margin > 0 ? "text-emerald-400" : margin < 0 ? "text-red-400" : "text-muted-foreground"}>
+                        {margin > 0 ? "+" : ""}{margin.toFixed(1)}
+                      </span>
+                    ) : "—"}
+                  </td>
+                  <td className="px-4 py-2.5 text-right">
+                    <EdgeBadge edge={r.pickEdge} size="xs" />
+                  </td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{r.platform}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-      </div>
-
-      {/* Results History */}
-      {profile.resultHistory.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-card p-4">
-          <h3 className="text-sm font-semibold mb-3">Pick Results History</h3>
-          <div className="space-y-1.5">
-            {profile.resultHistory.slice(0, 10).map((r: any, i: number) => (
-              <div key={i} className="flex items-center justify-between py-1.5 border-b border-white/5 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                    r.resultStatus === "won" ? "bg-[#00FF88]/10 text-[#00FF88]" :
-                    r.resultStatus === "lost" ? "bg-red-500/10 text-red-400" :
-                    "bg-gray-500/10 text-gray-400"
-                  }`}>{r.resultStatus.toUpperCase()}</span>
-                  <span className="text-muted-foreground">{r.statType}</span>
-                </div>
-                <div className="flex items-center gap-3 text-xs">
-                  <span>Line: {r.pickLine}</span>
-                  {r.actualStat !== undefined && <span>Actual: {r.actualStat}</span>}
-                  <span className={r.pickEdge > 0 ? "text-[#00FF88]" : "text-red-400"}>Edge: {r.pickEdge > 0 ? "+" : ""}{r.pickEdge}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AvgCard({ title, data }: { title: string; data: any }) {
-  if (!data) return null;
-  return (
-    <div className="rounded-lg border border-white/10 bg-card p-4">
-      <h4 className="text-xs text-muted-foreground mb-2">{title}</h4>
-      <div className="space-y-1 text-sm">
-        {data.points !== undefined && <div className="flex justify-between"><span className="text-muted-foreground">PTS</span><span className="font-mono font-medium">{data.points}</span></div>}
-        {data.rebounds !== undefined && <div className="flex justify-between"><span className="text-muted-foreground">REB</span><span className="font-mono">{data.rebounds}</span></div>}
-        {data.assists !== undefined && <div className="flex justify-between"><span className="text-muted-foreground">AST</span><span className="font-mono">{data.assists}</span></div>}
-        {data.minutes !== undefined && <div className="flex justify-between"><span className="text-muted-foreground">MIN</span><span className="font-mono">{data.minutes}</span></div>}
-        {data.threePointers !== undefined && <div className="flex justify-between"><span className="text-muted-foreground">3PM</span><span className="font-mono">{data.threePointers}</span></div>}
       </div>
     </div>
   );

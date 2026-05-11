@@ -41,10 +41,11 @@ export const seedResultsAndIntel = mutation({
       const pickEdge = prop.edge + (Math.random() * 4 - 2);
       const pickModelProb = prop.modelProb || 55;
       const pickMarketImplied = prop.marketImpliedProb || 50;
-      const actualStat = status === "pending" ? undefined
-        : status === "won" ? (prop.overUnder === "over" ? prop.line + 2 + Math.random() * 5 : prop.line - 2 - Math.random() * 3)
-        : status === "lost" ? (prop.overUnder === "over" ? prop.line - 1 - Math.random() * 3 : prop.line + 1 + Math.random() * 3)
+      const rawActual = status === "pending" ? undefined
+        : status === "won" ? (prop.overUnder === "over" ? prop.line + 2 + Math.random() * 5 : Math.max(0, prop.line - 2 - Math.random() * Math.min(3, prop.line * 0.3)))
+        : status === "lost" ? (prop.overUnder === "over" ? Math.max(0, prop.line - 1 - Math.random() * Math.min(3, prop.line * 0.3)) : prop.line + 1 + Math.random() * 3)
         : prop.line; // push
+      const actualStat = rawActual !== undefined ? Math.max(0, rawActual) : undefined;
       const closingLine = status !== "pending" ? prop.line + (Math.random() * 2 - 1) : undefined;
       const clv = closingLine !== undefined ? Math.round((prop.line - closingLine) * (prop.overUnder === "over" ? 1 : -1) * 10) / 10 : undefined;
       const roi = status === "won" ? Math.round((80 + Math.random() * 40) * 10) / 10
@@ -199,9 +200,10 @@ export const seedResultsAndIntel = mutation({
       // Higher model prob → higher hit chance (calibrated)
       const hitChance = modelProb / 100 - 0.05 + Math.random() * 0.1;
       const hit = Math.random() < hitChance;
-      const actualStat = hit
-        ? (prop.overUnder === "over" ? prop.line + 1 + Math.random() * 5 : prop.line - 1 - Math.random() * 3)
-        : (prop.overUnder === "over" ? prop.line - 1 - Math.random() * 3 : prop.line + 1 + Math.random() * 3);
+      const rawPredActual = hit
+        ? (prop.overUnder === "over" ? prop.line + 1 + Math.random() * 5 : Math.max(0, prop.line - 1 - Math.random() * Math.min(3, prop.line * 0.3)))
+        : (prop.overUnder === "over" ? Math.max(0, prop.line - 1 - Math.random() * Math.min(3, prop.line * 0.3)) : prop.line + 1 + Math.random() * 3);
+      const actualStat = Math.max(0, rawPredActual);
 
       await ctx.db.insert("modelPredictions", {
         propId: prop._id,
