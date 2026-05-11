@@ -30,11 +30,14 @@ interface PlayerHeroCardProps {
   injuryStatus?: string;
   recentForm?: string;
   imageUrl?: string;
+  teamLogoUrl?: string;
+  jerseyNumber?: number;
+  teamColor?: string;
   dataSource?: string;
 }
 
-export function PlayerHeroCard({ name, team, position, sport, injuryStatus, recentForm, imageUrl, dataSource = "demo" }: PlayerHeroCardProps) {
-  const teamColor = TEAM_COLORS[team] || "#6366f1";
+export function PlayerHeroCard({ name, team, position, sport, injuryStatus, recentForm, imageUrl, teamLogoUrl, jerseyNumber, teamColor: teamColorProp, dataSource = "demo" }: PlayerHeroCardProps) {
+  const teamColor = teamColorProp || TEAM_COLORS[team] || "#6366f1";
   const isHealthy = !injuryStatus || injuryStatus === "Active" || injuryStatus === "healthy";
   const isHot = recentForm === "hot" || recentForm === "🔥";
 
@@ -60,6 +63,8 @@ export function PlayerHeroCard({ name, team, position, sport, injuryStatus, rece
         >
           {imageUrl ? (
             <img src={imageUrl} alt={name} className="size-full rounded-2xl object-cover" />
+          ) : jerseyNumber !== undefined ? (
+            <span className="text-2xl font-black text-white/40 font-mono">#{jerseyNumber}</span>
           ) : (
             <User className="size-10 text-white/30" />
           )}
@@ -73,13 +78,17 @@ export function PlayerHeroCard({ name, team, position, sport, injuryStatus, rece
           </div>
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-            {/* Team logo placeholder */}
-            <div
-              className="size-5 rounded border flex items-center justify-center text-[8px] font-bold"
-              style={{ borderColor: `${teamColor}44`, background: `${teamColor}22`, color: teamColor }}
-            >
-              {team.split(" ").pop()?.substring(0, 3).toUpperCase()}
-            </div>
+            {/* Team logo */}
+            {teamLogoUrl ? (
+              <img src={teamLogoUrl} alt={team} className="size-5 rounded object-contain" />
+            ) : (
+              <div
+                className="size-5 rounded border flex items-center justify-center text-[8px] font-bold"
+                style={{ borderColor: `${teamColor}44`, background: `${teamColor}22`, color: teamColor }}
+              >
+                {team.split(" ").pop()?.substring(0, 3).toUpperCase()}
+              </div>
+            )}
             <span className="font-medium">{team}</span>
             <span className="text-muted-foreground/40">·</span>
             <span>{position}</span>

@@ -223,7 +223,10 @@ export function ResultsPage() {
                 {filteredResults.map((r: any, i: number) => {
                   // Fix impossible negative stats
                   const actualStat = r.actualStat !== undefined ? Math.max(0, Math.round(r.actualStat * 10) / 10) : undefined;
-                  const margin = actualStat !== undefined ? Math.round((actualStat - r.pickLine) * 10) / 10 : undefined;
+                  // Direction-aware margin: positive = pick beat the line
+                  const margin = actualStat !== undefined
+                    ? Math.round((r.overUnder === "over" ? actualStat - r.pickLine : r.pickLine - actualStat) * 10) / 10
+                    : undefined;
 
                   return (
                     <tr

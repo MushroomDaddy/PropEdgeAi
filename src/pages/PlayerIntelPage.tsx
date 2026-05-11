@@ -1,6 +1,7 @@
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, User, Bot, Sparkles, BarChart3, Activity } from "lucide-react";
 import {
   DemoBanner, PlayerHeroCard, StatTrendCard, PropOpportunityCard,
@@ -22,10 +23,22 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 export function PlayerIntelPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const qParam = searchParams.get("q") || "";
+  const [searchTerm, setSearchTerm] = useState(qParam);
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(qParam || null);
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [drawerProp, setDrawerProp] = useState<any>(null);
+
+  // Auto-load from ?q= URL param on mount / param change
+  useEffect(() => {
+    if (qParam && qParam !== selectedPlayer) {
+      setSearchTerm(qParam);
+      setSelectedPlayer(qParam);
+      setActiveTab("overview");
+    }
+  }, [qParam]);
+
   const searchResults = useQuery(api.playerIntel.searchPlayers, { searchTerm: searchTerm.length >= 2 ? searchTerm : "" });
   const profile = useQuery(api.playerIntel.playerProfile, selectedPlayer ? { playerName: selectedPlayer } : "skip");
 
@@ -92,9 +105,30 @@ export function PlayerIntelPage() {
       )}
 
       {/* Prop Detail Drawer */}
-      <PropDetailDrawer prop={drawerProp} onClose={() => setDrawerProp(null)} />
+      <PropDetailDrawerWithPicks prop={drawerProp} onClose={() => setDrawerProp(null)} />
     </div>
   );
+}
+
+/* ═══════════════════════════════════════════════════
+   PropDetailDrawer with Add to Picks wired
+   ═══════════════════════════════════════════════════ */
+
+function PropDetailDrawerWithPicks({ prop, onClose }: { prop: any; onClose: () => void }) {
+  const addPick = useMutation(api.picks.addPick);
+
+  const handleAddToPicks = prop?.propId
+    ? async () => {
+        try {
+          await addPick({ propId: prop.propId });
+          onClose();
+        } catch {
+          // Prop may not have a valid propId (demo) — silently handle
+        }
+      }
+    : undefined;
+
+  return <PropDetailDrawer prop={prop} onClose={onClose} onAddToPicks={handleAddToPicks} />;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -126,6 +160,10 @@ function PlayerProfileView({
         sport={p.sport}
         injuryStatus={p.injuryStatus}
         recentForm={p.recentForm}
+        imageUrl={p.imageUrl}
+        teamLogoUrl={p.teamLogoUrl}
+        jerseyNumber={p.jerseyNumber}
+        teamColor={p.teamColor}
         dataSource="demo"
       />
 
@@ -418,24 +456,40 @@ function MatchupsTab({ profile }: { profile: any }) {
 
 /* ═══════ Line Movement Tab ═══════ */
 function LineMovementTab({ profile }: { profile: any }) {
-  // Use current props to show line movement sections
+  // Use current props + real propSnapshots from Convex
   const props = profile.currentProps || [];
+  const snapMap: Record<string, any[]> = profile.propSnapshots || {};
+
   if (!props.length) {
     return <EmptyState icon={Activity} title="No line movement data" description="No props available to show line movement" />;
   }
 
   return (
     <div className="grid md:grid-cols-2 gap-4">
-      {props.map((cp: any, i: number) => (
-        <LineMovementTimeline
-          key={i}
-          snapshots={[
-            { timestamp: Date.now() - 3 * 86400000, line: cp.line + (Math.random() * 1.5 - 0.75), snapshotType: "opening", edge: cp.edge - 2 },
-            { timestamp: Date.now() - 1.5 * 86400000, line: cp.line + (Math.random() * 0.5 - 0.25), snapshotType: "update", edge: cp.edge - 1 },
-            { timestamp: Date.now(), line: cp.line, snapshotType: "current", edge: cp.edge },
-          ]}
-        />
-      ))}
+      {props.map((cp: any, i: number) => {
+        // Look up real snapshots by propId
+        const realSnaps = cp.propId ? snapMap[String(cp.propId)] : undefined;
+        const snapshots = realSnaps && realSnaps.length > 0
+          ? realSnaps.map((s: any) => ({
+              timestamp: s.timestamp,
+              line: s.line,
+              snapshotType: s.snapshotType,
+              edge: s.edge,
+            }))
+          : [
+              // Fallback: single current snapshot (no random data)
+              { timestamp: Date.now(), line: cp.line, snapshotType: "current", edge: cp.edge },
+            ];
+
+        return (
+          <div key={i}>
+            <div className="text-xs font-medium text-muted-foreground mb-2">
+              {cp.statType} — {cp.platform} ({cp.overUnder.toUpperCase()} {cp.line})
+            </div>
+            <LineMovementTimeline snapshots={snapshots} />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -466,7 +520,10 @@ function ResultsHistoryTab({ profile }: { profile: any }) {
           <tbody>
             {results.map((r: any, i: number) => {
               const actual = r.actualStat !== undefined ? Math.max(0, r.actualStat) : undefined;
-              const margin = actual !== undefined ? actual - r.pickLine : undefined;
+              // Direction-aware margin: positive = pick beat the line
+              const margin = actual !== undefined
+                ? Math.round((r.overUnder === "over" ? actual - r.pickLine : r.pickLine - actual) * 10) / 10
+                : undefined;
               return (
                 <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors">
                   <td className="px-4 py-2.5">

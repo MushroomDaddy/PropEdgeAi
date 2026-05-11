@@ -47,7 +47,11 @@ export const seedResultsAndIntel = mutation({
         : prop.line; // push
       const actualStat = rawActual !== undefined ? Math.max(0, rawActual) : undefined;
       const closingLine = status !== "pending" ? prop.line + (Math.random() * 2 - 1) : undefined;
-      const clv = closingLine !== undefined ? Math.round((prop.line - closingLine) * (prop.overUnder === "over" ? 1 : -1) * 10) / 10 : undefined;
+      // Over CLV = closingLine - pickLine (line moved up = good for over bettors)
+      // Under CLV = pickLine - closingLine (line moved up = good for under bettors)
+      const clv = closingLine !== undefined
+        ? Math.round((prop.overUnder === "over" ? closingLine - prop.line : prop.line - closingLine) * 10) / 10
+        : undefined;
       const roi = status === "won" ? Math.round((80 + Math.random() * 40) * 10) / 10
         : status === "lost" ? -100
         : 0;

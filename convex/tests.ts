@@ -414,18 +414,25 @@ export const runAll = action({
       results.push({ name: "Actual stat non-negative", passed: false, details: e.message });
     }
 
-    // 20. Result margin calculation
+    // 20. Result margin calculation (direction-aware)
     try {
       const actualStat = 28.3;
       const pickLine = 25.5;
-      const margin = Math.round((actualStat - pickLine) * 10) / 10;
-      assert(margin === 2.8, `Margin should be 2.8, got ${margin}`);
+      // Over margin = actual - line (positive = beat the line)
+      const marginOver = Math.round((actualStat - pickLine) * 10) / 10;
+      assert(marginOver === 2.8, `Over margin should be 2.8, got ${marginOver}`);
+      // Under margin = line - actual (positive = beat the line)
+      const marginUnder = Math.round((pickLine - actualStat) * 10) / 10;
+      assert(marginUnder === -2.8, `Under margin should be -2.8, got ${marginUnder}`);
+      // Under pick that hits: actual=22, line=25.5 → margin = 25.5-22 = 3.5
+      const underHitMargin = Math.round((25.5 - 22.0) * 10) / 10;
+      assert(underHitMargin === 3.5, `Under hit margin should be 3.5, got ${underHitMargin}`);
       // Negative actual should floor to 0
       const clampedActual = Math.max(0, -3.2);
       assert(clampedActual === 0, `Clamped actual should be 0, got ${clampedActual}`);
-      results.push({ name: "Result margin calculation", passed: true, details: "Margin = actual - line, clamped ≥ 0 ✓" });
+      results.push({ name: "Result margin (direction-aware)", passed: true, details: `Over=+2.8, Under=-2.8, UnderHit=+3.5 ✓` });
     } catch (e: any) {
-      results.push({ name: "Result margin calculation", passed: false, details: e.message });
+      results.push({ name: "Result margin (direction-aware)", passed: false, details: e.message });
     }
 
     // 21. Prop card value score rendering

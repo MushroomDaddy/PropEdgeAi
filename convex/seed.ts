@@ -197,9 +197,57 @@ export const seedAll = mutation({
       return game.homeTeam === team ? game.awayTeam : game.homeTeam;
     }
 
+    // Demo player metadata (jersey numbers, team colors, placeholder image/logo URLs)
+    const playerMeta: Record<string, { jerseyNumber: number; teamColor: string }> = {
+      "Jayson Tatum": { jerseyNumber: 0, teamColor: "#007A33" },
+      "Jimmy Butler": { jerseyNumber: 22, teamColor: "#98002E" },
+      "Nikola Jokic": { jerseyNumber: 15, teamColor: "#0E2240" },
+      "LeBron James": { jerseyNumber: 23, teamColor: "#552583" },
+      "Kevin Durant": { jerseyNumber: 35, teamColor: "#1D1160" },
+      "Stephen Curry": { jerseyNumber: 30, teamColor: "#1D428A" },
+      "Giannis Antetokounmpo": { jerseyNumber: 34, teamColor: "#00471B" },
+      "Joel Embiid": { jerseyNumber: 21, teamColor: "#006BB6" },
+      "Luka Doncic": { jerseyNumber: 77, teamColor: "#0064B1" },
+      "Anthony Edwards": { jerseyNumber: 5, teamColor: "#0C2340" },
+      "Jaylen Brown": { jerseyNumber: 7, teamColor: "#007A33" },
+      "Bam Adebayo": { jerseyNumber: 13, teamColor: "#98002E" },
+      "Jamal Murray": { jerseyNumber: 27, teamColor: "#0E2240" },
+      "Anthony Davis": { jerseyNumber: 3, teamColor: "#552583" },
+      "Devin Booker": { jerseyNumber: 1, teamColor: "#1D1160" },
+      "Khris Middleton": { jerseyNumber: 22, teamColor: "#00471B" },
+      "Tyrese Maxey": { jerseyNumber: 0, teamColor: "#006BB6" },
+      "Patrick Mahomes": { jerseyNumber: 15, teamColor: "#E31837" },
+      "Josh Allen": { jerseyNumber: 17, teamColor: "#00338D" },
+      "Travis Kelce": { jerseyNumber: 87, teamColor: "#E31837" },
+      "Stefon Diggs": { jerseyNumber: 14, teamColor: "#00338D" },
+      "Brock Purdy": { jerseyNumber: 13, teamColor: "#AA0000" },
+      "CeeDee Lamb": { jerseyNumber: 88, teamColor: "#003594" },
+      "Jalen Hurts": { jerseyNumber: 1, teamColor: "#004C54" },
+      "Jahmyr Gibbs": { jerseyNumber: 26, teamColor: "#0076B6" },
+      "Aaron Judge": { jerseyNumber: 99, teamColor: "#003087" },
+      "Shohei Ohtani": { jerseyNumber: 17, teamColor: "#005A9C" },
+      "Mookie Betts": { jerseyNumber: 50, teamColor: "#005A9C" },
+      "Ronald Acuna Jr.": { jerseyNumber: 13, teamColor: "#CE1141" },
+      "Gerrit Cole": { jerseyNumber: 45, teamColor: "#003087" },
+      "Rafael Devers": { jerseyNumber: 11, teamColor: "#BD3039" },
+      "Connor McDavid": { jerseyNumber: 97, teamColor: "#FF4C00" },
+      "Aleksander Barkov": { jerseyNumber: 16, teamColor: "#041E42" },
+      "Artemi Panarin": { jerseyNumber: 10, teamColor: "#0038A8" },
+      "Sebastian Aho": { jerseyNumber: 20, teamColor: "#CC0000" },
+    };
+
     // Seed all players and their props
     for (const player of allPlayers) {
-      const playerId = await ctx.db.insert("players", player as any);
+      const meta = playerMeta[player.name];
+      const playerWithMeta = {
+        ...player,
+        jerseyNumber: meta?.jerseyNumber,
+        teamColor: meta?.teamColor,
+        // Placeholder URLs — replace with real CDN URLs when connecting live APIs
+        imageUrl: undefined,
+        teamLogoUrl: undefined,
+      };
+      const playerId = await ctx.db.insert("players", playerWithMeta as any);
       const result = findGameForPlayer(player.team, player.sport);
       if (!result) continue;
       const { id: gameId, game } = result;

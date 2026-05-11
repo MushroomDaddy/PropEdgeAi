@@ -14,14 +14,11 @@ export const myResults = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
     // Try user-specific results first
+    // Only return results owned by the authenticated user — no fallback to all results
     let results = await ctx.db
       .query("pickResults")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
-    // Fallback: if no user results, show all demo results (for demo mode)
-    if (results.length === 0) {
-      results = await ctx.db.query("pickResults").collect();
-    }
     if (sport) results = results.filter((r) => r.sport === sport);
     if (platform) results = results.filter((r) => r.platform === platform);
     if (status) results = results.filter((r) => r.resultStatus === status);
@@ -36,14 +33,11 @@ export const resultsSummary = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
-    let results = await ctx.db
+    // Only return results owned by the authenticated user — no fallback
+    const results = await ctx.db
       .query("pickResults")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
-    // Fallback: if no user results, show all demo results
-    if (results.length === 0) {
-      results = await ctx.db.query("pickResults").collect();
-    }
     const graded = results.filter((r) => r.resultStatus !== "pending");
     const won = graded.filter((r) => r.resultStatus === "won").length;
     const lost = graded.filter((r) => r.resultStatus === "lost").length;

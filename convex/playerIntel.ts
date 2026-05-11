@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -107,8 +108,12 @@ export const playerProfile = query({
       .sort((a, b) => b.predictedAt - a.predictedAt)
       .slice(0, 20);
 
-    // Pick results history
-    const results = await ctx.db.query("pickResults").withIndex("by_playerName", (q) => q.eq("playerName", playerName)).collect();
+    // Pick results history — only show current user's results (privacy)
+    const userId = await getAuthUserId(ctx);
+    const allPlayerResults = await ctx.db.query("pickResults").withIndex("by_playerName", (q) => q.eq("playerName", playerName)).collect();
+    const results = userId
+      ? allPlayerResults.filter((r) => r.userId === userId)
+      : [];
 
     return {
       player: {
@@ -118,6 +123,10 @@ export const playerProfile = query({
         sport: player.sport,
         injuryStatus: player.injuryStatus || "Active",
         recentForm: player.recentForm || "—",
+        imageUrl: player.imageUrl,
+        teamLogoUrl: player.teamLogoUrl,
+        jerseyNumber: player.jerseyNumber,
+        teamColor: player.teamColor,
       },
       gameLogs: sortedLogs.slice(0, 20),
       last5Avg,
@@ -128,6 +137,7 @@ export const playerProfile = query({
       matchups,
       minutesTrend,
       currentProps: props.map((p) => ({
+        propId: p._id,
         statType: p.statType,
         line: p.line,
         projection: p.projection,
@@ -136,7 +146,33 @@ export const playerProfile = query({
         overUnder: p.overUnder,
         confidence: p.confidence,
         modelProb: p.modelProb,
+        marketImpliedProb: p.marketImpliedProb,
+        projectionDiff: p.projectionDiff,
+        bustRisk: p.bustRisk,
+        valueScore: p.bustRisk !== undefined && p.projectionDiff !== undefined
+          ? Math.round(Math.min(100,
+              Math.min(40, Math.abs(p.edge) * 2.5)
+              + Math.min(25, (p.projectionConsensus?.numOverLine ?? 0) / Math.max(1, p.projectionConsensus?.numSources ?? 1) * 25)
+              + Math.min(20, (p.hitRate / 100) * 20)
+              + Math.min(15, ((100 - (p.bustRisk ?? 50)) / 100) * 15)
+            ))
+          : undefined,
+        dataSource: p.dataSource || "demo",
+        lastUpdated: p.lastUpdated,
+        provider: p.provider,
       })),
+      // Prop snapshots for line movement (keyed by propId string)
+      propSnapshots: await (async () => {
+        const snapMap: Record<string, any[]> = {};
+        for (const p of props) {
+          const snaps = await ctx.db
+            .query("propSnapshots")
+            .withIndex("by_propId", (q) => q.eq("propId", p._id))
+            .collect();
+          snapMap[String(p._id)] = snaps.sort((a, b) => a.timestamp - b.timestamp);
+        }
+        return snapMap;
+      })(),
       predictionHistory: playerPredictions,
       resultHistory: results.sort((a, b) => b.pickedAt - a.pickedAt).slice(0, 20),
       dataSource: "demo",

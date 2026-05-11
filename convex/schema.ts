@@ -20,6 +20,9 @@ const schema = defineSchema({
     position: v.string(),
     sport: v.string(),
     imageUrl: v.optional(v.string()),
+    teamLogoUrl: v.optional(v.string()),
+    jerseyNumber: v.optional(v.number()),
+    teamColor: v.optional(v.string()),
     injuryStatus: v.optional(v.string()),
     recentForm: v.optional(v.string()),
     seasonAvg: v.optional(v.object({
