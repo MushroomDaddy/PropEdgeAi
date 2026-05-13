@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { formatLabel, formatDirection } from "@/lib/labels";
 
 interface HitRateEntry {
   statType: string;
@@ -32,7 +33,7 @@ export function HitRateHeatmap({ data }: { data: HitRateEntry[] }) {
             className={cn("rounded-lg border p-3 text-center transition-colors", getColor(d.hitRate))}
           >
             <div className="text-[10px] opacity-70 mb-1 truncate">
-              {d.statType} {d.overUnder} {d.line}
+              {formatLabel(d.statType)} {formatDirection(d.overUnder)} {d.line}
             </div>
             <div className="text-lg font-bold font-mono">{d.hitRate}%</div>
             <div className="text-[10px] opacity-50">n={d.sampleSize}</div>

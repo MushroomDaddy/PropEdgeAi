@@ -24,3 +24,8 @@ export { MatchupCard } from "./MatchupCard";
 export { StatSparkline } from "./StatSparkline";
 export { GameStrip } from "./GameStrip";
 export { LineMovementMiniChart } from "./LineMovementMiniChart";
+
+// R12 Premium Visual System
+export { PageTransition, FadeIn, SlideUp, ScaleIn, StaggerContainer, StaggerItem } from "./PageTransition";
+export { DataModeIndicator } from "./DataModeIndicator";
+export { PremiumEmptyState } from "./PremiumEmptyState";

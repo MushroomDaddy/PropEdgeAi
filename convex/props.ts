@@ -163,7 +163,7 @@ export const stats = query({
     for (const p of allProps) {
       sportCounts[p.sport] = (sportCounts[p.sport] || 0) + 1;
     }
-    const topSport = Object.entries(sportCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "NBA";
+    const topSport = Object.entries(sportCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
 
     return { totalProps, avgEdge, topSport, positiveEdgeCount };
   },

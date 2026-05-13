@@ -1,6 +1,7 @@
 import { EdgeMeter } from "./EdgeMeter";
 import { ConfidenceMeter } from "./ConfidenceMeter";
 import { RiskMeter } from "./RiskMeter";
+import { formatLabel, formatDirection } from "@/lib/labels";
 import { TeamBadge } from "./TeamBadge";
 
 interface PremiumPropCardProps {
@@ -30,7 +31,7 @@ export function PremiumPropCard(props: PremiumPropCardProps) {
   } = props;
 
   const edgeColor = edge > 0 ? "border-emerald-500/30" : "border-red-500/30";
-  const dirLabel = overUnder === "over" ? "OVER" : "UNDER";
+  const dirLabel = formatDirection(overUnder).toUpperCase();
   const dirColor = overUnder === "over" ? "text-emerald-400" : "text-red-400";
 
   return (
@@ -65,7 +66,7 @@ export function PremiumPropCard(props: PremiumPropCardProps) {
         {/* Stat line */}
         <div className="flex items-baseline justify-between">
           <div>
-            <span className="text-muted-foreground text-xs">{statType}</span>
+            <span className="text-muted-foreground text-xs">{formatLabel(statType)}</span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold font-mono">{line}</span>
               <span className="text-xs text-muted-foreground">→ {projection}</span>

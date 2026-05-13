@@ -18,6 +18,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { formatLabel, formatDirection } from "@/lib/labels";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 
@@ -206,7 +207,7 @@ export function PropsAnalyzerPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-3 text-[#C8D0E0]">{prop.statType}</td>
+                    <td className="p-3 text-[#C8D0E0]">{formatLabel(prop.statType)}</td>
                     <td className="p-3 text-right font-mono text-[#C8D0E0]">{prop.line}</td>
                     <td className="p-3 text-right font-mono font-medium text-white">{prop.projection}</td>
                     <td className="p-3 text-right">
@@ -237,13 +238,13 @@ export function PropsAnalyzerPage() {
                           ? "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/20"
                           : "bg-[#FF4466]/15 text-[#FF4466] border-[#FF4466]/20"
                       }`}>
-                        {prop.isKalshiMarket ? (prop.edge > 0 ? "YES" : "NO") : prop.overUnder.toUpperCase()}
+                        {prop.isKalshiMarket ? (prop.edge > 0 ? "YES" : "NO") : formatDirection(prop.overUnder)}
                       </Badge>
                     </td>
                     <td className="p-3">
                       <span className={`text-xs px-2 py-0.5 rounded whitespace-nowrap ${
                         prop.platform === "Kalshi" ? "text-[#A855F7] bg-[#A855F7]/10" : "text-muted-foreground bg-[#1A2236]"
-                      }`}>{prop.platform}</span>
+                      }`}>{formatLabel(prop.platform)}</span>
                     </td>
                     <td className="p-3">
                       <Button
@@ -268,8 +269,8 @@ export function PropsAnalyzerPage() {
         <div className="bg-[#111827] rounded-xl border border-[#00D4FF]/20 p-5">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h3 className="text-lg font-bold text-white">{selectedProp.playerName} — {selectedProp.statType}</h3>
-              <p className="text-sm text-muted-foreground">{selectedProp.team} · {selectedProp.sport} · {selectedProp.platform}</p>
+              <h3 className="text-lg font-bold text-white">{selectedProp.playerName} — {formatLabel(selectedProp.statType)}</h3>
+              <p className="text-sm text-muted-foreground">{selectedProp.team} · {selectedProp.sport} · {formatLabel(selectedProp.platform)}</p>
             </div>
             <div className="flex items-center gap-3">
               <ValueScoreBadge score={selectedProp.valueScore} size="lg" />

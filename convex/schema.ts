@@ -23,6 +23,19 @@ const schema = defineSchema({
     teamLogoUrl: v.optional(v.string()),
     jerseyNumber: v.optional(v.number()),
     teamColor: v.optional(v.string()),
+    // R12: Sports asset architecture
+    headshotUrl: v.optional(v.string()),         // Player headshot from SportsDataIO/Sportradar
+    teamColors: v.optional(v.object({
+      primary: v.string(),
+      secondary: v.string(),
+      accent: v.optional(v.string()),
+    })),
+    league: v.optional(v.string()),               // "NBA", "NFL", etc.
+    externalIds: v.optional(v.object({
+      sportsDataIoId: v.optional(v.string()),
+      sportradarId: v.optional(v.string()),
+      espnId: v.optional(v.string()),
+    })),
     injuryStatus: v.optional(v.string()),
     recentForm: v.optional(v.string()),
     seasonAvg: v.optional(v.object({

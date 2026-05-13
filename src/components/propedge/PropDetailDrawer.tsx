@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { formatLabel } from "@/lib/labels";
 import {
   X, ShoppingCart, Target,
   BarChart3, History, AlertTriangle,
@@ -48,7 +49,7 @@ export function PropDetailDrawer({ prop, onClose, onAddToPicks }: PropDetailDraw
         {/* Header */}
         <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-white/10 px-5 py-4 flex items-center justify-between z-10">
           <div>
-            <h3 className="text-sm font-semibold">{prop.playerName || "Prop"} — {prop.statType}</h3>
+            <h3 className="text-sm font-semibold">{prop.playerName || "Prop"} — {formatLabel(prop.statType)}</h3>
             <div className="flex items-center gap-2 mt-1">
               <DirectionBadge direction={prop.overUnder} line={prop.line} />
               <span className="text-xs text-muted-foreground">{prop.platform}</span>

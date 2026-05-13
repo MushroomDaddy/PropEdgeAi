@@ -11,6 +11,7 @@ import {
   StatSparkline, TeamBadge,
 } from "@/components/propedge";
 import { cn } from "@/lib/utils";
+import { formatLabel, formatDirection } from "@/lib/labels";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -249,7 +250,7 @@ function AISummaryCard({ player, topProp, profile }: { player: any; topProp: any
           <> Season average of <span className="font-mono text-foreground">{seasonPts}</span> PTS with L5 at <span className="font-mono text-foreground">{l5Pts}</span>.</>
         )}
         {topProp && (
-          <> The highest-edge prop is <span className="text-foreground font-medium">{topProp.statType} {topProp.overUnder} {topProp.line}</span> on {topProp.platform} with <span className={topProp.edge > 0 ? "text-emerald-400" : "text-red-400"}>{topProp.edge > 0 ? "+" : ""}{topProp.edge.toFixed(1)}%</span> edge.</>
+          <> The highest-edge prop is <span className="text-foreground font-medium">{formatLabel(topProp.statType)} {formatDirection(topProp.overUnder)} {topProp.line}</span> on {formatLabel(topProp.platform)} with <span className={topProp.edge > 0 ? "text-emerald-400" : "text-red-400"}>{topProp.edge > 0 ? "+" : ""}{topProp.edge.toFixed(1)}%</span> edge.</>
         )}
         {profile.propHitRates?.length > 0 && profile.propHitRates.some((pr: any) => pr.hitRate > 70) && (
           <> Historical hit rates look strong — check the Heatmap for the best angles.</>
@@ -310,7 +311,7 @@ function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile
             <div>
               <div className="text-[10px] text-muted-foreground">Top Edge</div>
               <div className="flex items-center gap-1">
-                <span className="font-bold">{bestProp.statType}</span>
+                <span className="font-bold">{formatLabel(bestProp.statType)}</span>
                 <EdgeMeter edge={bestProp.edge} />
               </div>
             </div>
@@ -553,7 +554,7 @@ function LineMovementTab({ profile }: { profile: any }) {
         return (
           <div key={i}>
             <div className="text-xs font-medium text-muted-foreground mb-2">
-              {cp.statType} — {cp.platform} ({cp.overUnder.toUpperCase()} {cp.line})
+              {formatLabel(cp.statType)} — {formatLabel(cp.platform)} ({formatDirection(cp.overUnder)} {cp.line})
             </div>
             <LineMovementTimeline snapshots={snapshots} />
           </div>
@@ -605,10 +606,10 @@ function ResultsHistoryTab({ profile }: { profile: any }) {
                       {r.resultStatus.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 font-medium">{r.statType}</td>
+                  <td className="px-4 py-2.5 font-medium">{formatLabel(r.statType)}</td>
                   <td className="px-4 py-2.5">
                     <span className={cn("text-[10px] font-semibold", r.overUnder === "over" ? "text-emerald-400" : "text-red-400")}>
-                      {r.overUnder.toUpperCase()}
+                      {formatDirection(r.overUnder)}
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-right font-mono">{r.pickLine}</td>
@@ -623,7 +624,7 @@ function ResultsHistoryTab({ profile }: { profile: any }) {
                   <td className="px-4 py-2.5 text-right">
                     <EdgeBadge edge={r.pickEdge} size="xs" />
                   </td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{r.platform}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{formatLabel(r.platform)}</td>
                 </tr>
               );
             })}

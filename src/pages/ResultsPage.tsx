@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useState } from "react";
+import { formatLabel, formatDirection } from "@/lib/labels";
 import {
   ArrowUpDown, TrendingUp, Target, DollarSign,
   BarChart3, Trophy, X, ChevronRight,
@@ -240,14 +241,14 @@ export function ResultsPage() {
                     >
                       <td className="px-4 py-2.5"><ResultStatusBadge status={r.resultStatus} size="xs" /></td>
                       <td className="px-4 py-2.5 font-medium text-sm">{r.playerName}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground text-xs">{r.statType}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground text-xs">{formatLabel(r.statType)}</td>
                       <td className="px-4 py-2.5">
                         <span className={cn("text-[10px] font-bold", r.overUnder === "over" ? "text-emerald-400" : "text-red-400")}>
-                          {r.overUnder === "over" ? "▲" : "▼"} {r.overUnder.toUpperCase()}
+                          {r.overUnder === "over" ? "▲" : "▼"} {formatDirection(r.overUnder)}
                         </span>
                       </td>
                       <td className="px-4 py-2.5 text-xs">{r.sport}</td>
-                      <td className="px-4 py-2.5 text-xs text-muted-foreground">{r.platform}</td>
+                      <td className="px-4 py-2.5 text-xs text-muted-foreground">{formatLabel(r.platform)}</td>
                       <td className="px-4 py-2.5 font-mono text-sm">{r.pickLine}</td>
                       <td className="px-4 py-2.5 font-mono text-sm font-semibold">{actualStat ?? "—"}</td>
                       <td className="px-4 py-2.5 font-mono text-xs">
@@ -391,7 +392,7 @@ function DetailDrawerInline({ result, onClose }: { result: any; onClose: () => v
   return (
     <div className="border-t border-white/10 bg-white/[0.02] px-6 py-4">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-semibold">{r.playerName} — {r.statType} {r.overUnder}</h4>
+        <h4 className="text-sm font-semibold">{r.playerName} — {formatLabel(r.statType)} {formatDirection(r.overUnder)}</h4>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">

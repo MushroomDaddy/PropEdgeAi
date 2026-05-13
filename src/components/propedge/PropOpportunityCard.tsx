@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, ChevronRight, Star } from "lucide-react";
 import { EdgeBadge, ValueScoreBadge, ConfidenceBadge, RiskLabel, DataSourceBadge } from "./Badges";
+import { formatLabel, formatDirection } from "@/lib/labels";
 
 interface PropOpportunityCardProps {
   statType: string;
@@ -49,10 +50,10 @@ export function PropOpportunityCard({
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-semibold">{statType}</span>
+            <span className="text-sm font-semibold">{formatLabel(statType)}</span>
             {valueScore !== undefined && <ValueScoreBadge score={valueScore} size="xs" />}
           </div>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{platform}</span>
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{formatLabel(platform)}</span>
         </div>
         <EdgeBadge edge={edge} />
       </div>
@@ -64,7 +65,7 @@ export function PropOpportunityCard({
           isOver ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400",
         )}>
           {isOver ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-          {overUnder.toUpperCase()} {line}
+          {formatDirection(overUnder)} {line}
         </span>
         <div className="text-xs text-muted-foreground">
           Proj: <span className="font-mono font-medium text-foreground">{projection}</span>

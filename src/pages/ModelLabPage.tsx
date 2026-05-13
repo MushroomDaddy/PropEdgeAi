@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { DemoBanner, EmptyState, SkeletonCard } from "@/components/propedge";
 import { cn } from "@/lib/utils";
+import { formatLabel } from "@/lib/labels";
 
 export function ModelLabPage() {
   const perf = useQuery(api.results.modelPerformance);
@@ -231,19 +232,19 @@ export function ModelLabPage() {
               {learningInsights.strengths?.bestSport && (
                 <div className="text-xs flex justify-between">
                   <span>Best Sport</span>
-                  <span className="font-mono text-emerald-400">{learningInsights.strengths.bestSport.key} ({learningInsights.strengths.bestSport.hitRate}%)</span>
+                  <span className="font-mono text-emerald-400">{formatLabel(learningInsights.strengths.bestSport.key)} ({learningInsights.strengths.bestSport.hitRate}%)</span>
                 </div>
               )}
               {learningInsights.strengths?.bestStatType && (
                 <div className="text-xs flex justify-between">
                   <span>Best Stat Type</span>
-                  <span className="font-mono text-emerald-400">{learningInsights.strengths.bestStatType.key} ({learningInsights.strengths.bestStatType.hitRate}%)</span>
+                  <span className="font-mono text-emerald-400">{formatLabel(learningInsights.strengths.bestStatType.key)} ({learningInsights.strengths.bestStatType.hitRate}%)</span>
                 </div>
               )}
               {learningInsights.strengths?.bestPlatform && (
                 <div className="text-xs flex justify-between">
                   <span>Best Platform</span>
-                  <span className="font-mono text-emerald-400">{learningInsights.strengths.bestPlatform.key} ({learningInsights.strengths.bestPlatform.hitRate}%)</span>
+                  <span className="font-mono text-emerald-400">{formatLabel(learningInsights.strengths.bestPlatform.key)} ({learningInsights.strengths.bestPlatform.hitRate}%)</span>
                 </div>
               )}
               {learningInsights.strengths?.bestConfBucket && (() => {
@@ -265,13 +266,13 @@ export function ModelLabPage() {
               {learningInsights.weaknesses?.worstSport && (
                 <div className="text-xs flex justify-between">
                   <span>Worst Sport</span>
-                  <span className="font-mono text-red-400">{learningInsights.weaknesses.worstSport.key} ({learningInsights.weaknesses.worstSport.hitRate}%)</span>
+                  <span className="font-mono text-red-400">{formatLabel(learningInsights.weaknesses.worstSport.key)} ({learningInsights.weaknesses.worstSport.hitRate}%)</span>
                 </div>
               )}
               {learningInsights.weaknesses?.worstStatType && (
                 <div className="text-xs flex justify-between">
                   <span>Worst Stat Type</span>
-                  <span className="font-mono text-red-400">{learningInsights.weaknesses.worstStatType.key} ({learningInsights.weaknesses.worstStatType.hitRate}%)</span>
+                  <span className="font-mono text-red-400">{formatLabel(learningInsights.weaknesses.worstStatType.key)} ({learningInsights.weaknesses.worstStatType.hitRate}%)</span>
                 </div>
               )}
               {learningInsights.weaknesses?.worstPlayers?.map((p: any) => (
@@ -450,7 +451,7 @@ function ComparisonCard({ title, icon, data, labelKey }: {
       <div className="space-y-2">
         {sorted.map((d: any, i: number) => (
           <div key={i} className="flex items-center justify-between text-xs">
-            <span className="font-medium">{d[labelKey]}</span>
+            <span className="font-medium">{formatLabel(d[labelKey])}</span>
             <div className="flex items-center gap-2">
               <span className={cn("font-mono font-semibold", d.hitRate > 55 ? "text-emerald-400" : d.hitRate < 45 ? "text-red-400" : "text-muted-foreground")}>
                 {d.hitRate}%
