@@ -7,7 +7,7 @@
  * R10.1 fixes:
  * - Imported picks no longer attach to a random first propId
  * - Each imported pick stores sourceType, importJobId, matchStatus,
- *   originalLine, and originalPlatform for full traceability
+ *   Full audit trail: originalImported* fields (14 total) for traceability
  */
 
 import { query, mutation } from "./_generated/server";
@@ -33,32 +33,61 @@ async function tryMatchProp(
   ctx: any,
   playerName: string,
   statType: string,
-  _line: number,
-): Promise<{ propId: any; matchStatus: string }> {
-  // Search by player name in props table
+  line: number,
+  overUnder: string,
+  platform: string,
+  sport: string,
+): Promise<{
+  propId: any;
+  matchedPropId: any;
+  matchConfidence: number;
+  matchStatus: string;
+}> {
   const candidates = await ctx.db.query("props").collect();
   const nameLower = playerName.toLowerCase();
+  const statLower = statType.toLowerCase();
+  const ouLower = overUnder.toLowerCase();
+  const platLower = platform.toLowerCase();
+  const sportLower = sport.toLowerCase();
 
-  // Exact player + stat match
-  const exact = candidates.find(
-    (p: any) =>
-      p.playerName.toLowerCase() === nameLower &&
-      p.statType.toLowerCase() === statType.toLowerCase(),
-  );
-  if (exact) {
-    return { propId: exact._id, matchStatus: "matched" };
+  // Score each candidate for best match
+  let bestMatch: any = null;
+  let bestScore = 0;
+
+  for (const p of candidates) {
+    if (p.playerName.toLowerCase() !== nameLower) continue;
+
+    let score = 0.3; // Player name match = 30%
+
+    if (p.statType.toLowerCase() === statLower) score += 0.25;          // +25% stat type
+    if (Math.abs(p.line - line) < 0.5) score += 0.15;                   // +15% line within 0.5
+    if (p.overUnder.toLowerCase() === ouLower) score += 0.1;            // +10% over/under
+    if (p.platform.toLowerCase() === platLower) score += 0.1;           // +10% platform
+    if (p.sport.toLowerCase() === sportLower) score += 0.1;             // +10% sport
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = p;
+    }
   }
 
-  // Partial player match (name only)
-  const partial = candidates.find(
-    (p: any) => p.playerName.toLowerCase() === nameLower,
-  );
-  if (partial) {
-    return { propId: partial._id, matchStatus: "partial" };
+  if (bestMatch && bestScore >= 0.55) {
+    // Good match (at least player + stat type)
+    return {
+      propId: bestMatch._id,
+      matchedPropId: bestMatch._id,
+      matchConfidence: Math.round(bestScore * 100) / 100,
+      matchStatus: bestScore >= 0.8 ? "matched" : "partial",
+    };
   }
 
-  // No match — leave propId undefined
-  return { propId: undefined, matchStatus: "unmatched" };
+  // No usable match
+  return {
+    propId: undefined,
+    matchedPropId: undefined,
+    matchConfidence: bestMatch ? Math.round(bestScore * 100) / 100 : 0,
+    matchStatus: "unmatched",
+  };
 }
 
 /** Manual slip entry — create picks from a form */
@@ -72,6 +101,8 @@ export const manualSlipEntry = mutation({
         overUnder: v.string(),
         platform: v.string(),
         sport: v.string(),
+        odds: v.optional(v.number()),
+        stake: v.optional(v.number()),
       }),
     ),
     importSource: v.string(),
@@ -98,17 +129,20 @@ export const manualSlipEntry = mutation({
     let created = 0;
 
     for (const pick of picks) {
-      // Try to match to an existing prop (but don't require it)
-      const { propId, matchStatus } = await tryMatchProp(
+      // Try to match to an existing prop by player/stat/line/overUnder/platform/sport
+      const match = await tryMatchProp(
         ctx,
         pick.playerName,
         pick.statType,
         pick.line,
+        pick.overUnder,
+        pick.platform,
+        pick.sport,
       );
 
       await ctx.db.insert("picks", {
         userId,
-        propId,                                   // undefined if unmatched
+        propId: match.propId,                     // undefined if unmatched
         playerName: pick.playerName,
         statType: pick.statType,
         line: pick.line,
@@ -120,11 +154,22 @@ export const manualSlipEntry = mutation({
         status: "active",
         addedAt: now,
         // Import tracking (R10.1)
-        sourceType: "manual_import",
+        sourceType: "manual",
         importJobId,
-        matchStatus,
-        originalLine: pick.line,
-        originalPlatform: pick.platform,
+        matchStatus: match.matchStatus,
+        matchedPropId: match.matchedPropId,
+        matchConfidence: match.matchConfidence,
+        // Full audit trail
+        originalImportedLine: pick.line,
+        originalImportedPlatform: pick.platform,
+        originalImportedPlayer: pick.playerName,
+        originalImportedStatType: pick.statType,
+        originalImportedDirection: pick.overUnder,
+        originalImportedSport: pick.sport,
+        originalImportedOdds: pick.odds,
+        originalImportedStake: pick.stake,
+        // Review workflow
+        reviewStatus: match.matchStatus === "unmatched" ? "pending" : "accepted",
       });
       created++;
     }
@@ -185,33 +230,53 @@ export const csvImport = mutation({
         continue;
       }
 
-      // Try to match to an existing prop (but don't require it)
-      const { propId, matchStatus } = await tryMatchProp(
+      const csvOverUnder = (overUnder || "over").toLowerCase();
+      const csvSport = sport || "NBA";
+      // Optional columns: odds (col 5), stake (col 6)
+      const csvOdds = parts[5] ? parseFloat(parts[5]) : undefined;
+      const csvStake = parts[6] ? parseFloat(parts[6]) : undefined;
+
+      // Try to match to an existing prop by player/stat/line/overUnder/platform/sport
+      const match = await tryMatchProp(
         ctx,
         playerName,
         statType,
         line,
+        csvOverUnder,
+        platform,
+        csvSport,
       );
 
       await ctx.db.insert("picks", {
         userId,
-        propId,                                   // undefined if unmatched
+        propId: match.propId,                     // undefined if unmatched
         playerName,
         statType,
         line,
         projection: line,
         edge: 0,
-        overUnder: (overUnder || "over").toLowerCase(),
+        overUnder: csvOverUnder,
         platform,
-        sport: sport || "NBA",
+        sport: csvSport,
         status: "active",
         addedAt: now,
         // Import tracking (R10.1)
-        sourceType: "csv_import",
+        sourceType: "csv",
         importJobId,
-        matchStatus,
-        originalLine: line,
-        originalPlatform: platform,
+        matchStatus: match.matchStatus,
+        matchedPropId: match.matchedPropId,
+        matchConfidence: match.matchConfidence,
+        // Full audit trail
+        originalImportedLine: line,
+        originalImportedPlatform: platform,
+        originalImportedPlayer: playerName,
+        originalImportedStatType: statType,
+        originalImportedDirection: csvOverUnder,
+        originalImportedSport: csvSport,
+        originalImportedOdds: isNaN(csvOdds ?? NaN) ? undefined : csvOdds,
+        originalImportedStake: isNaN(csvStake ?? NaN) ? undefined : csvStake,
+        // Review workflow
+        reviewStatus: match.matchStatus === "unmatched" ? "pending" : "accepted",
       });
       parsed++;
     }

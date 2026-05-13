@@ -100,15 +100,19 @@ export default function DataSourcesPage() {
                 <div>
                   <div className="font-bold text-sm">{p.displayName}</div>
                   <div className="text-[10px] text-muted-foreground flex items-center gap-2">
-                    {p.isLive ? (
-                      <span className="flex items-center gap-1 text-emerald-400"><Activity className="size-3" /> Live</span>
-                    ) : p.isDemoMode ? (
-                      <span className="flex items-center gap-1 text-amber-400"><AlertTriangle className="size-3" /> Demo</span>
+                    {p.isDemoMode ? (
+                      <span className="flex items-center gap-1 text-amber-400"><AlertTriangle className="size-3" /> Active — Demo Mode</span>
+                    ) : p.provider === "manual_import" ? (
+                      <span className="flex items-center gap-1 text-emerald-400"><Activity className="size-3" /> Available — Manual Entry & CSV</span>
+                    ) : p.provider === "screenshot_import" ? (
+                      <span className="flex items-center gap-1 text-gray-400"><WifiOff className="size-3" /> Placeholder — Coming Soon</span>
+                    ) : p.isLive ? (
+                      <span className="flex items-center gap-1 text-emerald-400"><Activity className="size-3" /> Connected — Live</span>
                     ) : (
-                      <span className="flex items-center gap-1"><WifiOff className="size-3" /> Not Connected</span>
+                      <span className="flex items-center gap-1 text-gray-400"><WifiOff className="size-3" /> Not Connected</span>
                     )}
                     {p.requiresApiKey && !p.apiKeyConfigured && (
-                      <span className="text-red-400">• Needs API Key</span>
+                      <span className="text-red-400">• API Key Required</span>
                     )}
                   </div>
                 </div>

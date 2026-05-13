@@ -179,11 +179,23 @@ const schema = defineSchema({
     result: v.optional(v.number()),
     addedAt: v.number(),
     // Import tracking (R10.1)
-    sourceType: v.optional(v.string()),        // "prop_matched" | "manual_import" | "csv_import"
+    sourceType: v.optional(v.string()),              // "manual" | "csv" | "screenshot" | "live" | "demo"
     importJobId: v.optional(v.id("importJobs")),
-    matchStatus: v.optional(v.string()),       // "matched" | "unmatched" | "partial"
-    originalLine: v.optional(v.number()),      // line as entered by user
-    originalPlatform: v.optional(v.string()),  // platform as entered by user
+    // Match result
+    matchStatus: v.optional(v.string()),              // "matched" | "unmatched" | "partial" | "needs_review"
+    matchedPropId: v.optional(v.id("props")),         // the matched prop (if any)
+    matchConfidence: v.optional(v.number()),           // 0-1 confidence in the match
+    // Original imported data (full audit trail)
+    originalImportedLine: v.optional(v.number()),
+    originalImportedPlatform: v.optional(v.string()),
+    originalImportedPlayer: v.optional(v.string()),
+    originalImportedStatType: v.optional(v.string()),
+    originalImportedDirection: v.optional(v.string()), // "over" | "under"
+    originalImportedSport: v.optional(v.string()),
+    originalImportedOdds: v.optional(v.number()),      // e.g. -110, +120
+    originalImportedStake: v.optional(v.number()),     // wager amount
+    // Review workflow
+    reviewStatus: v.optional(v.string()),              // "pending" | "accepted" | "rejected" | "corrected"
   })
     .index("by_userId", ["userId"])
     .index("by_userId_status", ["userId", "status"]),

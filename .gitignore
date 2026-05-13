@@ -26,8 +26,9 @@ Thumbs.db
 *.log
 npm-debug.log*
 bun.lockb
+bun.lock
 
 # Temp/test output
 tmp/
 test-results/
-playwright-report/bun.lock
+playwright-report/
