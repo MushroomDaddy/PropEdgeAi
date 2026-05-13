@@ -25,6 +25,8 @@ const BankrollPage = lazy(() => import("./pages/BankrollPage").then((m) => ({ de
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })));
 const SettingsPage = lazy(() => import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage })));
 const GameDetailPage = lazy(() => import("./pages/GameDetailPage").then((m) => ({ default: m.GameDetailPage })));
+const DataSourcesPage = lazy(() => import("./pages/DataSourcesPage"));
+const ImportPage = lazy(() => import("./pages/ImportPage"));
 
 function PageLoading() {
   return (
@@ -67,6 +69,8 @@ function App() {
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/game/:gameId" element={<GameDetailPage />} />
+                <Route path="/data-sources" element={<DataSourcesPage />} />
+                <Route path="/import" element={<ImportPage />} />
               </Route>
             </Route>
 

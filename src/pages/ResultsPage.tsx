@@ -383,7 +383,10 @@ function StatusDonut({ won, lost, push, voided, pending }: { won: number; lost: 
 function DetailDrawerInline({ result, onClose }: { result: any; onClose: () => void }) {
   const r = result;
   const actualStat = r.actualStat !== undefined ? Math.max(0, Math.round(r.actualStat * 10) / 10) : undefined;
-  const margin = actualStat !== undefined ? Math.round((actualStat - r.pickLine) * 10) / 10 : undefined;
+  // Direction-aware margin: positive = pick beat the line
+  const margin = actualStat !== undefined
+    ? Math.round((r.overUnder === "over" ? actualStat - r.pickLine : r.pickLine - actualStat) * 10) / 10
+    : undefined;
 
   return (
     <div className="border-t border-white/10 bg-white/[0.02] px-6 py-4">
@@ -404,6 +407,10 @@ function DetailDrawerInline({ result, onClose }: { result: any; onClose: () => v
         <DetailStat label="ROI" value={r.roi !== undefined ? `${r.roi > 0 ? "+" : ""}${r.roi}%` : "—"} color={r.roi > 0 ? "text-emerald-400" : r.roi < 0 ? "text-red-400" : undefined} />
         <DetailStat label="Picked" value={new Date(r.pickedAt).toLocaleDateString()} />
         <DetailStat label="Graded" value={r.gradedAt ? new Date(r.gradedAt).toLocaleDateString() : "Pending"} />
+        <DetailStat label="Grading Source" value={r.gradingSource ?? "auto"} />
+        <DetailStat label="Model Version" value={r.modelVersion ?? "heuristic-v1"} />
+        <DetailStat label="Quality" value={r.qualityFlags?.join(", ") ?? "clean"} />
+        <DetailStat label="Data Source" value={r.dataSource ?? "demo"} />
       </div>
     </div>
   );

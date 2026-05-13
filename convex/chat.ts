@@ -95,16 +95,53 @@ export const askAnalyst = action({
       )
       .join("\n");
 
-    const systemPrompt: string = `You are PropEdge AI, an analytical sports projection assistant. Use step-by-step reasoning, citing only the data provided below. NEVER invent stats, injuries, odds, or sources not present in the data.
+    // Fetch additional context for enriched analysis
+    const resultsContext: any[] = await ctx.runQuery(internal.chat.getResultsContext);
+    const modelPerfContext: any = await ctx.runQuery(internal.chat.getModelPerfContext);
 
-IMPORTANT RULES:
-- Only reference data explicitly provided in GAMES and PROPS below
+    const resultsStr: string = resultsContext.length > 0
+      ? resultsContext.slice(0, 20).map((r: any) =>
+          `${r.playerName} ${r.statType} ${r.overUnder} ${r.pickLine}: ${r.resultStatus} (actual: ${r.actualStat ?? "pending"}, edge: ${r.pickEdge}%, ROI: ${r.roi ?? "—"}%, CLV: ${r.clv ?? "—"})`
+        ).join("\n")
+      : "No graded results yet.";
+
+    const modelPerfStr: string = modelPerfContext
+      ? `Model: ${modelPerfContext.overallHitRate}% hit rate (${modelPerfContext.gradedPredictions} graded). Best sport: ${modelPerfContext.roiBySport?.[0]?.sport ?? "—"}. Over: ${modelPerfContext.overVsUnder?.over?.hitRate ?? "—"}%, Under: ${modelPerfContext.overVsUnder?.under?.hitRate ?? "—"}%.`
+      : "No model performance data yet.";
+
+    // Detect response mode from question
+    const qLower = question.toLowerCase();
+    let responseMode = "quick_summary";
+    if (qLower.includes("deep") || qLower.includes("research") || qLower.includes("detailed")) responseMode = "deep_research";
+    else if (qLower.includes("compare")) responseMode = "compare_picks";
+    else if (qLower.includes("player") && (qLower.includes("profile") || qLower.includes("intel"))) responseMode = "player_profile";
+    else if (qLower.includes("model") && (qLower.includes("performance") || qLower.includes("lab"))) responseMode = "model_performance";
+    else if (qLower.includes("bankroll") || qLower.includes("roi") || qLower.includes("profit")) responseMode = "bankroll_review";
+
+    const systemPrompt: string = `You are PropEdge AI, an analytical sports projection assistant. Use step-by-step reasoning, citing ONLY the data provided below. NEVER invent stats, injuries, odds, or sources not present in the data.
+
+RESPONSE MODE: ${responseMode}
+
+CRITICAL RULES:
+- ONLY reference data explicitly provided in GAMES, PROPS, RESULTS, MODEL PERFORMANCE below
 - If data is missing for a question, say "Data not available for that query"
-- All data shown is DEMO DATA — state this clearly in responses
-- Always include a responsible disclaimer at the end
-- Show edge as: Model Probability vs Market Implied Probability
-- Show projection difference separately from EV/edge
-- Cite data freshness: "Based on demo projections (not real-time)"
+- All data is DEMO DATA — state this clearly
+- NEVER invent: injuries, odds, stats, sources, breaking news, or live data
+- Show true edge as: Model Probability - Market Implied Probability (NOT projection diff)
+- Show projection difference SEPARATELY from EV/edge
+- EV must include payout/odds (not just probability)
+
+STRUCTURED RESPONSE FORMAT:
+For each pick/analysis, include these sections:
+1. **Top Edges** — highest edge picks from data
+2. **Why the model likes it** — cite specific model probability, consensus, hit rate
+3. **Supporting data** — game logs, trends, L10 hits, Monte Carlo
+4. **Risk factors** — bust risk, injury status, matchup rating, variance
+5. **Similar historical picks** — historical hit rates on similar lines
+6. **Line movement context** — if available from propSnapshots
+7. **Result history context** — past results for this player/stat
+8. **What would make this pick worse** — key risk scenarios
+9. **Final risk-adjusted rating** — 1-10 scale with rationale
 
 GAMES:
 ${gamesContext}
@@ -112,13 +149,13 @@ ${gamesContext}
 PROPS (top 40 by edge — Edge = Model Prob - Market Implied Prob):
 ${propsContext}
 
-FORMAT: Use ## headers, bullet points with **bold** data, and step-by-step analysis:
-Step 1: Data Review — cite exact projection numbers from the data above
-Step 2: Edge Analysis — show model probability vs market implied probability
-Step 3: Risk Assessment — bust risk, matchup, streaks from data
-Step 4: Recommendation — verdict with confidence level
+RECENT RESULTS (user's graded picks):
+${resultsStr}
 
-Always cite: Monte Carlo hit rates, consensus ratios, historical hit rates, DvP rankings, and bust risk %. End every response with:
+MODEL PERFORMANCE:
+${modelPerfStr}
+
+End every response with:
 ⚠️ *Demo data only — not real-time. Not financial advice. Always verify with live sources before placing entries.*`;
 
     try {
@@ -180,6 +217,53 @@ export const getGamesContext = internalQuery({
   returns: v.array(v.any()),
   handler: async (ctx) => {
     return await ctx.db.query("games").collect();
+  },
+});
+
+export const getResultsContext = internalQuery({
+  args: {},
+  returns: v.array(v.any()),
+  handler: async (ctx) => {
+    const results = await ctx.db.query("pickResults").collect();
+    return results
+      .filter((r) => r.resultStatus !== "pending")
+      .sort((a, b) => (b.gradedAt || b.pickedAt) - (a.gradedAt || a.pickedAt))
+      .slice(0, 20);
+  },
+});
+
+export const getModelPerfContext = internalQuery({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const preds = await ctx.db.query("modelPredictions").collect();
+    const graded = preds.filter((p) => p.hit !== undefined);
+    if (graded.length === 0) return null;
+    const hits = graded.filter((p) => p.hit).length;
+    const overHits = graded.filter((p) => p.overUnder === "over" && p.hit).length;
+    const overTotal = graded.filter((p) => p.overUnder === "over").length;
+    const underHits = graded.filter((p) => p.overUnder === "under" && p.hit).length;
+    const underTotal = graded.filter((p) => p.overUnder === "under").length;
+    // Best sport
+    const sportMap: Record<string, { hits: number; total: number }> = {};
+    for (const p of graded) {
+      if (!sportMap[p.sport]) sportMap[p.sport] = { hits: 0, total: 0 };
+      sportMap[p.sport].total++;
+      if (p.hit) sportMap[p.sport].hits++;
+    }
+    const roiBySport = Object.entries(sportMap).map(([sport, d]) => ({
+      sport, hitRate: Math.round((d.hits / d.total) * 1000) / 10,
+    })).sort((a, b) => b.hitRate - a.hitRate);
+
+    return {
+      gradedPredictions: graded.length,
+      overallHitRate: Math.round((hits / graded.length) * 1000) / 10,
+      overVsUnder: {
+        over: { hitRate: overTotal > 0 ? Math.round((overHits / overTotal) * 1000) / 10 : 0 },
+        under: { hitRate: underTotal > 0 ? Math.round((underHits / underTotal) * 1000) / 10 : 0 },
+      },
+      roiBySport,
+    };
   },
 });
 

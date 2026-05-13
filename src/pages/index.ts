@@ -12,3 +12,7 @@ export { BankrollPage } from "./BankrollPage";
 export { ResultsPage } from "./ResultsPage";
 export { ModelLabPage } from "./ModelLabPage";
 export { PlayerIntelPage } from "./PlayerIntelPage";
+
+// R10 New Pages (lazy loaded via App.tsx)
+// DataSourcesPage — default export
+// ImportPage — default export

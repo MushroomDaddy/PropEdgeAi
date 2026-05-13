@@ -1,4 +1,5 @@
 import { useQuery, useMutation } from "convex/react";
+import type { Id } from "../../convex/_generated/dataModel";
 import {
   Activity,
   ArrowDown,
@@ -655,8 +656,8 @@ function MiniStat({ label, value, color }: { label: string; value: string | numb
   );
 }
 
-function LineMovementSection({ propId, playerName }: { propId: string; playerName: string }) {
-  const snapshots = useQuery(api.playerIntel.lineMovement, { propId: propId });
+function LineMovementSection({ propId, playerName }: { propId: Id<"props">; playerName: string }) {
+  const snapshots = useQuery(api.playerIntel.lineMovement, { propId });
   if (!snapshots || snapshots.length === 0) return null;
 
   const opening = snapshots.find((s: any) => s.snapshotType === "opening");

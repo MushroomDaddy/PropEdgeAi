@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 export function ModelLabPage() {
   const perf = useQuery(api.results.modelPerformance);
+  const learningInsights = useQuery(api.modelLearning.learningInsights);
   
   const loading = perf === undefined;
 
@@ -213,6 +214,123 @@ export function ModelLabPage() {
         <PlayerPerfList title="Best Performers" players={perf.bestPlayers || []} positive />
         <PlayerPerfList title="Needs Improvement" players={perf.worstPlayers || []} positive={false} />
       </div>
+
+      {/* Model Learning Insights (R10) */}
+      {learningInsights && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <Sparkles className="size-5 text-amber-400" />
+            Model Learning Insights
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Strongest areas */}
+            <div className="rounded-xl border border-emerald-400/10 bg-card/50 p-4 space-y-2">
+              <h3 className="text-sm font-semibold text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 className="size-4" /> Strongest Areas
+              </h3>
+              {learningInsights.strengths?.bestSport && (
+                <div className="text-xs flex justify-between">
+                  <span>Best Sport</span>
+                  <span className="font-mono text-emerald-400">{learningInsights.strengths.bestSport.key} ({learningInsights.strengths.bestSport.hitRate}%)</span>
+                </div>
+              )}
+              {learningInsights.strengths?.bestStatType && (
+                <div className="text-xs flex justify-between">
+                  <span>Best Stat Type</span>
+                  <span className="font-mono text-emerald-400">{learningInsights.strengths.bestStatType.key} ({learningInsights.strengths.bestStatType.hitRate}%)</span>
+                </div>
+              )}
+              {learningInsights.strengths?.bestPlatform && (
+                <div className="text-xs flex justify-between">
+                  <span>Best Platform</span>
+                  <span className="font-mono text-emerald-400">{learningInsights.strengths.bestPlatform.key} ({learningInsights.strengths.bestPlatform.hitRate}%)</span>
+                </div>
+              )}
+              {learningInsights.strengths?.bestConfBucket && (() => {
+                const b = learningInsights.strengths.bestConfBucket as any;
+                return (
+                  <div className="text-xs flex justify-between">
+                    <span>Best Confidence Bucket</span>
+                    <span className="font-mono text-emerald-400">{b.bucketLabel || b.key} ({b.actualHitRate || b.hitRate}%)</span>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Weakest areas */}
+            <div className="rounded-xl border border-red-400/10 bg-card/50 p-4 space-y-2">
+              <h3 className="text-sm font-semibold text-red-400 flex items-center gap-1">
+                <XCircle className="size-4" /> Weakest Areas
+              </h3>
+              {learningInsights.weaknesses?.worstSport && (
+                <div className="text-xs flex justify-between">
+                  <span>Worst Sport</span>
+                  <span className="font-mono text-red-400">{learningInsights.weaknesses.worstSport.key} ({learningInsights.weaknesses.worstSport.hitRate}%)</span>
+                </div>
+              )}
+              {learningInsights.weaknesses?.worstStatType && (
+                <div className="text-xs flex justify-between">
+                  <span>Worst Stat Type</span>
+                  <span className="font-mono text-red-400">{learningInsights.weaknesses.worstStatType.key} ({learningInsights.weaknesses.worstStatType.hitRate}%)</span>
+                </div>
+              )}
+              {learningInsights.weaknesses?.worstPlayers?.map((p: any) => (
+                <div key={p.key} className="text-xs flex justify-between">
+                  <span>{p.key}</span>
+                  <span className="font-mono text-red-400">{p.hitRate}% ({p.total})</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Over vs Under performance */}
+          {learningInsights.overVsUnder && (
+            <div className="rounded-xl border border-white/5 bg-card/50 p-4">
+              <h3 className="text-sm font-semibold mb-3">Over vs Under Performance</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-emerald-400/5 rounded-lg">
+                  <div className="text-2xl font-bold text-emerald-400 font-mono">
+                    {learningInsights.overVsUnder.over?.hitRate ?? "—"}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">Overs ({learningInsights.overVsUnder.over?.total ?? 0})</div>
+                </div>
+                <div className="text-center p-3 bg-red-400/5 rounded-lg">
+                  <div className="text-2xl font-bold text-red-400 font-mono">
+                    {learningInsights.overVsUnder.under?.hitRate ?? "—"}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">Unders ({learningInsights.overVsUnder.under?.total ?? 0})</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Calibration */}
+          {learningInsights.calibrationBuckets?.length > 0 && (
+            <div className="rounded-xl border border-white/5 bg-card/50 p-4">
+              <h3 className="text-sm font-semibold mb-3">Calibration Check</h3>
+              <div className="space-y-1.5">
+                {learningInsights.calibrationBuckets.map((b: any) => (
+                  <div key={b.bucketLabel} className="flex items-center gap-3 text-xs">
+                    <span className="w-16 text-muted-foreground font-mono">{b.bucketLabel}%</span>
+                    <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#00D4FF] rounded-full"
+                        style={{ width: `${Math.min(100, b.actualHitRate)}%` }}
+                      />
+                    </div>
+                    <span className="w-12 text-right font-mono">{b.actualHitRate}%</span>
+                    <span className={cn("w-12 text-right font-mono text-[10px]",
+                      b.calibrationError <= 5 ? "text-emerald-400" : b.calibrationError <= 10 ? "text-yellow-400" : "text-red-400"
+                    )}>
+                      ±{b.calibrationError.toFixed(1)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

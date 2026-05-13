@@ -239,13 +239,18 @@ export const seedAll = mutation({
     // Seed all players and their props
     for (const player of allPlayers) {
       const meta = playerMeta[player.name];
+      // Placeholder avatar URLs — replace with real CDN/API headshots when connecting live data
+      const nameParts = player.name.split(" ");
+      const initials = nameParts.map((n: string) => n[0]).join("+");
+      const colorHex = (meta?.teamColor || "#333333").replace("#", "");
+      const teamAbbr = player.team.split(" ").pop() || player.team;
+
       const playerWithMeta = {
         ...player,
         jerseyNumber: meta?.jerseyNumber,
         teamColor: meta?.teamColor,
-        // Placeholder URLs — replace with real CDN URLs when connecting live APIs
-        imageUrl: undefined,
-        teamLogoUrl: undefined,
+        imageUrl: `https://ui-avatars.com/api/?name=${initials}&size=256&background=${colorHex}&color=fff&bold=true&font-size=0.4`,
+        teamLogoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(teamAbbr)}&size=128&background=${colorHex}&color=fff&bold=true&rounded=true&font-size=0.33`,
       };
       const playerId = await ctx.db.insert("players", playerWithMeta as any);
       const result = findGameForPlayer(player.team, player.sport);

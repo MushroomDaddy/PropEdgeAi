@@ -14,6 +14,8 @@ import {
   ClipboardCheck,
   FlaskConical,
   UserSearch,
+  Database,
+  Upload,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { APP_NAME } from "@/lib/constants";
@@ -51,6 +53,11 @@ const intelligenceNav = [
   { href: "/players", label: "Player Intel", icon: UserSearch },
   { href: "/results", label: "Results", icon: ClipboardCheck },
   { href: "/model-lab", label: "Model Lab", icon: FlaskConical },
+];
+
+const dataNav = [
+  { href: "/data-sources", label: "Data Sources", icon: Database },
+  { href: "/import", label: "Import", icon: Upload },
 ];
 
 const trackingNav = [
@@ -115,6 +122,25 @@ function SidebarNav() {
         <SidebarGroupContent>
           <SidebarMenu>
             {intelligenceNav.map((item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                isActive={location.pathname === item.href}
+              />
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+
+      <SidebarGroup>
+        <SidebarGroupLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+          Data
+        </SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {dataNav.map((item) => (
               <NavLink
                 key={item.href}
                 href={item.href}

@@ -2,7 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 
-// Get all graded results for the logged-in user (falls back to all demo results)
+// Get all graded results for the logged-in user (returns only user-owned results)
 export const myResults = query({
   args: {
     sport: v.optional(v.string()),

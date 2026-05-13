@@ -7,6 +7,8 @@ import {
   DemoBanner, PlayerHeroCard, StatTrendCard, PropOpportunityCard,
   PropDetailDrawer, GameLogTable, HitRateHeatmap, LineMovementTimeline,
   EmptyState, SkeletonCard, EdgeBadge, DataSourceBadge,
+  ValueScoreRing, EdgeMeter, ConfidenceMeter, GameStrip,
+  StatSparkline, TeamBadge,
 } from "@/components/propedge";
 import { cn } from "@/lib/utils";
 
@@ -261,8 +263,75 @@ function AISummaryCard({ player, topProp, profile }: { player: any; topProp: any
 function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile: any; onOpenPropDrawer: (p: any) => void }) {
   const p = profile.player;
   void _onOpenPropDrawer; // available for future prop-click in overview
+
+  // Premium visual identity data
+  const bestProp = (profile.currentProps || []).sort((a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge))[0];
+  const recentGames = (profile.gameLogs || []).slice(0, 10);
+  const pointsTrend = recentGames.map((g: any) => g.points || 0);
+
   return (
     <div className="space-y-5">
+      {/* Premium Visual Identity Section */}
+      <div className="bg-[#0D1117] rounded-xl border border-white/5 p-5 space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            {p.imageUrl ? (
+              <img src={p.imageUrl} alt={p.name} className="size-16 rounded-full object-cover ring-2 ring-white/10" />
+            ) : (
+              <div className="size-16 rounded-full bg-gradient-to-br from-[#00FF88]/20 to-[#00D4FF]/20 flex items-center justify-center text-xl font-bold">
+                {p.name?.split(" ").map((n: string) => n[0]).join("") || "?"}
+              </div>
+            )}
+            <div>
+              <div className="flex items-center gap-2">
+                <TeamBadge team={p.team} logoUrl={p.teamLogoUrl} color={p.teamColor} size="md" />
+                {p.jerseyNumber && <span className="text-xs text-muted-foreground">#{p.jerseyNumber}</span>}
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-1">{p.position} • {p.sport}</div>
+            </div>
+          </div>
+
+          {/* Value + Edge + Confidence */}
+          <div className="flex items-center gap-4">
+            {bestProp && (
+              <>
+                <div className="relative">
+                  <ValueScoreRing score={bestProp.confidence || 50} size={56} label="Confidence" />
+                </div>
+                <ConfidenceMeter confidence={bestProp.confidence || 50} />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Top edges row */}
+        {bestProp && (
+          <div className="grid grid-cols-3 gap-3 pt-2 border-t border-white/5">
+            <div>
+              <div className="text-[10px] text-muted-foreground">Top Edge</div>
+              <div className="flex items-center gap-1">
+                <span className="font-bold">{bestProp.statType}</span>
+                <EdgeMeter edge={bestProp.edge} />
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] text-muted-foreground">Trend (L10)</div>
+              <StatSparkline data={pointsTrend} line={bestProp?.line} />
+            </div>
+            <div>
+              <div className="text-[10px] text-muted-foreground">Recent Games</div>
+              <GameStrip
+                results={recentGames.slice(0, 5).map((g: any) => ({
+                  value: g.points || 0,
+                  opponent: g.opponent || "?",
+                }))}
+                line={bestProp?.line || 20}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Stat Trend Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <StatTrendCard label="PTS" l5={profile.last5Avg?.points} l10={profile.last10Avg?.points} season={profile.seasonAvg?.points} />

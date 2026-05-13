@@ -299,7 +299,8 @@ const schema = defineSchema({
     .index("by_userId_status", ["userId", "resultStatus"])
     .index("by_sport", ["sport"])
     .index("by_platform", ["platform"])
-    .index("by_playerName", ["playerName"]),
+    .index("by_playerName", ["playerName"])
+    .index("by_userId_playerName", ["userId", "playerName"]),
 
   // ─── R8: Prop Snapshots (line movement history) ───
   propSnapshots: defineTable({
@@ -381,6 +382,76 @@ const schema = defineSchema({
     .index("by_confidenceBucket", ["confidenceBucket"])
     .index("by_edgeBucket", ["edgeBucket"])
     .index("by_platform", ["platform"]),
+
+  // ─── R10: Import Jobs ───
+  importJobs: defineTable({
+    userId: v.id("users"),
+    importSource: v.string(), // "manual" | "csv" | "screenshot"
+    status: v.string(),       // "pending" | "processing" | "completed" | "failed"
+    totalPicks: v.number(),
+    successfulPicks: v.number(),
+    failedPicks: v.number(),
+    errors: v.array(v.string()),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_status", ["userId", "status"]),
+
+  // ─── R10: Kalshi Markets ───
+  kalshiMarkets: defineTable({
+    marketTicker: v.string(),
+    eventTicker: v.string(),
+    title: v.string(),
+    category: v.string(),
+    sport: v.optional(v.string()),
+    yesPrice: v.number(),
+    noPrice: v.number(),
+    yesBid: v.number(),
+    noBid: v.number(),
+    impliedYesProbability: v.number(),
+    impliedNoProbability: v.number(),
+    marketVolume: v.number(),
+    liquidityScore: v.number(),
+    settlementStatus: v.string(),
+    closeTime: v.optional(v.number()),
+    expirationTime: v.optional(v.number()),
+    expectedPayout: v.optional(v.number()),
+    // Provider meta
+    provider: v.string(),
+    sourceType: v.string(),
+    externalId: v.optional(v.string()),
+    lastUpdated: v.number(),
+    staleAfterMinutes: v.number(),
+    refreshStatus: v.string(),
+    confidenceInSource: v.number(),
+    dataSource: v.string(),
+  })
+    .index("by_marketTicker", ["marketTicker"])
+    .index("by_eventTicker", ["eventTicker"])
+    .index("by_sport", ["sport"])
+    .index("by_settlementStatus", ["settlementStatus"]),
+
+  // ─── R10: Model Versions ───
+  modelVersions: defineTable({
+    version: v.string(),
+    modelType: v.string(),
+    trainedAt: v.number(),
+    trainingRows: v.number(),
+    featureCount: v.number(),
+    accuracy: v.number(),
+    logLoss: v.number(),
+    brierScore: v.number(),
+    auc: v.number(),
+    calibrationError: v.number(),
+    sports: v.array(v.string()),
+    statTypes: v.array(v.string()),
+    notes: v.string(),
+    isActive: v.boolean(),
+    isDemo: v.boolean(),
+  })
+    .index("by_version", ["version"])
+    .index("by_isActive", ["isActive"]),
 });
 
 export default schema;

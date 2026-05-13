@@ -110,9 +110,8 @@ export const playerProfile = query({
 
     // Pick results history — only show current user's results (privacy)
     const userId = await getAuthUserId(ctx);
-    const allPlayerResults = await ctx.db.query("pickResults").withIndex("by_playerName", (q) => q.eq("playerName", playerName)).collect();
     const results = userId
-      ? allPlayerResults.filter((r) => r.userId === userId)
+      ? await ctx.db.query("pickResults").withIndex("by_userId_playerName", (q) => q.eq("userId", userId).eq("playerName", playerName)).collect()
       : [];
 
     return {
@@ -182,12 +181,13 @@ export const playerProfile = query({
 
 // Line movement for a specific prop
 export const lineMovement = query({
-  args: { propId: v.string() },
+  args: { propId: v.id("props") },
   returns: v.any(),
   handler: async (ctx, { propId }) => {
-    // Validate propId by querying propSnapshots
-    const allSnapshots = await ctx.db.query("propSnapshots").collect();
-    const snapshots = allSnapshots.filter((s) => String(s.propId) === propId);
+    const snapshots = await ctx.db
+      .query("propSnapshots")
+      .withIndex("by_propId", (q) => q.eq("propId", propId))
+      .collect();
     return snapshots.sort((a, b) => a.timestamp - b.timestamp);
   },
 });
