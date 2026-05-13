@@ -1,8 +1,13 @@
 /**
- * PropEdge AI — Import System
+ * PropEdge AI — Import System (R10.1 hardened)
  *
  * Manual slip entry, CSV import, and import job tracking.
  * NO credential-based sportsbook syncing.
+ *
+ * R10.1 fixes:
+ * - Imported picks no longer attach to a random first propId
+ * - Each imported pick stores sourceType, importJobId, matchStatus,
+ *   originalLine, and originalPlatform for full traceability
  */
 
 import { query, mutation } from "./_generated/server";
@@ -23,6 +28,39 @@ export const myImports = query({
   },
 });
 
+/** Try to match an imported pick to an existing prop in the DB */
+async function tryMatchProp(
+  ctx: any,
+  playerName: string,
+  statType: string,
+  _line: number,
+): Promise<{ propId: any; matchStatus: string }> {
+  // Search by player name in props table
+  const candidates = await ctx.db.query("props").collect();
+  const nameLower = playerName.toLowerCase();
+
+  // Exact player + stat match
+  const exact = candidates.find(
+    (p: any) =>
+      p.playerName.toLowerCase() === nameLower &&
+      p.statType.toLowerCase() === statType.toLowerCase(),
+  );
+  if (exact) {
+    return { propId: exact._id, matchStatus: "matched" };
+  }
+
+  // Partial player match (name only)
+  const partial = candidates.find(
+    (p: any) => p.playerName.toLowerCase() === nameLower,
+  );
+  if (partial) {
+    return { propId: partial._id, matchStatus: "partial" };
+  }
+
+  // No match — leave propId undefined
+  return { propId: undefined, matchStatus: "unmatched" };
+}
+
 /** Manual slip entry — create picks from a form */
 export const manualSlipEntry = mutation({
   args: {
@@ -34,7 +72,7 @@ export const manualSlipEntry = mutation({
         overUnder: v.string(),
         platform: v.string(),
         sport: v.string(),
-      })
+      }),
     ),
     importSource: v.string(),
   },
@@ -43,58 +81,63 @@ export const manualSlipEntry = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    let created = 0;
     const now = Date.now();
 
-    // Find a demo prop ID to reference (picks table requires propId)
-    const anyProp = await ctx.db.query("props").first();
-    if (!anyProp) {
-      // No props exist — can't create picks without a prop reference.
-      // Record the import as failed.
-      await ctx.db.insert("importJobs", {
-        userId,
-        importSource,
-        status: "failed",
-        totalPicks: picks.length,
-        successfulPicks: 0,
-        failedPicks: picks.length,
-        errors: ["No props in database — seed demo data first"],
-        createdAt: now,
-      });
-      return { picksCreated: 0, picksAttempted: picks.length };
-    }
+    // Create the import job FIRST so we can reference its ID
+    const importJobId = await ctx.db.insert("importJobs", {
+      userId,
+      importSource,
+      status: "processing",
+      totalPicks: picks.length,
+      successfulPicks: 0,
+      failedPicks: 0,
+      errors: [],
+      createdAt: now,
+    });
+
+    let created = 0;
 
     for (const pick of picks) {
+      // Try to match to an existing prop (but don't require it)
+      const { propId, matchStatus } = await tryMatchProp(
+        ctx,
+        pick.playerName,
+        pick.statType,
+        pick.line,
+      );
+
       await ctx.db.insert("picks", {
         userId,
-        propId: anyProp._id, // placeholder reference
+        propId,                                   // undefined if unmatched
         playerName: pick.playerName,
         statType: pick.statType,
         line: pick.line,
-        projection: pick.line, // same as line for manual imports
+        projection: pick.line,                    // same as line for manual imports
         edge: 0,
         overUnder: pick.overUnder,
         platform: pick.platform,
         sport: pick.sport,
         status: "active",
         addedAt: now,
+        // Import tracking (R10.1)
+        sourceType: "manual_import",
+        importJobId,
+        matchStatus,
+        originalLine: pick.line,
+        originalPlatform: pick.platform,
       });
       created++;
     }
 
-    // Record import job
-    await ctx.db.insert("importJobs", {
-      userId,
-      importSource,
+    // Update the import job with final counts
+    await ctx.db.patch(importJobId, {
       status: "completed",
-      totalPicks: picks.length,
       successfulPicks: created,
-      failedPicks: 0,
-      errors: [],
-      createdAt: now,
+      failedPicks: picks.length - created,
+      completedAt: now,
     });
 
-    return { picksCreated: created, picksAttempted: picks.length };
+    return { picksCreated: created, picksAttempted: picks.length, importJobId };
   },
 });
 
@@ -111,10 +154,21 @@ export const csvImport = mutation({
 
     const lines = csvContent.trim().split("\n").filter((l) => l.trim());
     const errors: string[] = [];
-    let parsed = 0;
     const now = Date.now();
 
-    const anyProp = await ctx.db.query("props").first();
+    // Create import job first
+    const importJobId = await ctx.db.insert("importJobs", {
+      userId,
+      importSource: "csv",
+      status: "processing",
+      totalPicks: lines.length,
+      successfulPicks: 0,
+      failedPicks: 0,
+      errors: [],
+      createdAt: now,
+    });
+
+    let parsed = 0;
 
     for (let i = 0; i < lines.length; i++) {
       const parts = lines[i].split(",").map((s) => s.trim());
@@ -131,14 +185,17 @@ export const csvImport = mutation({
         continue;
       }
 
-      if (!anyProp) {
-        errors.push(`Line ${i + 1}: no props in database — seed demo data first`);
-        continue;
-      }
+      // Try to match to an existing prop (but don't require it)
+      const { propId, matchStatus } = await tryMatchProp(
+        ctx,
+        playerName,
+        statType,
+        line,
+      );
 
       await ctx.db.insert("picks", {
         userId,
-        propId: anyProp._id,
+        propId,                                   // undefined if unmatched
         playerName,
         statType,
         line,
@@ -149,22 +206,25 @@ export const csvImport = mutation({
         sport: sport || "NBA",
         status: "active",
         addedAt: now,
+        // Import tracking (R10.1)
+        sourceType: "csv_import",
+        importJobId,
+        matchStatus,
+        originalLine: line,
+        originalPlatform: platform,
       });
       parsed++;
     }
 
-    // Record import job
-    await ctx.db.insert("importJobs", {
-      userId,
-      importSource: "csv",
+    // Update import job with final counts
+    await ctx.db.patch(importJobId, {
       status: errors.length === 0 ? "completed" : "partial",
-      totalPicks: lines.length,
       successfulPicks: parsed,
       failedPicks: lines.length - parsed,
       errors,
-      createdAt: now,
+      completedAt: now,
     });
 
-    return { parsed, errors };
+    return { parsed, errors, importJobId };
   },
 });

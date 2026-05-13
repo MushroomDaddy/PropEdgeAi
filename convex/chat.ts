@@ -96,7 +96,7 @@ export const askAnalyst = action({
       .join("\n");
 
     // Fetch additional context for enriched analysis
-    const resultsContext: any[] = await ctx.runQuery(internal.chat.getResultsContext);
+    const resultsContext: any[] = await ctx.runQuery(internal.chat.getResultsContext, { userId });
     const modelPerfContext: any = await ctx.runQuery(internal.chat.getModelPerfContext);
 
     const resultsStr: string = resultsContext.length > 0
@@ -221,10 +221,14 @@ export const getGamesContext = internalQuery({
 });
 
 export const getResultsContext = internalQuery({
-  args: {},
+  args: { userId: v.id("users") },
   returns: v.array(v.any()),
-  handler: async (ctx) => {
-    const results = await ctx.db.query("pickResults").collect();
+  handler: async (ctx, { userId }) => {
+    // Only return the authenticated user's own graded results
+    const results = await ctx.db
+      .query("pickResults")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
     return results
       .filter((r) => r.resultStatus !== "pending")
       .sort((a, b) => (b.gradedAt || b.pickedAt) - (a.gradedAt || a.pickedAt))

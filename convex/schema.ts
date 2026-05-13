@@ -164,7 +164,7 @@ const schema = defineSchema({
   // User picks
   picks: defineTable({
     userId: v.id("users"),
-    propId: v.id("props"),
+    propId: v.optional(v.id("props")), // optional for imported picks
     playerName: v.string(),
     statType: v.string(),
     line: v.number(),
@@ -178,6 +178,12 @@ const schema = defineSchema({
     status: v.string(),
     result: v.optional(v.number()),
     addedAt: v.number(),
+    // Import tracking (R10.1)
+    sourceType: v.optional(v.string()),        // "prop_matched" | "manual_import" | "csv_import"
+    importJobId: v.optional(v.id("importJobs")),
+    matchStatus: v.optional(v.string()),       // "matched" | "unmatched" | "partial"
+    originalLine: v.optional(v.number()),      // line as entered by user
+    originalPlatform: v.optional(v.string()),  // platform as entered by user
   })
     .index("by_userId", ["userId"])
     .index("by_userId_status", ["userId", "status"]),

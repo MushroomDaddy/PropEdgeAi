@@ -71,9 +71,9 @@ export default function DataSourcesPage() {
             { label: "Props", value: data.dbStats.props },
             { label: "Players", value: data.dbStats.players },
             { label: "Games", value: data.dbStats.games },
-            { label: "Results", value: data.dbStats.results },
+            { label: "My Results", value: data.dbStats.myResults },
             { label: "Kalshi", value: data.dbStats.kalshiMarkets },
-            { label: "Imports", value: data.dbStats.importJobs },
+            { label: "My Imports", value: data.dbStats.myImportJobs },
           ].map((s) => (
             <div key={s.label} className="bg-[#0D1117] rounded-xl border border-white/5 p-3 text-center">
               <div className="text-lg font-bold font-mono">{s.value}</div>
