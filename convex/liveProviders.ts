@@ -8,9 +8,13 @@
  *
  * The Odds API free tier: 500 requests/month
  * Docs: https://the-odds-api.com/liveapi/guides/v4/
+ *
+ * R11.1: All sync actions are internalAction — they cannot be called
+ * from the frontend. Only backend code, scheduled jobs, or the Convex
+ * dashboard can trigger them. This protects API request budget.
  */
 
-import { action, query, internalMutation } from "./_generated/server";
+import { query, internalMutation, internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { makeFunctionReference } from "convex/server";
 // Internal function references (avoids dependency on codegen _generated/api)
@@ -19,7 +23,7 @@ const ref = {
   recordSyncResult: makeFunctionReference<"mutation">("liveProviders:recordSyncResult"),
   storeLiveEvents: makeFunctionReference<"mutation">("liveProviders:storeLiveEvents"),
   storeLiveOdds: makeFunctionReference<"mutation">("liveProviders:storeLiveOdds"),
-  refreshOdds: makeFunctionReference<"action">("liveProviders:refreshOdds"),
+  refreshOdds: makeFunctionReference<"action">("liveProviders:refreshOdds"),  // internalAction still uses "action" type in makeFunctionReference
 };
 
 // ─── Sport key mapping ───
@@ -323,10 +327,12 @@ export const storeLiveOdds = internalMutation({
         .withIndex("by_eventExternalId", (q) => q.eq("eventExternalId", odd.eventExternalId))
         .collect();
 
+      // R11.1: Dedupe includes line — same player can have different alt lines
       const match = existingOdds.find((o) =>
         o.bookmaker === odd.bookmaker &&
         o.marketType === odd.marketType &&
-        (odd.marketType !== "player_props" || (o.playerName === odd.playerName && o.statType === odd.statType))
+        (odd.marketType !== "player_props" ||
+          (o.playerName === odd.playerName && o.statType === odd.statType && o.line === odd.line))
       );
 
       // Resolve liveEventId
@@ -388,7 +394,7 @@ export const storeLiveOdds = internalMutation({
 // ══════════════════════════════════════════════════
 
 /** Initialize / check provider config on startup */
-export const initProviderConfig = action({
+export const initProviderConfig = internalAction({
   args: {},
   returns: v.any(),
   handler: async (ctx) => {
@@ -437,7 +443,7 @@ export const initProviderConfig = action({
 });
 
 /** Refresh games/events from The Odds API */
-export const refreshGames = action({
+export const refreshGames = internalAction({
   args: { sport: v.optional(v.string()) },
   returns: v.any(),
   handler: async (ctx, { sport }) => {
@@ -518,7 +524,7 @@ export const refreshGames = action({
 });
 
 /** Refresh odds from The Odds API (game-level: h2h, spreads, totals) */
-export const refreshOdds = action({
+export const refreshOdds = internalAction({
   args: { sport: v.optional(v.string()), markets: v.optional(v.string()) },
   returns: v.any(),
   handler: async (ctx, { sport, markets }) => {
@@ -630,7 +636,7 @@ export const refreshOdds = action({
 });
 
 /** Refresh player props from The Odds API (uses event-level endpoint) */
-export const refreshProps = action({
+export const refreshProps = internalAction({
   args: { sport: v.optional(v.string()), maxEvents: v.optional(v.number()) },
   returns: v.any(),
   handler: async (ctx, { sport, maxEvents }) => {
@@ -679,55 +685,66 @@ export const refreshProps = action({
             const propsData = await propsResp.json() as any;
             const oddsRecords: any[] = [];
 
-            // Normalize player prop markets
+            // R11.1: Fixed player prop parsing — group by player description,
+            // then pair Over/Under outcomes. The Odds API returns:
+            //   { name: "Over", description: "LeBron James", price: -115, point: 27.5 }
+            //   { name: "Under", description: "LeBron James", price: -105, point: 27.5 }
+            // All outcomes have name "Over" or "Under" — never the player name.
             for (const bookmaker of (propsData.bookmakers || [])) {
               for (const market of (bookmaker.markets || [])) {
-                // Market key format: "player_points", "player_rebounds", etc.
-                const statType = market.key
-                  .replace("player_", "")
-                  .replace("threes", "3-Pointers Made")
-                  .replace("points", "Points")
-                  .replace("rebounds", "Rebounds")
-                  .replace("assists", "Assists")
-                  .replace("blocks", "Blocks")
-                  .replace("steals", "Steals")
-                  .replace("turnovers", "Turnovers");
+                // Map market key → human-readable stat type
+                const STAT_MAP: Record<string, string> = {
+                  player_points: "Points",
+                  player_rebounds: "Rebounds",
+                  player_assists: "Assists",
+                  player_threes: "3-Pointers Made",
+                  player_blocks: "Blocks",
+                  player_steals: "Steals",
+                  player_turnovers: "Turnovers",
+                };
+                const statType = STAT_MAP[market.key] || market.key;
 
+                // Group outcomes by player description
+                const playerMap = new Map<string, { over?: any; under?: any }>();
                 for (const outcome of (market.outcomes || [])) {
-                  if (outcome.name === "Over" || outcome.name === "Under") continue;
-                  // Each player gets Over/Under pair
-                  const overOutcome = market.outcomes.find(
-                    (o: any) => o.description === outcome.description && o.name === "Over"
-                  );
-                  const underOutcome = market.outcomes.find(
-                    (o: any) => o.description === outcome.description && o.name === "Under"
-                  );
-
-                  if (overOutcome && underOutcome) {
-                    oddsRecords.push({
-                      provider: "the_odds_api",
-                      eventExternalId: event.id,
-                      sport: s,
-                      bookmaker: bookmaker.key,
-                      marketType: "player_props",
-                      playerName: outcome.description,
-                      statType,
-                      line: overOutcome.point,
-                      overPrice: overOutcome.price,
-                      underPrice: underOutcome.price,
-                      overImplied: americanToImplied(overOutcome.price),
-                      underImplied: americanToImplied(underOutcome.price),
-                    });
+                  const playerKey = `${outcome.description}|${outcome.point}`;
+                  if (!playerMap.has(playerKey)) {
+                    playerMap.set(playerKey, {});
                   }
+                  const entry = playerMap.get(playerKey)!;
+                  if (outcome.name === "Over") entry.over = outcome;
+                  else if (outcome.name === "Under") entry.under = outcome;
+                }
+
+                // Build one record per player/stat/bookmaker/line
+                for (const [, pair] of playerMap) {
+                  if (!pair.over && !pair.under) continue;
+                  const playerName = pair.over?.description || pair.under?.description;
+                  const line = pair.over?.point ?? pair.under?.point;
+
+                  oddsRecords.push({
+                    provider: "the_odds_api",
+                    eventExternalId: event.id,
+                    sport: s,
+                    bookmaker: bookmaker.key,
+                    marketType: "player_props",
+                    playerName,
+                    statType,
+                    line,
+                    overPrice: pair.over?.price,
+                    underPrice: pair.under?.price,
+                    overImplied: pair.over?.price ? americanToImplied(pair.over.price) : undefined,
+                    underImplied: pair.under?.price ? americanToImplied(pair.under.price) : undefined,
+                  });
                 }
               }
             }
 
             if (oddsRecords.length > 0) {
-              // Deduplicate: only keep unique player+stat+bookmaker combos
+              // R11.1: Dedupe by eventExternalId+bookmaker+marketType+playerName+statType+line
               const seen = new Set<string>();
               const unique = oddsRecords.filter((r) => {
-                const key = `${r.playerName}|${r.statType}|${r.bookmaker}`;
+                const key = `${r.eventExternalId}|${r.bookmaker}|${r.marketType}|${r.playerName}|${r.statType}|${r.line}`;
                 if (seen.has(key)) return false;
                 seen.add(key);
                 return true;
@@ -766,7 +783,7 @@ export const refreshProps = action({
 });
 
 /** Refresh line movement snapshots for tracked props */
-export const refreshLineMovement = action({
+export const refreshLineMovement = internalAction({
   args: { sport: v.optional(v.string()) },
   returns: v.any(),
   handler: async (ctx, { sport }) => {
@@ -775,11 +792,14 @@ export const refreshLineMovement = action({
       return { success: false, error: "THE_ODDS_API_KEY not configured", snapshots: 0 };
     }
 
-    // Line movement: compare current liveOdds to previous values
-    // This is a "soft" refresh — we re-fetch odds and the storeLiveOdds
-    // upsert naturally updates prices, giving us implicit movement tracking.
-    // For explicit snapshot history, we'd need a propSnapshots insert here too.
-    // For R11, just re-run refreshOdds to update prices.
+    // R11.1: Line movement currently triggers a re-fetch of odds.
+    // The storeLiveOdds upsert naturally updates prices in-place.
+    //
+    // TODO (R12): Before upserting, read old prices from liveOdds,
+    // then insert a snapshot row into liveOddsSnapshots with:
+    //   previousOverPrice, currentOverPrice, openingOverPrice, closingOverPrice,
+    //   previousHomeOdds, currentHomeOdds, movementDirection, snapshotTime
+    // This enables line movement charts and steam-move detection.
     const result = await ctx.runAction(ref.refreshOdds, {
       sport: sport || undefined,
       markets: "h2h,spreads,totals",

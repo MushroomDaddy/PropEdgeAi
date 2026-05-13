@@ -524,6 +524,44 @@ const schema = defineSchema({
     .index("by_sport_marketType", ["sport", "marketType"])
     .index("by_bookmaker", ["bookmaker"]),
 
+  // ─── R11.1: Line Movement Snapshots (planned) ───
+  // TODO: Activate in R12 — captures price history for line movement charts
+  // Each refresh of liveOdds should insert a snapshot row here,
+  // allowing before/after price comparison and trend visualisation.
+  liveOddsSnapshots: defineTable({
+    liveOddsId: v.id("liveOdds"),          // FK to the current liveOdds record
+    eventExternalId: v.string(),
+    bookmaker: v.string(),
+    marketType: v.string(),
+    playerName: v.optional(v.string()),
+    statType: v.optional(v.string()),
+    line: v.optional(v.number()),
+    // Price history
+    previousOverPrice: v.optional(v.number()),
+    currentOverPrice: v.optional(v.number()),
+    previousUnderPrice: v.optional(v.number()),
+    currentUnderPrice: v.optional(v.number()),
+    openingOverPrice: v.optional(v.number()),   // first seen
+    openingUnderPrice: v.optional(v.number()),  // first seen
+    closingOverPrice: v.optional(v.number()),   // most recent before game start
+    closingUnderPrice: v.optional(v.number()),  // most recent before game start
+    // For game-level
+    previousHomeOdds: v.optional(v.number()),
+    currentHomeOdds: v.optional(v.number()),
+    previousAwayOdds: v.optional(v.number()),
+    currentAwayOdds: v.optional(v.number()),
+    previousSpread: v.optional(v.number()),
+    currentSpread: v.optional(v.number()),
+    previousTotal: v.optional(v.number()),
+    currentTotal: v.optional(v.number()),
+    // Movement
+    movementDirection: v.optional(v.string()),  // "up" | "down" | "stable"
+    snapshotTime: v.number(),                   // ms epoch when snapshot was taken
+  })
+    .index("by_liveOddsId", ["liveOddsId"])
+    .index("by_eventExternalId", ["eventExternalId"])
+    .index("by_snapshotTime", ["snapshotTime"]),
+
   // ─── R10: Model Versions ───
   modelVersions: defineTable({
     version: v.string(),
