@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { DemoBanner } from "../components/propedge";
+
 import {
-  Database, Wifi, WifiOff, Activity, CheckCircle2,
-  XCircle, AlertTriangle, Server,
+  Database, WifiOff, Activity, CheckCircle2,
+  XCircle, AlertTriangle, Server, RefreshCw, Clock,
+  Zap, Shield, BarChart3, Radio,
 } from "lucide-react";
 
 function HealthBar({ value }: { value: number }) {
@@ -25,12 +27,14 @@ function StatusBadge({ status }: { status: string }) {
     inactive: "bg-gray-400/10 text-gray-400 border-gray-400/20",
     error: "bg-red-400/10 text-red-400 border-red-400/20",
     demo: "bg-amber-400/10 text-amber-400 border-amber-400/20",
+    live: "bg-cyan-400/10 text-cyan-400 border-cyan-400/20",
   };
   const icons: Record<string, ReactNode> = {
     active: <CheckCircle2 className="size-3" />,
     inactive: <WifiOff className="size-3" />,
     error: <XCircle className="size-3" />,
     demo: <AlertTriangle className="size-3" />,
+    live: <Radio className="size-3" />,
   };
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${styles[status] || styles.inactive}`}>
@@ -39,8 +43,28 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function RefreshStatusBadge({ status }: { status: string }) {
+  const config: Record<string, { color: string; icon: ReactNode; label: string }> = {
+    fresh: { color: "text-emerald-400", icon: <CheckCircle2 className="size-3" />, label: "Fresh" },
+    updating: { color: "text-amber-400", icon: <RefreshCw className="size-3 animate-spin" />, label: "Updating" },
+    stale: { color: "text-red-400", icon: <Clock className="size-3" />, label: "Stale" },
+    failed: { color: "text-red-500", icon: <XCircle className="size-3" />, label: "Failed" },
+    demo: { color: "text-amber-400", icon: <AlertTriangle className="size-3" />, label: "Demo" },
+    never: { color: "text-gray-400", icon: <Clock className="size-3" />, label: "Never Synced" },
+  };
+  const c = config[status] || config.never;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-mono ${c.color}`}>
+      {c.icon} {c.label}
+    </span>
+  );
+}
+
 export default function DataSourcesPage() {
   const data = useQuery(api.providerStatus.allProviders);
+
+  const isHybridMode = data?.mode === "hybrid";
+  const isDemo = data?.mode === "demo";
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -56,30 +80,67 @@ export default function DataSourcesPage() {
             Provider integrations, sync status, and data health
           </p>
         </div>
-        {data && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg">
-            <Wifi className="size-4 text-emerald-400" />
-            <span className="text-xs font-bold">Mode: {data.mode?.toUpperCase()}</span>
+        <div className="flex items-center gap-3">
+          {/* Mode indicator */}
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+            isHybridMode
+              ? "bg-cyan-400/5 border-cyan-400/20"
+              : "bg-amber-400/5 border-amber-400/20"
+          }`}>
+            {isHybridMode ? (
+              <>
+                <Zap className="size-4 text-cyan-400" />
+                <span className="text-xs font-bold text-cyan-400">HYBRID MODE</span>
+              </>
+            ) : (
+              <>
+                <Shield className="size-4 text-amber-400" />
+                <span className="text-xs font-bold text-amber-400">DEMO MODE</span>
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* DB Stats */}
+      {/* DB Stats — expanded for R11 */}
       {data && (
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {[
-            { label: "Props", value: data.dbStats.props },
-            { label: "Players", value: data.dbStats.players },
-            { label: "Games", value: data.dbStats.games },
-            { label: "My Results", value: data.dbStats.myResults },
-            { label: "Kalshi", value: data.dbStats.kalshiMarkets },
-            { label: "My Imports", value: data.dbStats.myImportJobs },
+            { label: "Demo Props", value: data.dbStats.props, icon: "📊" },
+            { label: "Players", value: data.dbStats.players, icon: "👤" },
+            { label: "Games", value: data.dbStats.games, icon: "🏟️" },
+            { label: "My Results", value: data.dbStats.myResults, icon: "✅" },
+            { label: "Kalshi", value: data.dbStats.kalshiMarkets, icon: "📈" },
+            { label: "My Imports", value: data.dbStats.myImportJobs, icon: "📥" },
+            { label: "Live Events", value: data.dbStats.liveEvents || 0, icon: "🔴" },
+            { label: "Live Odds", value: data.dbStats.liveOdds || 0, icon: "💰" },
           ].map((s) => (
             <div key={s.label} className="bg-[#0D1117] rounded-xl border border-white/5 p-3 text-center">
+              <div className="text-xs mb-1">{s.icon}</div>
               <div className="text-lg font-bold font-mono">{s.value}</div>
               <div className="text-[10px] text-muted-foreground">{s.label}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Live data freshness bar (R11) */}
+      {data && (data.dbStats.liveEvents > 0 || data.dbStats.liveOdds > 0) && (
+        <div className="bg-[#0D1117] rounded-xl border border-cyan-400/10 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold flex items-center gap-2">
+              <Radio className="size-4 text-cyan-400" /> Live Data Health
+            </span>
+            <div className="flex gap-3 text-[10px] font-mono">
+              <span className="text-emerald-400">● {data.dbStats.freshEvents || 0} fresh</span>
+              <span className="text-red-400">● {data.dbStats.staleEvents || 0} stale</span>
+            </div>
+          </div>
+          <HealthBar value={
+            data.dbStats.liveEvents > 0
+              ? Math.round(((data.dbStats.freshEvents || 0) / data.dbStats.liveEvents) * 100)
+              : 0
+          } />
         </div>
       )}
 
@@ -88,17 +149,30 @@ export default function DataSourcesPage() {
         {data?.providers?.map((p: any) => (
           <div
             key={p.provider}
-            className="bg-[#0D1117] rounded-xl border border-white/5 p-4 space-y-3"
+            className={`bg-[#0D1117] rounded-xl border p-4 space-y-3 ${
+              p.isLive && p.apiKeyConfigured
+                ? "border-cyan-400/20"
+                : "border-white/5"
+            }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={`size-10 rounded-lg flex items-center justify-center ${
-                  p.status === "active" ? "bg-emerald-400/10" : "bg-white/5"
+                  p.isLive ? "bg-cyan-400/10" : p.status === "active" ? "bg-emerald-400/10" : "bg-white/5"
                 }`}>
-                  <Server className={`size-5 ${p.status === "active" ? "text-emerald-400" : "text-muted-foreground"}`} />
+                  <Server className={`size-5 ${
+                    p.isLive ? "text-cyan-400" : p.status === "active" ? "text-emerald-400" : "text-muted-foreground"
+                  }`} />
                 </div>
                 <div>
-                  <div className="font-bold text-sm">{p.displayName}</div>
+                  <div className="font-bold text-sm flex items-center gap-2">
+                    {p.displayName}
+                    {p.isLive && p.apiKeyConfigured && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-cyan-400/10 text-cyan-400 rounded-full font-mono">
+                        LIVE
+                      </span>
+                    )}
+                  </div>
                   <div className="text-[10px] text-muted-foreground flex items-center gap-2">
                     {p.isDemoMode ? (
                       <span className="flex items-center gap-1 text-amber-400"><AlertTriangle className="size-3" /> Active — Demo Mode</span>
@@ -106,8 +180,8 @@ export default function DataSourcesPage() {
                       <span className="flex items-center gap-1 text-emerald-400"><Activity className="size-3" /> Available — Manual Entry & CSV</span>
                     ) : p.provider === "screenshot_import" ? (
                       <span className="flex items-center gap-1 text-gray-400"><WifiOff className="size-3" /> Placeholder — Coming Soon</span>
-                    ) : p.isLive ? (
-                      <span className="flex items-center gap-1 text-emerald-400"><Activity className="size-3" /> Connected — Live</span>
+                    ) : p.isLive && p.apiKeyConfigured ? (
+                      <span className="flex items-center gap-1 text-cyan-400"><Zap className="size-3" /> Connected — Live Data</span>
                     ) : (
                       <span className="flex items-center gap-1 text-gray-400"><WifiOff className="size-3" /> Not Connected</span>
                     )}
@@ -117,7 +191,10 @@ export default function DataSourcesPage() {
                   </div>
                 </div>
               </div>
-              <StatusBadge status={p.isDemoMode ? "demo" : p.status} />
+              <div className="flex items-center gap-2">
+                {p.refreshStatus && <RefreshStatusBadge status={p.refreshStatus} />}
+                <StatusBadge status={p.isLive && p.apiKeyConfigured ? "live" : p.isDemoMode ? "demo" : p.status} />
+              </div>
             </div>
 
             <HealthBar value={p.providerHealth} />
@@ -128,14 +205,63 @@ export default function DataSourcesPage() {
               ))}
             </div>
 
+            {/* Rate limit info (R11) */}
+            {p.rateLimit && (
+              <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <BarChart3 className="size-3" />
+                  {p.requestsUsed || 0} / {p.rateLimit} requests used
+                </span>
+                <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      (p.requestsUsed || 0) / p.rateLimit > 0.8 ? "bg-red-400" : "bg-emerald-400"
+                    }`}
+                    style={{ width: `${Math.min(100, ((p.requestsUsed || 0) / p.rateLimit) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Last sync info */}
             {p.lastSyncTime && (
-              <div className="text-[10px] text-muted-foreground">
-                Last sync: {new Date(p.lastSyncTime).toLocaleString()} • {p.recordsUpdated} records
+              <div className="text-[10px] text-muted-foreground flex items-center gap-2">
+                <Clock className="size-3" />
+                Last sync: {new Date(p.lastSyncTime).toLocaleString()}
+                {p.lastSyncRecords > 0 && ` • ${p.lastSyncRecords} records`}
+                {p.lastSyncStatus === "error" && p.lastSyncError && (
+                  <span className="text-red-400"> • {p.lastSyncError}</span>
+                )}
+              </div>
+            )}
+
+            {/* API key setup hint */}
+            {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "the_odds_api" && (
+              <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
+                <div className="font-bold text-white/80">🔑 Setup Instructions</div>
+                <div>1. Get a free API key at <span className="text-cyan-400">the-odds-api.com</span></div>
+                <div>2. Add <code className="bg-black/30 px-1 rounded">THE_ODDS_API_KEY</code> to your Convex environment variables</div>
+                <div>3. Run <code className="bg-black/30 px-1 rounded">npx convex run liveProviders:initProviderConfig</code></div>
+                <div className="text-amber-400 mt-1">Free tier: 500 requests/month • Covers NBA, NFL, MLB, NHL + more</div>
               </div>
             )}
           </div>
         ))}
       </div>
+
+      {/* No API key warning */}
+      {isDemo && (
+        <div className="bg-amber-400/5 border border-amber-400/20 rounded-xl p-4 text-sm text-amber-400 flex items-start gap-3">
+          <AlertTriangle className="size-5 mt-0.5 shrink-0" />
+          <div>
+            <div className="font-bold">Demo Mode Active</div>
+            <div className="text-amber-400/80 mt-1">
+              All data is simulated. Connect a provider API key to see real live odds, games, and player props.
+              Demo data will remain available alongside live data.
+            </div>
+          </div>
+        </div>
+      )}
 
       {!data && (
         <div className="space-y-3">

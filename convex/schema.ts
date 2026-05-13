@@ -450,6 +450,80 @@ const schema = defineSchema({
     .index("by_sport", ["sport"])
     .index("by_settlementStatus", ["settlementStatus"]),
 
+  // ─── R11: Provider Config (live data integration) ───
+  providerConfig: defineTable({
+    provider: v.string(),            // "the_odds_api" | "sportsdata_io" | "kalshi" | ...
+    enabled: v.boolean(),
+    apiKeyConfigured: v.boolean(),   // true if env var is set
+    supportedSports: v.array(v.string()),
+    supportedMarkets: v.array(v.string()),
+    rateLimitPerMonth: v.optional(v.number()),
+    requestsUsedThisMonth: v.number(),
+    rateLimitResetAt: v.optional(v.number()),
+    lastSyncTime: v.optional(v.number()),
+    lastSyncStatus: v.string(),      // "success" | "error" | "never"
+    lastSyncError: v.optional(v.string()),
+    lastSyncRecords: v.number(),
+    nextSyncAfter: v.optional(v.number()),
+    staleAfterMinutes: v.number(),   // when data becomes stale
+    updatedAt: v.number(),
+  })
+    .index("by_provider", ["provider"]),
+
+  // ─── R11: Live Events (from external APIs) ───
+  liveEvents: defineTable({
+    provider: v.string(),
+    externalId: v.string(),          // API-specific event ID
+    sport: v.string(),
+    sportKey: v.string(),            // API sport key e.g. "basketball_nba"
+    homeTeam: v.string(),
+    awayTeam: v.string(),
+    commenceTime: v.number(),        // ms epoch
+    status: v.string(),              // "upcoming" | "live" | "completed"
+    sourceType: v.string(),          // "live" | "demo"
+    lastUpdated: v.number(),
+    staleAfterMinutes: v.number(),
+    refreshStatus: v.string(),       // "fresh" | "updating" | "stale" | "failed" | "demo"
+  })
+    .index("by_provider", ["provider"])
+    .index("by_sport", ["sport"])
+    .index("by_externalId", ["externalId"])
+    .index("by_status", ["status"]),
+
+  // ─── R11: Live Odds (from external APIs) ───
+  liveOdds: defineTable({
+    provider: v.string(),
+    eventExternalId: v.string(),
+    liveEventId: v.optional(v.id("liveEvents")),
+    sport: v.string(),
+    bookmaker: v.string(),           // "draftkings", "fanduel", etc.
+    marketType: v.string(),          // "h2h" | "spreads" | "totals" | "player_props"
+    // For player props
+    playerName: v.optional(v.string()),
+    statType: v.optional(v.string()),
+    line: v.optional(v.number()),
+    overPrice: v.optional(v.number()),   // American odds
+    underPrice: v.optional(v.number()),  // American odds
+    overImplied: v.optional(v.number()), // 0-100
+    underImplied: v.optional(v.number()),// 0-100
+    // For game-level odds
+    homeOdds: v.optional(v.number()),
+    awayOdds: v.optional(v.number()),
+    drawOdds: v.optional(v.number()),
+    spread: v.optional(v.number()),
+    total: v.optional(v.number()),
+    // Provider meta
+    sourceType: v.string(),
+    externalId: v.optional(v.string()),
+    lastUpdated: v.number(),
+    staleAfterMinutes: v.number(),
+    refreshStatus: v.string(),
+  })
+    .index("by_provider", ["provider"])
+    .index("by_eventExternalId", ["eventExternalId"])
+    .index("by_sport_marketType", ["sport", "marketType"])
+    .index("by_bookmaker", ["bookmaker"]),
+
   // ─── R10: Model Versions ───
   modelVersions: defineTable({
     version: v.string(),
