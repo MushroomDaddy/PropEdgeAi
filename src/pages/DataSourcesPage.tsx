@@ -235,14 +235,55 @@ export default function DataSourcesPage() {
               </div>
             )}
 
-            {/* API key setup hint */}
+            {/* Data type badge */}
+            {(p.provider === "api_sports" || p.provider === "balldontlie") && (
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 bg-purple-400/10 text-purple-400 rounded text-[10px] font-bold border border-purple-400/20">
+                  Structured Data
+                </span>
+                {p.provider === "api_sports" && (
+                  <span className="px-2 py-0.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20">
+                    Official Stats
+                  </span>
+                )}
+              </div>
+            )}
+            {p.provider === "thesportsdb" && (
+              <span className="px-2 py-0.5 bg-pink-400/10 text-pink-400 rounded text-[10px] font-bold border border-pink-400/20">
+                Media / Visuals
+              </span>
+            )}
+            {p.provider === "serpapi" && (
+              <span className="px-2 py-0.5 bg-yellow-400/10 text-yellow-400 rounded text-[10px] font-bold border border-yellow-400/20">
+                Context Only
+              </span>
+            )}
+
+            {/* API key setup hints */}
             {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "the_odds_api" && (
               <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
                 <div className="font-bold text-white/80">🔑 Setup Instructions</div>
                 <div>1. Get a free API key at <span className="text-cyan-400">the-odds-api.com</span></div>
                 <div>2. Add <code className="bg-black/30 px-1 rounded">THE_ODDS_API_KEY</code> to your Convex environment variables</div>
-                <div>3. Run <code className="bg-black/30 px-1 rounded">npx convex run liveProviders:initProviderConfig</code></div>
+                <div>3. Run <code className="bg-black/30 px-1 rounded">npx convex run adminSync:adminFullSync</code></div>
                 <div className="text-amber-400 mt-1">Free tier: 500 requests/month • Covers NBA, NFL, MLB, NHL + more</div>
+              </div>
+            )}
+            {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "api_sports" && (
+              <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
+                <div className="font-bold text-white/80">🔑 Setup Instructions</div>
+                <div>1. Get an API key at <span className="text-cyan-400">api-sports.io</span></div>
+                <div>2. Add <code className="bg-black/30 px-1 rounded">API_SPORTS_KEY</code> to your Convex environment variables</div>
+                <div>3. Run <code className="bg-black/30 px-1 rounded">npx convex run adminSync:adminApiSportsFullSync '{"{"}\"sport\":\"NBA\"{"}"}'</code></div>
+                <div className="text-amber-400 mt-1">Free tier: 100 requests/day • Teams, players, games, standings, injuries, live scores</div>
+              </div>
+            )}
+            {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "thesportsdb" && (
+              <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
+                <div className="font-bold text-white/80">🔑 Setup Instructions</div>
+                <div>1. Get a key at <span className="text-cyan-400">thesportsdb.com</span> (free for dev: use "1")</div>
+                <div>2. Add <code className="bg-black/30 px-1 rounded">THESPORTSDB_KEY</code> to your Convex environment variables</div>
+                <div className="text-amber-400 mt-1">Team logos, player images, badges, fanart, jersey visuals</div>
               </div>
             )}
           </div>

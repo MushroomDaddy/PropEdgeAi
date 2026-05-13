@@ -58,16 +58,21 @@ export function ValueScoreBadge({ score, size = "sm" }: { score: number; size?: 
 
 /* ═══════ Data Source Badge ═══════ */
 export function DataSourceBadge({ source = "demo" }: { source?: string }) {
-  if (source === "live") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-        <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
-      </span>
-    );
-  }
+  const configs: Record<string, { bg: string; text: string; border: string; label: string; dot?: boolean }> = {
+    live: { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20", label: "LIVE", dot: true },
+    api_sports: { bg: "bg-purple-500/10", text: "text-purple-400", border: "border-purple-500/20", label: "API-SPORTS" },
+    the_odds_api: { bg: "bg-cyan-500/10", text: "text-cyan-400", border: "border-cyan-500/20", label: "ODDS API" },
+    thesportsdb: { bg: "bg-pink-500/10", text: "text-pink-400", border: "border-pink-500/20", label: "SportsDB" },
+    balldontlie: { bg: "bg-orange-500/10", text: "text-orange-400", border: "border-orange-500/20", label: "BDL" },
+    manual: { bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-500/20", label: "MANUAL" },
+    demo: { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20", label: "DEMO" },
+  };
+  const c = configs[source] || configs.demo;
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-      <AlertTriangle className="size-2.5" /> DEMO
+    <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full ${c.bg} ${c.text} border ${c.border} font-medium`}>
+      {c.dot ? <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" /> : null}
+      {!c.dot && source === "demo" ? <AlertTriangle className="size-2.5" /> : null}
+      {c.label}
     </span>
   );
 }

@@ -25,6 +25,7 @@ import { getTeamColors, getPlayerInitials, getTeamAbbr, getSportIcon } from "@/l
 import { DataModeIndicator } from "@/components/propedge/DataModeIndicator";
 import { PremiumEmptyState } from "@/components/propedge/PremiumEmptyState";
 import { PageTransition, FadeIn, StaggerContainer, StaggerItem } from "@/components/propedge/PageTransition";
+import { SportsHeroBackground } from "@/components/propedge/SportsHeroBackground";
 import {
   BarChart,
   Bar,
@@ -101,6 +102,8 @@ export function DashboardPage() {
   return (
     <PageTransition>
       <div className="space-y-6 max-w-[1400px]">
+        {/* ===== HERO BACKGROUND ===== */}
+        <SportsHeroBackground sport={stats?.topSport || ""} intensity="low" className="rounded-2xl -mx-2 px-2 py-6 -mt-2">
         {/* ===== HEADER ===== */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <FadeIn>
@@ -132,6 +135,7 @@ export function DashboardPage() {
             </div>
           </FadeIn>
         </div>
+        </SportsHeroBackground>
 
         {/* ===== EMPTY STATE (when no data) ===== */}
         {!loading && !hasData && (

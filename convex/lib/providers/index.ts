@@ -1,7 +1,15 @@
 /**
- * PropEdge AI — Provider Registry
+ * PropEdge AI — Provider Registry (R13 update)
  *
  * Central registry for all data providers.
+ * Priority order:
+ *   1. The Odds API = odds, lines, props, bookmaker data
+ *   2. API-SPORTS = structured sports data (NBA/NFL/MLB/NHL)
+ *   3. BALLDONTLIE = NBA backup/enrichment
+ *   4. TheSportsDB = team logos, player images, fanart, visuals
+ *   5. SerpApi = search/news/injury/matchup context only
+ *   6. Manual import = slips/CSV/screenshot pipeline
+ *   7. Demo provider = fallback only
  */
 
 import { DemoProvider } from "./DemoProvider";
@@ -11,17 +19,33 @@ import { SportradarProvider } from "./SportradarProvider";
 import { KalshiProvider } from "./KalshiProvider";
 import { ManualImportProvider } from "./ManualImportProvider";
 import { ScreenshotImportProvider } from "./ScreenshotImportProvider";
+import { ApiSportsProvider } from "./ApiSportsProvider";
+import { TheSportsDBProvider } from "./TheSportsDBProvider";
+import { BallDontLieProvider } from "./BallDontLieProvider";
+import { SerpApiProvider } from "./SerpApiProvider";
 
 import type { DataProvider, NormalizedProviderStatus } from "../providerTypes";
 
 export const ALL_PROVIDERS: DataProvider[] = [
-  DemoProvider,
-  SportsDataIOProvider,
+  // Priority 1: Odds & lines
   TheOddsAPIProvider,
-  SportradarProvider,
-  KalshiProvider,
+  // Priority 2: Structured sports data
+  ApiSportsProvider,
+  // Priority 3: NBA backup
+  BallDontLieProvider,
+  // Priority 4: Media/visuals
+  TheSportsDBProvider,
+  // Priority 5: Search/context
+  SerpApiProvider,
+  // Priority 6: Manual
   ManualImportProvider,
   ScreenshotImportProvider,
+  // Premium stubs (not yet active)
+  SportsDataIOProvider,
+  SportradarProvider,
+  KalshiProvider,
+  // Priority 7: Fallback
+  DemoProvider,
 ];
 
 /** Get all provider statuses */
@@ -47,4 +71,8 @@ export {
   KalshiProvider,
   ManualImportProvider,
   ScreenshotImportProvider,
+  ApiSportsProvider,
+  TheSportsDBProvider,
+  BallDontLieProvider,
+  SerpApiProvider,
 };

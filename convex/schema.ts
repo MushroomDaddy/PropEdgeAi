@@ -35,6 +35,9 @@ const schema = defineSchema({
       sportsDataIoId: v.optional(v.string()),
       sportradarId: v.optional(v.string()),
       espnId: v.optional(v.string()),
+      apiSportsId: v.optional(v.string()),
+      ballDontLieId: v.optional(v.string()),
+      theSportsDbId: v.optional(v.string()),
     })),
     injuryStatus: v.optional(v.string()),
     recentForm: v.optional(v.string()),
@@ -595,6 +598,55 @@ const schema = defineSchema({
   })
     .index("by_version", ["version"])
     .index("by_isActive", ["isActive"]),
+
+  // ─── R13: API-SPORTS Cache ───
+  apiSportsCache: defineTable({
+    dataType: v.string(),            // "teams" | "players" | "games" | "standings" | "playerStats" | "injuries"
+    sport: v.string(),               // "NBA" | "NFL" | "MLB" | "NHL"
+    apiSportsId: v.number(),         // API-SPORTS entity ID
+    data: v.any(),                   // Normalized data object
+    lastUpdated: v.number(),         // ms epoch
+    staleAfterMinutes: v.number(),   // when this record is stale
+  })
+    .index("by_type", ["dataType"])
+    .index("by_type_sport", ["dataType", "sport"])
+    .index("by_sport", ["sport"])
+    .index("by_apiSportsId", ["apiSportsId"]),
+
+  // ─── R13: Media Assets (player headshots, team logos, badges, fanart) ───
+  mediaAssets: defineTable({
+    entityType: v.string(),          // "player" | "team" | "league" | "event"
+    entityId: v.string(),            // Internal PropEdge ID or name
+    entityName: v.string(),          // Display name for lookup
+    provider: v.string(),            // "thesportsdb" | "api_sports" | "manual" | "generated"
+    sourceUrl: v.string(),           // Original image URL
+    cachedUrl: v.optional(v.string()), // Cached/CDN URL
+    imageType: v.string(),           // "headshot" | "logo" | "badge" | "jersey" | "fanart" | "silhouette"
+    license: v.optional(v.string()), // License/source note
+    lastChecked: v.number(),         // ms epoch
+    isFallback: v.boolean(),         // true if generated/placeholder
+    confidence: v.number(),          // 0-100 match confidence
+    sport: v.optional(v.string()),
+  })
+    .index("by_entity", ["entityType", "entityId"])
+    .index("by_entity_type", ["entityType", "imageType"])
+    .index("by_provider", ["provider"])
+    .index("by_name", ["entityName"]),
+
+  // ─── R13: Provider Usage Log ───
+  providerUsageLog: defineTable({
+    provider: v.string(),            // "api_sports" | "the_odds_api" | "thesportsdb" | etc.
+    endpoint: v.string(),            // "teams" | "players" | "games" | etc.
+    sport: v.string(),
+    requestsUsed: v.number(),
+    recordsFetched: v.number(),
+    success: v.boolean(),
+    error: v.optional(v.string()),
+    timestamp: v.number(),           // ms epoch
+  })
+    .index("by_provider", ["provider"])
+    .index("by_timestamp", ["timestamp"])
+    .index("by_provider_timestamp", ["provider", "timestamp"]),
 });
 
 export default schema;

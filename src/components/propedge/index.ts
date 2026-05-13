@@ -29,3 +29,16 @@ export { LineMovementMiniChart } from "./LineMovementMiniChart";
 export { PageTransition, FadeIn, SlideUp, ScaleIn, StaggerContainer, StaggerItem } from "./PageTransition";
 export { DataModeIndicator } from "./DataModeIndicator";
 export { PremiumEmptyState } from "./PremiumEmptyState";
+
+// R13 Premium Components — Data + Media + Visual Overhaul
+export { SportsHeroBackground } from "./SportsHeroBackground";
+export { PlayerTradingCard } from "./PlayerTradingCard";
+export { TeamMatchupCard } from "./TeamMatchupCard";
+export { LiveGameTickerPremium } from "./LiveGameTickerPremium";
+export { EdgeHeatmapMatrix } from "./EdgeHeatmapMatrix";
+export { OddsMovementChart } from "./OddsMovementChart";
+export { PlayerHeadshotFallback } from "./PlayerHeadshotFallback";
+export { JerseyAvatar } from "./JerseyAvatar";
+export { MediaAssetImage } from "./MediaAssetImage";
+export { ProviderStatusCard } from "./ProviderStatusCard";
+export { SyncHealthPanel } from "./SyncHealthPanel";
