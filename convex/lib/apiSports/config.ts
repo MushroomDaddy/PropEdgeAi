@@ -66,6 +66,23 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
   },
 };
 
+export const SUPPORTED_SPORTS = Object.keys(SPORT_CONFIGS);
+
+export const ALL_ENDPOINTS = [
+  "teams",
+  "games",
+  "standings",
+  "liveScores",
+  "injuries",
+  "players",
+  "playerStats",
+  "teamStats",
+  "searchPlayer",
+  "searchTeam",
+];
+
+export const API_SPORTS_DAILY_LIMIT = 1000; // API-SPORTS free tier limit
+
 export function getSportConfig(sport: string): SportConfig {
   const config = SPORT_CONFIGS[sport.toUpperCase()];
   if (!config) {
@@ -77,5 +94,3 @@ export function getSportConfig(sport: string): SportConfig {
 export function getAllSportConfigs(): Record<string, SportConfig> {
   return SPORT_CONFIGS;
 }
-
-export const SUPPORTED_SPORTS = Object.keys(SPORT_CONFIGS);
