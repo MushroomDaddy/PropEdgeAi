@@ -170,3 +170,15 @@ export interface NormalizedApiInjury {
   provider: "api_sports";
   lastUpdated: number;
 }
+
+export interface ApiSportsHealth {
+  configured: boolean;
+  enabled: boolean;
+  requestsUsedToday: number;
+  dailyLimit: number;
+  supportedSports: string[];
+  supportedEndpoints: string[];
+  sourceLabel: string;
+  dataType: string;
+  officialStatsProvider: boolean;
+}
