@@ -9,23 +9,33 @@ export interface ApiSportsResult<T> {
   data: T[];
   requestsUsed: number;
   requestsRemaining: number;
-  error?: string;
+  error?: {
+    code: string;
+    message: string;
+  };
 }
 
 const API_SPORTS_KEY = process.env.API_SPORTS_KEY || "";
+
+export function isApiSportsConfigured(): boolean {
+  return !!API_SPORTS_KEY;
+}
 
 export async function apiSportsFetch<T>(
   baseUrl: string,
   endpoint: string,
   params: Record<string, string | number> = {}
 ): Promise<ApiSportsResult<T>> {
-  if (!API_SPORTS_KEY) {
+  if (!isApiSportsConfigured()) {
     return {
       ok: false,
       data: [],
       requestsUsed: 0,
       requestsRemaining: 0,
-      error: "API_SPORTS_KEY not configured",
+      error: {
+        code: "not_configured",
+        message: "API_SPORTS_KEY not configured",
+      },
     };
   }
 
@@ -56,7 +66,10 @@ export async function apiSportsFetch<T>(
         data: [],
         requestsUsed,
         requestsRemaining,
-        error: `API error: ${response.status} ${response.statusText}`,
+        error: {
+          code: "api_error",
+          message: `API error: ${response.status} ${response.statusText}`,
+        },
       };
     }
 
@@ -75,7 +88,10 @@ export async function apiSportsFetch<T>(
       data: [],
       requestsUsed: 0,
       requestsRemaining: 0,
-      error: `Fetch error: ${error instanceof Error ? error.message : String(error)}`,
+      error: {
+        code: "fetch_error",
+        message: `Fetch error: ${error instanceof Error ? error.message : String(error)}`,
+      },
     };
   }
 }
