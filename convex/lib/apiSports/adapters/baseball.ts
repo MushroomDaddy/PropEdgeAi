@@ -62,7 +62,7 @@ export const baseballAdapter: SportAdapter = {
     const params: Record<string, string | number> = { league: league || config.leagueId };
     if (config.season) params.season = config.season;
     const result = await apiSportsFetch<RawBaseballTeam>(config.baseUrl, config.endpoints.teams, params);
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeTeam) };
   },
 
@@ -76,7 +76,7 @@ export const baseballAdapter: SportAdapter = {
     if (config.season) params.season = config.season;
     if (dateRange?.from) params.date = dateRange.from;
     const result = await apiSportsFetch<RawBaseballGame>(config.baseUrl, config.endpoints.games, params);
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeGame) };
   },
 
@@ -88,7 +88,7 @@ export const baseballAdapter: SportAdapter = {
       season: season || config.season || "",
     };
     const result = await apiSportsFetch<any>(config.baseUrl, config.endpoints.standings, params);
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     const normalized = result.data.map((raw: any) => ({
       apiSportsTeamId: raw.team?.id ?? 0,
       teamName: raw.team?.name ?? "Unknown",
@@ -123,7 +123,7 @@ export const baseballAdapter: SportAdapter = {
       league: config.leagueId,
       live: "all",
     });
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeGame) };
   },
 };

@@ -7,13 +7,14 @@
 export interface SportConfig {
   baseUrl: string;
   leagueId: number;
-  season: number;
+  season: string;
   endpoints: {
     teams: string;
     games: string;
     standings: string;
     liveScores?: string;
     injuries?: string;
+    playerStats?: string;
   };
 }
 
@@ -21,7 +22,7 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
   NBA: {
     baseUrl: "https://api-sports.io/v1",
     leagueId: 12, // NBA league ID
-    season: new Date().getFullYear(),
+    season: String(new Date().getFullYear()),
     endpoints: {
       teams: "/basketball/teams",
       games: "/basketball/games",
@@ -33,7 +34,7 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
   NFL: {
     baseUrl: "https://api-sports.io/v1",
     leagueId: 1, // NFL league ID
-    season: new Date().getFullYear(),
+    season: String(new Date().getFullYear()),
     endpoints: {
       teams: "/american-football/teams",
       games: "/american-football/games",
@@ -45,7 +46,7 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
   MLB: {
     baseUrl: "https://v1.baseball.api-sports.io",
     leagueId: 1, // MLB league ID
-    season: new Date().getFullYear(),
+    season: String(new Date().getFullYear()),
     endpoints: {
       teams: "/teams",
       games: "/games",
@@ -55,7 +56,7 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
   NHL: {
     baseUrl: "https://api-sports.io/v1",
     leagueId: 3, // NHL league ID
-    season: new Date().getFullYear(),
+    season: String(new Date().getFullYear()),
     endpoints: {
       teams: "/hockey/teams",
       games: "/hockey/games",

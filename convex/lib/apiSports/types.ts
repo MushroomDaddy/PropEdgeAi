@@ -58,22 +58,30 @@ export interface RawBaseballGame {
 export interface RawFootballTeam extends RawBasketballTeam {}
 
 export interface RawFootballGame {
-  id: number;
-  date: string;
+  game: {
+    id: number;
+    date: {
+      timestamp: number;
+    };
+    status: {
+      short?: string;
+      long?: string;
+      timer?: string;
+    };
+    venue?: {
+      name?: string;
+    };
+  };
+  league?: {
+    season: number;
+  };
   teams: {
     home: { id: number; name: string };
     away: { id: number; name: string };
   };
-  scores: {
-    home: number;
-    away: number;
-  };
-  status: {
-    short: string;
-    long: string;
-  };
-  league: {
-    season: number;
+  scores?: {
+    home?: { total?: number };
+    away?: { total?: number };
   };
 }
 
@@ -81,19 +89,20 @@ export interface RawHockeyTeam extends RawBasketballTeam {}
 
 export interface RawHockeyGame {
   id: number;
+  timestamp: number;
   date: string;
   teams: {
     home: { id: number; name: string };
     away: { id: number; name: string };
   };
-  scores: {
-    home: number;
-    away: number;
+  scores?: {
+    home?: number;
+    away?: number;
   };
   status: {
-    short: string;
+    short?: string;
   };
-  league: {
+  league?: {
     season: number;
   };
 }
@@ -104,7 +113,7 @@ export interface NormalizedApiTeam {
   apiSportsId: number;
   name: string;
   abbreviation: string;
-  city: string;
+  city?: string;
   sport: string;
   logoUrl: string;
   provider: "api_sports";
@@ -132,6 +141,8 @@ export interface NormalizedApiGame {
   status: "upcoming" | "live" | "final" | "postponed" | "cancelled";
   homeScore?: number;
   awayScore?: number;
+  venue?: string;
+  period?: string;
   season?: number;
   provider: "api_sports";
   lastUpdated: number;
@@ -154,19 +165,24 @@ export interface NormalizedApiStanding {
 export interface NormalizedApiPlayerStats {
   apiSportsPlayerId: number;
   playerName: string;
+  apiSportsGameId?: number;
   sport: string;
-  season: number;
-  gamesPlayed: number;
-  stats: Record<string, number>;
+  season?: number;
+  gamesPlayed?: number;
+  stats: Record<string, number | string | object>;
   provider: "api_sports";
   lastUpdated: number;
 }
 
 export interface NormalizedApiInjury {
+  apiSportsPlayerId?: number;
   playerName: string;
-  teamName: string;
+  team?: string;
+  teamName?: string;
   sport: string;
   status: string;
+  description?: string;
+  reportDate?: number;
   provider: "api_sports";
   lastUpdated: number;
 }
@@ -176,6 +192,8 @@ export interface ApiSportsHealth {
   enabled: boolean;
   requestsUsedToday: number;
   dailyLimit: number;
+  lastSync?: number;
+  lastError?: string;
   supportedSports: string[];
   supportedEndpoints: string[];
   sourceLabel: string;

@@ -22,6 +22,9 @@ function requireAdapter(sport: string) {
   if (!adapter) {
     return {
       ok: false as const,
+      data: [] as any[],
+      requestsUsed: 0,
+      requestsRemaining: 0,
       error: {
         code: "api_error" as const,
         message: `Sport "${sport}" is not supported. Available: ${getSupportedSports().join(", ")}`,
@@ -94,7 +97,7 @@ export async function getLiveScores(sport: string): Promise<ApiSportsResult<Norm
 /** Search for a player by name (checks all supported sports or specific sport) */
 export async function searchPlayer(name: string, sport?: string): Promise<ApiSportsResult<NormalizedApiPlayer>> {
   if (!isApiSportsConfigured()) {
-    return { ok: false, error: { code: "not_configured", message: "API_SPORTS_KEY not set" } };
+    return { ok: false, data: [], requestsUsed: 0, requestsRemaining: 0, error: { code: "not_configured", message: "API_SPORTS_KEY not set" } };
   }
 
   // If sport specified, search that sport only
@@ -131,7 +134,7 @@ export async function searchPlayer(name: string, sport?: string): Promise<ApiSpo
 /** Search for a team by name */
 export async function searchTeam(name: string, sport?: string): Promise<ApiSportsResult<NormalizedApiTeam>> {
   if (!isApiSportsConfigured()) {
-    return { ok: false, error: { code: "not_configured", message: "API_SPORTS_KEY not set" } };
+    return { ok: false, data: [], requestsUsed: 0, requestsRemaining: 0, error: { code: "not_configured", message: "API_SPORTS_KEY not set" } };
   }
 
   const sports = sport ? [sport] : getSupportedSports();

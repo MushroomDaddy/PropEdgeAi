@@ -339,8 +339,8 @@ export const syncTeams = internalAction({
   handler: async (ctx, { sport }) => {
     const result = await getTeams(sport);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "teams", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error.message });
-      await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: 0, recordsUpdated: 0, success: false, error: result.error.message });
+      await ctx.runMutation(ref.logUsage, { endpoint: "teams", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
+      await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: 0, recordsUpdated: 0, success: false, error: result.error?.message ?? "Unknown error" });
       return { success: false, error: result.error };
     }
 
@@ -359,7 +359,7 @@ export const syncPlayers = internalAction({
   handler: async (ctx, { sport, teamId }) => {
     const result = await getPlayers(sport, teamId || undefined);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "players", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error.message });
+      await ctx.runMutation(ref.logUsage, { endpoint: "players", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
       return { success: false, error: result.error };
     }
 
@@ -379,7 +379,7 @@ export const syncGames = internalAction({
     const dateRange = date ? { from: date, to: date } : undefined;
     const result = await getGames(sport, dateRange);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "games", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error.message });
+      await ctx.runMutation(ref.logUsage, { endpoint: "games", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
       return { success: false, error: result.error };
     }
 
@@ -398,7 +398,7 @@ export const syncStandings = internalAction({
   handler: async (ctx, { sport, season }) => {
     const result = await getStandings(sport, undefined, season || undefined);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "standings", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error.message });
+      await ctx.runMutation(ref.logUsage, { endpoint: "standings", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
       return { success: false, error: result.error };
     }
 
@@ -417,7 +417,7 @@ export const syncInjuries = internalAction({
   handler: async (ctx, { sport }) => {
     const result = await getInjuries(sport);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "injuries", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error.message });
+      await ctx.runMutation(ref.logUsage, { endpoint: "injuries", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
       return { success: false, error: result.error };
     }
 
@@ -436,7 +436,7 @@ export const syncLiveScores = internalAction({
   handler: async (ctx, { sport }) => {
     const result = await getLiveScores(sport);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "liveScores", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error.message });
+      await ctx.runMutation(ref.logUsage, { endpoint: "liveScores", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
       return { success: false, error: result.error };
     }
 

@@ -94,7 +94,7 @@ export const footballAdapter: SportAdapter = {
     const params: Record<string, string | number> = { league: league || config.leagueId };
     if (config.season) params.season = config.season;
     const result = await apiSportsFetch<RawFootballTeam>(config.baseUrl, config.endpoints.teams, params);
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeTeam) };
   },
 
@@ -109,7 +109,7 @@ export const footballAdapter: SportAdapter = {
     if (config.season) params.season = config.season;
     if (dateRange?.from) params.date = dateRange.from;
     const result = await apiSportsFetch<RawFootballGame>(config.baseUrl, config.endpoints.games, params);
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeGame) };
   },
 
@@ -121,7 +121,7 @@ export const footballAdapter: SportAdapter = {
       season: season || config.season || "",
     };
     const result = await apiSportsFetch<any>(config.baseUrl, config.endpoints.standings, params);
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     // NFL standings have a different shape — normalize generically
     const normalized = result.data.map((raw: any) => ({
       apiSportsTeamId: raw.team?.id ?? 0,
@@ -148,7 +148,7 @@ export const footballAdapter: SportAdapter = {
       season: season || config.season || "",
     };
     const result = await apiSportsFetch<any>(config.baseUrl, config.endpoints.playerStats, params);
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     const normalized = result.data.map((raw: any) => ({
       apiSportsPlayerId: raw.player?.id ?? parseInt(playerId),
       playerName: raw.player?.name ?? "Unknown",
@@ -172,7 +172,7 @@ export const footballAdapter: SportAdapter = {
     if (config.season) params.season = config.season;
     if (teamId) params.team = teamId;
     const result = await apiSportsFetch<RawFootballInjury>(config.baseUrl, config.endpoints.injuries, params);
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeInjury) };
   },
 
@@ -182,7 +182,7 @@ export const footballAdapter: SportAdapter = {
       league: config.leagueId,
       live: "all",
     });
-    if (!result.ok) return result;
+    if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeGame) };
   },
 };
