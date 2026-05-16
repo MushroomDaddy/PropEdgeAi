@@ -24,11 +24,25 @@ export interface SportConfig {
 	};
 }
 
+
+/** Compute current season string for a sport.
+ *  NBA/NHL use cross-year format: if month >= October, season = "YYYY-YYYY+1", else "YYYY-1-YYYY"
+ *  NFL/MLB use single calendar year.
+ */
+function currentSeason(sport: "NBA" | "NHL" | "NFL" | "MLB"): string {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = now.getMonth(); // 0-indexed (0=Jan, 9=Oct)
+	if (sport === "NBA" || sport === "NHL") {
+		return month >= 9 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+	}
+	return String(year);
+}
 const SPORT_CONFIGS: Record<string, SportConfig> = {
 	NBA: {
 		baseUrl: "https://v1.basketball.api-sports.io",
 		leagueId: 12, // NBA league ID
-		season: String(new Date().getFullYear()),
+		season: currentSeason("NBA"),
 		endpoints: {
 			teams: "/teams",
 			games: "/games",
@@ -41,7 +55,7 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
 	NFL: {
 		baseUrl: "https://v1.american-football.api-sports.io",
 		leagueId: 1, // NFL league ID
-		season: String(new Date().getFullYear()),
+		season: currentSeason("NFL"),
 		endpoints: {
 			teams: "/teams",
 			games: "/games",
@@ -53,7 +67,7 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
 	MLB: {
 		baseUrl: "https://v1.baseball.api-sports.io",
 		leagueId: 1, // MLB league ID
-		season: String(new Date().getFullYear()),
+		season: currentSeason("MLB"),
 		endpoints: {
 			teams: "/teams",
 			games: "/games",
@@ -63,7 +77,7 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
 	NHL: {
 		baseUrl: "https://v1.hockey.api-sports.io",
 		leagueId: 3, // NHL league ID
-		season: String(new Date().getFullYear()),
+		season: currentSeason("NHL"),
 		endpoints: {
 			teams: "/teams",
 			games: "/games",
