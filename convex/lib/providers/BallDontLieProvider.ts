@@ -3,7 +3,7 @@
  *
  * Free tier: 30 requests/min (no key needed for basic), API key for higher limits.
  * Covers: NBA players, teams, games, stats, season averages.
- * API key: BALLDONTLIE_KEY (optional, server-side only)
+ * API key: BALLDONTLIE_API_KEY (optional, server-side only)
  *
  * Base URL: https://api.balldontlie.io/v1/
  * Endpoints:
@@ -33,7 +33,7 @@ export const BallDontLieProvider: DataProvider = {
   getStatus(): NormalizedProviderStatus {
     // BALLDONTLIE works without a key (basic tier) but key gives higher limits
     const hasKey =
-      typeof process !== "undefined" && !!process.env?.BALLDONTLIE_KEY;
+      typeof process !== "undefined" && !!process.env?.BALLDONTLIE_API_KEY;
     return {
       provider: "balldontlie",
       displayName: "BALLDONTLIE",
