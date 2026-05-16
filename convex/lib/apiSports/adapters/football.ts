@@ -69,8 +69,8 @@ function normalizeGame(raw: RawFootballGame): NormalizedApiGame {
 
 // Raw injury type for NFL
 interface RawFootballInjury {
-  player: id: number; name: string ;
-  team: id: number; name: string; logo: string ;
+  player: { id: number; name: string };
+  team: { id: number; name: string; logo: string };
   type: string;
   status: string;
   date: string;

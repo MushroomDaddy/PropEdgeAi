@@ -8,7 +8,7 @@ export const allProviders = query({
     const props = await ctx.db.query("props").collect();
     const players = await ctx.db.query("players").collect();
     const games = await ctx.db.query("games").collect();
-    const results = await ctx.db.query("results").collect();
+    const results = await (ctx.db as any).query("results").collect();
     const kalshiMarkets = await ctx.db.query("kalshiMarkets").collect();
     const importJobs = await ctx.db.query("importJobs").collect();
     

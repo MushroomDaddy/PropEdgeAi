@@ -69,8 +69,8 @@ export const list = query({
 		}
 		const results = await q.collect();
 		return results
-			.filter((p) => Number.isFinite(p.edge))
-			.map((p) => ({
+			.filter((p: any) => Number.isFinite(p.edge))
+			.map((p: any) => ({
 				...p,
 				valueScore: computeValueScore(p),
 			}));
@@ -83,8 +83,8 @@ export const getTopEdges = query({
 	handler: async (ctx, { limit }) => {
 		const allProps = await ctx.db.query("props").collect();
 		const validProps = allProps
-			.filter((p) => Number.isFinite(p.edge))
-			.map((p) => ({
+			.filter((p: any) => Number.isFinite(p.edge))
+			.map((p: any) => ({
 				...p,
 				valueScore: computeValueScore(p),
 			}));
@@ -100,8 +100,8 @@ export const getTopValuePicks = query({
 	handler: async (ctx, { limit }) => {
 		const allProps = await ctx.db.query("props").collect();
 		const scored = allProps
-			.filter((p) => Number.isFinite(p.edge))
-			.map((p) => ({
+			.filter((p: any) => Number.isFinite(p.edge))
+			.map((p: any) => ({
 				...p,
 				valueScore: computeValueScore(p),
 			}));
@@ -184,7 +184,7 @@ export const stats = query({
 	}),
 	handler: async (ctx) => {
 		const allProps = await ctx.db.query("props").collect();
-		const validProps = allProps.filter((p) => Number.isFinite(p.edge));
+		const validProps = allProps.filter((p: any) => Number.isFinite(p.edge));
 		const totalProps = allProps.length;
 		const avgEdge =
 			validProps.length > 0

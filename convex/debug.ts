@@ -24,9 +24,9 @@ export const countTable = query({
 	args: { table: v.string() },
 	returns: v.number(),
 	handler: async (ctx, { table }) => {
-		return await ctx.db
+		return await (ctx.db as any)
 			.query(table)
 			.collect()
-			.then((r) => r.length);
+			.then((r: any) => r.length);
 	},
 });
