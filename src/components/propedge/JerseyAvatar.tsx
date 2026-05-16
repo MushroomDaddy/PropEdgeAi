@@ -37,7 +37,7 @@ export function JerseyAvatar({
       className={`${s.w} ${s.h} relative flex flex-col items-center justify-center ${className}`}
     >
       {/* Jersey shape */}
-      <svg viewBox="0 0 40 48" className="absolute inset-0 w-full h-full">
+      <svg aria-hidden="true">
         <path
           d="M8 0 L0 12 L4 14 L4 48 L36 48 L36 14 L40 12 L32 0 Z"
           fill={colors.primary}

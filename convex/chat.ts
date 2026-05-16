@@ -352,7 +352,9 @@ function generateStatisticalResponse(
   // ===== HOT STREAKS =====
   if (q.includes("hot") || q.includes("streak") || q.includes("fire")) {
     const hotProps = props
-      .filter((p: any) => p.hotColdStreak?.type === "hot" && isFinite(p.edge))
+      .filter(
+        (p: any) => p.hotColdStreak?.type === "hot" && Number.isFinite(p.edge),
+      )
       .sort((a: any, b: any) => b.edge - a.edge);
     if (hotProps.length === 0)
       return "No players on significant hot streaks right now.";
@@ -376,7 +378,9 @@ function generateStatisticalResponse(
     const safeProps = props
       .filter(
         (p: any) =>
-          (p.bustRisk || 100) <= 30 && Math.abs(p.edge) > 3 && isFinite(p.edge),
+          (p.bustRisk || 100) <= 30 &&
+          Math.abs(p.edge) > 3 &&
+          Number.isFinite(p.edge),
       )
       .sort((a: any, b: any) => (a.bustRisk || 0) - (b.bustRisk || 0));
     if (safeProps.length === 0)
@@ -405,7 +409,7 @@ function generateStatisticalResponse(
     q.includes("sim")
   ) {
     const mcProps = props
-      .filter((p: any) => p.monteCarloSim && isFinite(p.edge))
+      .filter((p: any) => p.monteCarloSim && Number.isFinite(p.edge))
       .sort(
         (a: any, b: any) =>
           (b.monteCarloSim?.hitRate || 0) - (a.monteCarloSim?.hitRate || 0),
@@ -436,7 +440,9 @@ function generateStatisticalResponse(
           : q.includes("nhl")
             ? "NHL"
             : null;
-    let overProps = props.filter((p: any) => p.edge > 0 && isFinite(p.edge));
+    let overProps = props.filter(
+      (p: any) => p.edge > 0 && Number.isFinite(p.edge),
+    );
     if (sport) overProps = overProps.filter((p: any) => p.sport === sport);
     overProps.sort((a: any, b: any) => b.edge - a.edge);
     const top = overProps.slice(0, 5);
@@ -487,7 +493,9 @@ function generateStatisticalResponse(
           : q.includes("nhl")
             ? "NHL"
             : null;
-    let underProps = props.filter((p: any) => p.edge < 0 && isFinite(p.edge));
+    let underProps = props.filter(
+      (p: any) => p.edge < 0 && Number.isFinite(p.edge),
+    );
     if (sport) underProps = underProps.filter((p: any) => p.sport === sport);
     underProps.sort((a: any, b: any) => a.edge - b.edge);
     const top = underProps.slice(0, 5);
@@ -526,7 +534,7 @@ function generateStatisticalResponse(
     q.includes("build") &&
     (q.includes("entry") || q.includes("pick") || q.includes("lineup"))
   ) {
-    const numPicks = parseInt(q.match(/(\d+)[- ]?pick/)?.[1] || "6");
+    const numPicks = parseInt(q.match(/(\d+)[- ]?pick/)?.[1] || "6", 10);
     const platform = q.includes("prizepicks")
       ? "PrizePicks"
       : q.includes("underdog")
@@ -538,7 +546,7 @@ function generateStatisticalResponse(
             : "PrizePicks";
 
     const validProps = props
-      .filter((p: any) => Math.abs(p.edge) > 3 && isFinite(p.edge))
+      .filter((p: any) => Math.abs(p.edge) > 3 && Number.isFinite(p.edge))
       .sort((a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge));
 
     const selected: any[] = [];
@@ -619,7 +627,7 @@ function generateStatisticalResponse(
         resp += `**${g.awayTeam} @ ${g.homeTeam}** — ${new Date(g.gameTime).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} (${g.broadcast})\n`;
     }
     const topEdges = props
-      .filter(p => isFinite(p.edge))
+      .filter(p => Number.isFinite(p.edge))
       .sort((a, b) => Math.abs(b.edge) - Math.abs(a.edge))
       .slice(0, 3);
     if (topEdges.length > 0) {
@@ -633,7 +641,7 @@ function generateStatisticalResponse(
   // ===== COMPARE =====
   if (q.includes("compare") || q.includes("vs")) {
     const topEdges = props
-      .filter((p: any) => isFinite(p.edge))
+      .filter((p: any) => Number.isFinite(p.edge))
       .sort((a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge))
       .slice(0, 8);
     let resp = `## ⚖️ Value Comparison\n\n`;
@@ -820,7 +828,7 @@ function generateStatisticalResponse(
     const combo = props
       .filter(
         (p: any) =>
-          Math.abs(p.edge) >= 5 && p.hitRate >= 60 && isFinite(p.edge),
+          Math.abs(p.edge) >= 5 && p.hitRate >= 60 && Number.isFinite(p.edge),
       )
       .sort(
         (a: any, b: any) =>
@@ -844,7 +852,7 @@ function generateStatisticalResponse(
 
   // ===== DEFAULT =====
   const topEdges = props
-    .filter((p: any) => isFinite(p.edge))
+    .filter((p: any) => Number.isFinite(p.edge))
     .sort((a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge))
     .slice(0, 6);
   let resp = `## 📊 Today's Edge Analysis\n\n`;

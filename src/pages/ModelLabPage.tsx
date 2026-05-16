@@ -191,7 +191,7 @@ export function ModelLabPage() {
             {(perf.hitRateByConfidence || []).map((b: any) => (
               <BucketBar
                 key={b.bucket}
-                label={b.bucket + "%"}
+                label={`${b.bucket}%`}
                 value={b.hitRate}
                 total={b.total}
                 color="cyan"
@@ -210,7 +210,7 @@ export function ModelLabPage() {
             {(perf.roiByEdge || []).map((b: any) => (
               <BucketBar
                 key={b.bucket}
-                label={b.bucket + "%"}
+                label={`${b.bucket}%`}
                 value={b.hitRate}
                 total={b.total}
                 roi={b.roi}
@@ -563,7 +563,7 @@ function CalibrationChart({
 
   return (
     <div className="overflow-x-auto">
-      <svg
+      <svg aria-hidden="true"
         viewBox={`0 0 ${width} ${height}`}
         className="w-full max-w-lg mx-auto"
         style={{ minWidth: 300 }}

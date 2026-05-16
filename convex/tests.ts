@@ -3054,9 +3054,9 @@ export const runAll = action({
         NHL: "🏒",
         MLS: "⚽",
       };
-      assert(icons["NBA"] === "🏀", "NBA icon");
-      assert(icons["NFL"] === "🏈", "NFL icon");
-      assert(icons["MLB"] === "⚾", "MLB icon");
+      assert(icons.NBA === "🏀", "NBA icon");
+      assert(icons.NFL === "🏈", "NFL icon");
+      assert(icons.MLB === "⚾", "MLB icon");
       results.push({
         name: "R12: Sport icon mapping",
         passed: true,

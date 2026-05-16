@@ -32,7 +32,7 @@ export function StatSparkline({
       : undefined;
 
   return (
-    <svg width={width} height={height} className="inline-block">
+    <svg aria-hidden="true">
       {lineY !== undefined && (
         <line
           x1={pad}

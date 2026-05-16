@@ -29,7 +29,7 @@ export function LineMovementMiniChart({
 
   return (
     <div className="inline-flex flex-col items-center gap-0.5">
-      <svg width={width} height={height}>
+      <svg aria-hidden="true">
         <polyline
           fill="none"
           stroke={color}

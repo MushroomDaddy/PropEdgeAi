@@ -5,7 +5,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Clock, MapPin, Swords } from "lucide-react";
+import { MapPin, Swords } from "lucide-react";
 import { getSportIcon, getTeamAbbr, getTeamColors } from "../../lib/assets";
 
 interface TeamSide {

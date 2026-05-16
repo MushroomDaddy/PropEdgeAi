@@ -90,7 +90,7 @@ export function DashboardPage() {
           "> 10%": 0,
         };
         for (const p of allProps) {
-          if (!isFinite(p.edge)) continue;
+          if (!Number.isFinite(p.edge)) continue;
           if (p.edge < -10) buckets["< -10%"]++;
           else if (p.edge < -5) buckets["-10 to -5%"]++;
           else if (p.edge < 0) buckets["-5 to 0%"]++;
@@ -182,7 +182,7 @@ export function DashboardPage() {
             title="Live Data Not Synced Yet"
             description="Connect your The Odds API key in the Convex dashboard and run a full sync. Demo data will appear once the database is seeded."
             actionLabel="View Data Sources"
-            onAction={() => (window.location.href = "/data-sources")}
+            onAction={() => { window.location.href = "/data-sources"; }}
             providerStatus={[
               { name: "The Odds API", status: "pending" },
               { name: "SportsData.io", status: "pending" },

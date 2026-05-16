@@ -55,7 +55,7 @@ export function PlayerIntelPage() {
       setSelectedPlayer(qParam);
       setActiveTab("overview");
     }
-  }, [qParam]);
+  }, [qParam, selectedPlayer]);
 
   const searchResults = useQuery(api.playerIntel.searchPlayers, {
     searchTerm: searchTerm.length >= 2 ? searchTerm : "",

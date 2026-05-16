@@ -8,7 +8,6 @@
 import { motion } from "framer-motion";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import {
-  Area,
   CartesianGrid,
   Line,
   LineChart,

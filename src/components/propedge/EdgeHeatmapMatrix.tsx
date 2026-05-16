@@ -6,7 +6,6 @@
  */
 
 import { motion } from "framer-motion";
-import { useMemo } from "react";
 
 interface HeatmapCell {
   label: string;

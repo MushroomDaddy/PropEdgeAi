@@ -62,9 +62,11 @@ export async function apiSportsFetch<T>(
 
     const requestsUsed = parseInt(
       response.headers.get("x-apisports-requests-current") || "0",
+      10,
     );
     const requestsRemaining = parseInt(
       response.headers.get("x-apisports-requests-limit-remaining") || "0",
+      10,
     );
 
     if (!response.ok) {

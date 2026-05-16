@@ -16,7 +16,7 @@ export function ValueScoreRing({
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <svg width={size} height={size} className="transform -rotate-90">
+      <svg aria-hidden="true">
         <circle
           cx={size / 2}
           cy={size / 2}

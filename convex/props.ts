@@ -49,7 +49,7 @@ export const list = query({
   },
   returns: v.array(v.any()),
   handler: async (ctx, { sport, platform }) => {
-    let q;
+    let q: any;
     if (sport && platform) {
       q = ctx.db
         .query("props")
@@ -69,7 +69,7 @@ export const list = query({
     }
     const results = await q.collect();
     return results
-      .filter(p => isFinite(p.edge))
+      .filter(p => Number.isFinite(p.edge))
       .map(p => ({
         ...p,
         valueScore: computeValueScore(p),
@@ -83,7 +83,7 @@ export const getTopEdges = query({
   handler: async (ctx, { limit }) => {
     const allProps = await ctx.db.query("props").collect();
     const validProps = allProps
-      .filter(p => isFinite(p.edge))
+      .filter(p => Number.isFinite(p.edge))
       .map(p => ({
         ...p,
         valueScore: computeValueScore(p),
@@ -100,7 +100,7 @@ export const getTopValuePicks = query({
   handler: async (ctx, { limit }) => {
     const allProps = await ctx.db.query("props").collect();
     const scored = allProps
-      .filter(p => isFinite(p.edge))
+      .filter(p => Number.isFinite(p.edge))
       .map(p => ({
         ...p,
         valueScore: computeValueScore(p),
@@ -121,7 +121,7 @@ export const suggestDiversificationPicks = query({
   handler: async (ctx, { currentPickSports, currentOverUnder }) => {
     const allProps = await ctx.db.query("props").collect();
     const validProps = allProps.filter(
-      p => isFinite(p.edge) && Math.abs(p.edge) > 3,
+      p => Number.isFinite(p.edge) && Math.abs(p.edge) > 3,
     );
 
     // Count current distribution
@@ -184,7 +184,7 @@ export const stats = query({
   }),
   handler: async ctx => {
     const allProps = await ctx.db.query("props").collect();
-    const validProps = allProps.filter(p => isFinite(p.edge));
+    const validProps = allProps.filter(p => Number.isFinite(p.edge));
     const totalProps = allProps.length;
     const avgEdge =
       validProps.length > 0

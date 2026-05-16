@@ -46,7 +46,7 @@ const SPORT_KEY_MAP: Record<string, string> = {
   MLS: "soccer_usa_mls",
 };
 
-const REVERSE_SPORT_MAP: Record<string, string> = Object.fromEntries(
+const _REVERSE_SPORT_MAP: Record<string, string> = Object.fromEntries(
   Object.entries(SPORT_KEY_MAP).map(([k, v]) => [v, k]),
 );
 

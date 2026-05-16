@@ -54,11 +54,13 @@ export function PropDetailDrawer({
 
   return (
     <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-        onClick={onClose}
-      />
+        {/* Overlay */}
+        <button
+          type="button"
+          aria-label="Close drawer"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+          onClick={onClose}
+        />
 
       {/* Drawer */}
       <div className="fixed right-0 top-0 h-full w-full max-w-md bg-card border-l border-white/10 z-50 overflow-y-auto shadow-2xl animate-in slide-in-from-right duration-200">

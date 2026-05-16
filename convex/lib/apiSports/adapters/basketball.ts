@@ -122,7 +122,7 @@ export const basketballAdapter: SportAdapter = {
       apiSportsTeamId: raw.team?.id ?? 0,
       teamName: raw.team?.name ?? "Unknown",
       sport: SPORT,
-      season: parseInt(season || config.season?.toString() || "0"),
+      season: parseInt(season || config.season?.toString() || "0", 10),
       conference: raw.conference?.name,
       wins: raw.win?.total ?? 0,
       losses: raw.loss?.total ?? 0,

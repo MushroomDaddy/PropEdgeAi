@@ -400,7 +400,7 @@ export function PropsAnalyzerPage() {
             <MiniStat label="Projection" value={selectedProp.projection} />
             <MiniStat
               label="Proj Diff"
-              value={`${selectedProp.projectionDiff != null ? (selectedProp.projectionDiff > 0 ? "+" : "") + selectedProp.projectionDiff + "%" : "—"}`}
+              value={`${selectedProp.projectionDiff != null ? `${(selectedProp.projectionDiff > 0 ? "+" : "") + selectedProp.projectionDiff}%` : "—"}`}
               color="#00D4FF"
             />
             <MiniStat

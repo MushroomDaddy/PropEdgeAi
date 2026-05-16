@@ -944,7 +944,7 @@ export const seedAll = mutation({
 
         let baseProj =
           stat.baseLine +
-          (pseudoRandom(player.name + stat.type + "proj") - 0.5) *
+          (pseudoRandom(`${player.name + stat.type}proj`) - 0.5) *
             stat.variance *
             2;
 
@@ -952,22 +952,22 @@ export const seedAll = mutation({
           const avg = (player as any).last5Avg;
           if (stat.type === "Points" && avg.points)
             baseProj =
-              avg.points + (pseudoRandom(player.name + "pts") - 0.5) * 3;
+              avg.points + (pseudoRandom(`${player.name}pts`) - 0.5) * 3;
           if (stat.type === "Rebounds" && avg.rebounds)
             baseProj =
-              avg.rebounds + (pseudoRandom(player.name + "reb") - 0.5) * 2;
+              avg.rebounds + (pseudoRandom(`${player.name}reb`) - 0.5) * 2;
           if (stat.type === "Assists" && avg.assists)
             baseProj =
-              avg.assists + (pseudoRandom(player.name + "ast") - 0.5) * 2;
+              avg.assists + (pseudoRandom(`${player.name}ast`) - 0.5) * 2;
           if (stat.type === "3-Pointers" && avg.threePointers)
             baseProj =
-              avg.threePointers + (pseudoRandom(player.name + "3pt") - 0.5) * 1;
+              avg.threePointers + (pseudoRandom(`${player.name}3pt`) - 0.5) * 1;
         }
 
         const rawLine =
           Math.round(
             (baseProj +
-              (pseudoRandom(player.name + stat.type + "line") - 0.5) *
+              (pseudoRandom(`${player.name + stat.type}line`) - 0.5) *
                 stat.variance) *
               2,
           ) / 2;
@@ -992,7 +992,7 @@ export const seedAll = mutation({
           85,
           Math.max(
             15,
-            Math.round(50 + pseudoRandom(player.name + "mip") * 10 - 5),
+            Math.round(50 + pseudoRandom(`${player.name}mip`) * 10 - 5),
           ),
         );
         // True edge = model probability - market implied probability
@@ -1002,7 +1002,7 @@ export const seedAll = mutation({
           Math.max(
             25,
             Math.round(
-              50 + edge * 0.3 + pseudoRandom(player.name + "conf") * 20,
+              50 + edge * 0.3 + pseudoRandom(`${player.name}conf`) * 20,
             ),
           ),
         );
@@ -1013,14 +1013,14 @@ export const seedAll = mutation({
             Math.round(
               55 +
                 projectionDiff * 1.5 +
-                (pseudoRandom(player.name + "hit") - 0.5) * 15,
+                (pseudoRandom(`${player.name}hit`) - 0.5) * 15,
             ),
           ),
         );
         const opponent = getOpponentTeam(player.team, game);
         const dvpRank =
           dvpRankings[opponent] ||
-          15 + Math.floor(pseudoRandom(player.name + "dvp") * 15);
+          15 + Math.floor(pseudoRandom(`${player.name}dvp`) * 15);
         const matchupRating = Math.min(
           10,
           Math.max(
@@ -1028,12 +1028,12 @@ export const seedAll = mutation({
             Math.round(
               10 -
                 dvpRank / 3.5 +
-                (pseudoRandom(player.name + "match") - 0.5) * 3,
+                (pseudoRandom(`${player.name}match`) - 0.5) * 3,
             ),
           ),
         );
 
-        const trendRand = pseudoRandom(player.name + stat.type + "trend");
+        const trendRand = pseudoRandom(`${player.name + stat.type}trend`);
         const last10Trend =
           player.recentForm === "hot"
             ? "up"
@@ -1049,7 +1049,7 @@ export const seedAll = mutation({
             Math.round(
               5 +
                 projectionDiff * 0.3 +
-                (pseudoRandom(player.name + "l10") - 0.3) * 4,
+                (pseudoRandom(`${player.name}l10`) - 0.3) * 4,
             ),
           ),
         );
@@ -1064,7 +1064,7 @@ export const seedAll = mutation({
           : undefined;
 
         const numSources =
-          3 + Math.floor(pseudoRandom(player.name + stat.type + "src") * 3);
+          3 + Math.floor(pseudoRandom(`${player.name + stat.type}src`) * 3);
         const sources = [];
         for (let j = 0; j < numSources; j++) {
           sources.push({
@@ -1072,7 +1072,7 @@ export const seedAll = mutation({
             value:
               Math.round(
                 (projection +
-                  (pseudoRandom(player.name + stat.type + `src${j}`) - 0.5) *
+                  (pseudoRandom(`${player.name + stat.type}src${j}`) - 0.5) *
                     stat.variance *
                     0.8) *
                   10,
@@ -1106,13 +1106,13 @@ export const seedAll = mutation({
                   : player.injuryStatus === "doubtful"
                     ? 30
                     : 0) +
-                (pseudoRandom(player.name + stat.type + "bust") - 0.5) * 10,
+                (pseudoRandom(`${player.name + stat.type}bust`) - 0.5) * 10,
             ),
           ),
         );
 
         // R3: Hot/cold streak
-        const streakRand = pseudoRandom(player.name + stat.type + "streak");
+        const streakRand = pseudoRandom(`${player.name + stat.type}streak`);
         let streakType: string;
         let streakGames: number;
         if (player.recentForm === "hot") {
@@ -1142,13 +1142,13 @@ export const seedAll = mutation({
               50 +
                 edge * 1.8 +
                 (matchupRating / 10) * 8 +
-                (pseudoRandom(player.name + "mc") - 0.5) * 6,
+                (pseudoRandom(`${player.name}mc`) - 0.5) * 6,
             ),
           ),
         );
         const stdDev =
           Math.round(
-            stat.variance * (0.8 + pseudoRandom(player.name + "sd") * 0.4) * 10,
+            stat.variance * (0.8 + pseudoRandom(`${player.name}sd`) * 0.4) * 10,
           ) / 10;
         const p50 = Math.round(projection * 10) / 10;
         const p10 = Math.round((projection - stdDev * 1.28) * 10) / 10;
@@ -1160,18 +1160,18 @@ export const seedAll = mutation({
           Math.max(
             25,
             Math.round(
-              hitRate + (pseudoRandom(player.name + "hist") - 0.5) * 10,
+              hitRate + (pseudoRandom(`${player.name}hist`) - 0.5) * 10,
             ),
           ),
         );
         const histSampleSize =
-          20 + Math.floor(pseudoRandom(player.name + "histn") * 40);
+          20 + Math.floor(pseudoRandom(`${player.name}histn`) * 40);
         const vsTeamHit = Math.min(
           90,
           Math.max(
             20,
             Math.round(
-              historicalHit + (pseudoRandom(player.name + "vsteam") - 0.5) * 15,
+              historicalHit + (pseudoRandom(`${player.name}vsteam`) - 0.5) * 15,
             ),
           ),
         );
@@ -1298,7 +1298,7 @@ export const seedAll = mutation({
           85,
           Math.max(
             20,
-            Math.round(50 + pseudoRandom(km.statType + "kmip") * 10 - 5),
+            Math.round(50 + pseudoRandom(`${km.statType}kmip`) * 10 - 5),
           ),
         );
         const edge =
@@ -1329,7 +1329,7 @@ export const seedAll = mutation({
           projectionDiff: kalshiProjDiff,
           confidence: Math.min(90, Math.max(30, Math.round(55 + edge * 0.3))),
           hitRate: Math.round(
-            50 + (pseudoRandom(km.statType + "hr") - 0.3) * 20,
+            50 + (pseudoRandom(`${km.statType}hr`) - 0.3) * 20,
           ),
           overUnder: edge > 0 ? "over" : "under",
           variance: 8,

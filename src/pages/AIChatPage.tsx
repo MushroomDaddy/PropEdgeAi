@@ -88,7 +88,7 @@ export function AIChatPage() {
 
   useEffect(() => {
     messagesEnd.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
+  }, []);
 
   const handleSend = async (text?: string) => {
     const question = text || input.trim();

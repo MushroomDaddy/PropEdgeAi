@@ -4,7 +4,6 @@
  * Handles NFL data from v1.american-football.api-sports.io
  */
 
-import type { ApiSportsResult } from "../client";
 import { apiSportsFetch } from "../client";
 import { getSportConfig } from "../config";
 import type {
@@ -165,7 +164,7 @@ export const footballAdapter: SportAdapter = {
       apiSportsTeamId: raw.team?.id ?? 0,
       teamName: raw.team?.name ?? "Unknown",
       sport: SPORT,
-      season: parseInt(season || config.season || "0"),
+      season: parseInt(season || config.season || "0", 10),
       conference: raw.group?.name,
       wins: raw.won ?? 0,
       losses: raw.lost ?? 0,
@@ -198,7 +197,7 @@ export const footballAdapter: SportAdapter = {
     );
     if (!result.ok) return result as any;
     const normalized = result.data.map((raw: any) => ({
-      apiSportsPlayerId: raw.player?.id ?? parseInt(playerId),
+      apiSportsPlayerId: raw.player?.id ?? parseInt(playerId, 10),
       playerName: raw.player?.name ?? "Unknown",
       apiSportsGameId: raw.game?.id ?? 0,
       sport: SPORT,

@@ -7,7 +7,6 @@
 
 import { motion } from "framer-motion";
 import {
-  Activity,
   AlertTriangle,
   BarChart3,
   CheckCircle2,
@@ -16,17 +15,14 @@ import {
   Server,
   WifiOff,
   XCircle,
-  Zap,
 } from "lucide-react";
 
 interface Props {
-  provider: string;
   displayName: string;
   status: "active" | "inactive" | "error" | "syncing";
   isLive: boolean;
   apiKeyConfigured: boolean;
   supportedSports: string[];
-  supportedMarkets: string[];
   requestsUsed?: number;
   requestLimit?: number;
   lastSync?: number;
@@ -76,13 +72,11 @@ const DATA_TYPE_COLORS: Record<string, string> = {
 };
 
 export function ProviderStatusCard({
-  provider,
   displayName,
   status,
   isLive,
   apiKeyConfigured,
   supportedSports,
-  supportedMarkets,
   requestsUsed,
   requestLimit,
   lastSync,

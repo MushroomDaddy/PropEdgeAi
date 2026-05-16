@@ -14,9 +14,9 @@
  *   Functions → goLiveSmokeTest → run with {"token":"YOUR_TOKEN"}
  */
 
-import { action } from "./_generated/server";
-import { v } from "convex/values";
 import { makeFunctionReference } from "convex/server";
+import { v } from "convex/values";
+import { action } from "./_generated/server";
 
 declare const process: { env: Record<string, string | undefined> };
 
@@ -79,7 +79,7 @@ export const run = action({
     if (!expectedToken) {
       throw new Error(
         "SMOKE_TEST_TOKEN is not set in Convex Dashboard environment variables. " +
-        "Set it under Settings → Environment Variables.",
+          "Set it under Settings → Environment Variables.",
       );
     }
     if (args.token !== expectedToken) {
@@ -98,7 +98,11 @@ export const run = action({
       await ctx.runAction(internal.refreshGames, { sport });
       results.push({ step: "liveProviders.refreshGames", status: "ok" });
     } catch (e: any) {
-      results.push({ step: "liveProviders.refreshGames", status: "error", error: e.message });
+      results.push({
+        step: "liveProviders.refreshGames",
+        status: "error",
+        error: e.message,
+      });
     }
 
     try {
@@ -106,15 +110,26 @@ export const run = action({
       await ctx.runAction(internal.refreshOdds, { sport, markets: ["h2h"] });
       results.push({ step: "liveProviders.refreshOdds (h2h)", status: "ok" });
     } catch (e: any) {
-      results.push({ step: "liveProviders.refreshOdds", status: "error", error: e.message });
+      results.push({
+        step: "liveProviders.refreshOdds",
+        status: "error",
+        error: e.message,
+      });
     }
 
     try {
       // liveProviders.refreshProps NBA maxEvents=1 (tiny)
       await ctx.runAction(internal.refreshProps, { sport, maxEvents: 1 });
-      results.push({ step: "liveProviders.refreshProps (maxEvents=1)", status: "ok" });
+      results.push({
+        step: "liveProviders.refreshProps (maxEvents=1)",
+        status: "ok",
+      });
     } catch (e: any) {
-      results.push({ step: "liveProviders.refreshProps", status: "error", error: e.message });
+      results.push({
+        step: "liveProviders.refreshProps",
+        status: "error",
+        error: e.message,
+      });
     }
 
     try {
@@ -122,7 +137,11 @@ export const run = action({
       await ctx.runAction(internal.syncTeams, { sport });
       results.push({ step: "apiSportsSync.syncTeams", status: "ok" });
     } catch (e: any) {
-      results.push({ step: "apiSportsSync.syncTeams", status: "error", error: e.message });
+      results.push({
+        step: "apiSportsSync.syncTeams",
+        status: "error",
+        error: e.message,
+      });
     }
 
     try {
@@ -130,7 +149,11 @@ export const run = action({
       await ctx.runAction(internal.syncGames, { sport });
       results.push({ step: "apiSportsSync.syncGames", status: "ok" });
     } catch (e: any) {
-      results.push({ step: "apiSportsSync.syncGames", status: "error", error: e.message });
+      results.push({
+        step: "apiSportsSync.syncGames",
+        status: "error",
+        error: e.message,
+      });
     }
 
     try {
@@ -138,7 +161,11 @@ export const run = action({
       await ctx.runAction(internal.syncStandings, { sport });
       results.push({ step: "apiSportsSync.syncStandings", status: "ok" });
     } catch (e: any) {
-      results.push({ step: "apiSportsSync.syncStandings", status: "error", error: e.message });
+      results.push({
+        step: "apiSportsSync.syncStandings",
+        status: "error",
+        error: e.message,
+      });
     }
 
     // 4. Read counts after
@@ -154,7 +181,9 @@ export const run = action({
 
     // 6. Try to read request count from providerUsageLog
     try {
-      const usage = await ctx.runQuery(internal.countTable, { table: "providerUsageLog" });
+      const usage = await ctx.runQuery(internal.countTable, {
+        table: "providerUsageLog",
+      });
       totalRequests = usage; // approximation — actual requests tracked per-provider
     } catch {
       totalRequests = -1;
@@ -163,7 +192,8 @@ export const run = action({
     // 7. Return report
     return {
       ok: true,
-      message: "goLiveSmokeTest completed. This is a real pipeline proof, not just a probe.",
+      message:
+        "goLiveSmokeTest completed. This is a real pipeline proof, not just a probe.",
       sport,
       steps: results,
       tableCounts: {

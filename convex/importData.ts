@@ -229,7 +229,7 @@ export const csvImport = mutation({
       const [playerName, statType, lineStr, overUnder, sport] = parts;
       const line = parseFloat(lineStr);
 
-      if (!playerName || !statType || isNaN(line)) {
+      if (!playerName || !statType || Number.isNaN(line)) {
         errors.push(`Line ${i + 1}: invalid data`);
         continue;
       }
@@ -277,8 +277,12 @@ export const csvImport = mutation({
         originalImportedStatType: statType,
         originalImportedDirection: csvOverUnder,
         originalImportedSport: csvSport,
-        originalImportedOdds: isNaN(csvOdds ?? NaN) ? undefined : csvOdds,
-        originalImportedStake: isNaN(csvStake ?? NaN) ? undefined : csvStake,
+        originalImportedOdds: Number.isNaN(csvOdds ?? NaN)
+          ? undefined
+          : csvOdds,
+        originalImportedStake: Number.isNaN(csvStake ?? NaN)
+          ? undefined
+          : csvStake,
         // Review workflow
         reviewStatus:
           match.matchStatus === "unmatched" ? "pending" : "accepted",

@@ -174,7 +174,7 @@ export const modelPerformance = query({
 
     // Calibration — predicted prob vs actual hit rate
     const calibration = hitRateByConfidence.map(b => ({
-      predictedProb: parseInt(b.bucket.split("-")[0]) + 5, // midpoint
+      predictedProb: parseInt(b.bucket.split("-")[0], 10) + 5, // midpoint
       actualHitRate: b.hitRate,
       sampleSize: b.total,
     }));

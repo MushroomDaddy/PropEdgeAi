@@ -29,16 +29,16 @@ import { cronJobs, makeFunctionReference } from "convex/server";
 const crons = cronJobs();
 
 // Internal action references
-const refreshGames = makeFunctionReference<"action">(
+const _refreshGames = makeFunctionReference<"action">(
   "liveProviders:refreshGames",
 );
-const refreshOdds = makeFunctionReference<"action">(
+const _refreshOdds = makeFunctionReference<"action">(
   "liveProviders:refreshOdds",
 );
-const refreshProps = makeFunctionReference<"action">(
+const _refreshProps = makeFunctionReference<"action">(
   "liveProviders:refreshProps",
 );
-const refreshLineMovement = makeFunctionReference<"action">(
+const _refreshLineMovement = makeFunctionReference<"action">(
   "liveProviders:refreshLineMovement",
 );
 

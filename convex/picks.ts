@@ -277,7 +277,7 @@ export const generateQuickPack = query({
   returns: v.any(),
   handler: async (ctx, { packType }) => {
     const allProps = await ctx.db.query("props").collect();
-    const validProps = allProps.filter(p => isFinite(p.edge));
+    const validProps = allProps.filter(p => Number.isFinite(p.edge));
 
     const usedPlayers = new Set<string>();
     function pickUnique(pool: any[], count: number) {
