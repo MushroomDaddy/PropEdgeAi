@@ -293,11 +293,12 @@ export function SettingsPage() {
 
           {/* Edge Sensitivity */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">
+            <label htmlFor="edgeSens" className="text-xs text-muted-foreground mb-2 block">
               Edge Sensitivity (Min Edge %)
             </label>
             <div className="flex items-center gap-3">
               <input
+                id="edgeSens"
                 type="range"
                 min={0}
                 max={20}
@@ -313,11 +314,12 @@ export function SettingsPage() {
 
           {/* Min Confidence */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">
+            <label htmlFor="minConf" className="text-xs text-muted-foreground mb-2 block">
               Minimum Confidence Filter
             </label>
             <div className="flex items-center gap-3">
               <input
+                id="minConf"
                 type="range"
                 min={30}
                 max={90}
@@ -333,12 +335,13 @@ export function SettingsPage() {
 
           {/* Default Bankroll */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">
+            <label htmlFor="bankroll" className="text-xs text-muted-foreground mb-2 block">
               Default Bankroll
             </label>
             <div className="flex items-center gap-2">
               <DollarSign className="size-4 text-muted-foreground" />
               <Input
+                id="bankroll"
                 type="number"
                 value={defaultBankroll}
                 onChange={e => setDefaultBankroll(Number(e.target.value))}
@@ -377,7 +380,7 @@ export function SettingsPage() {
             </h2>
 
             <div className="mb-4">
-              <label className="text-xs text-muted-foreground mb-2 block">
+              <label htmlFor="favSports" className="text-xs text-muted-foreground mb-2 block">
                 Favorite Sports
               </label>
               <div className="flex flex-wrap gap-2">
@@ -407,9 +410,9 @@ export function SettingsPage() {
             </div>
 
             <div>
-              <label className="text-xs text-muted-foreground mb-2 block">
+              <span className="text-xs text-muted-foreground mb-2 block">
                 Tracked Platforms
-              </label>
+              </span>
               <div className="flex flex-wrap gap-2">
                 {[
                   "PrizePicks",

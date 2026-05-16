@@ -854,7 +854,7 @@ export function PickBuilderPage() {
 
             {/* Stake */}
             <div className="space-y-2 mb-4">
-              <label className="text-xs text-muted-foreground">Stake</label>
+              <span className="text-xs text-muted-foreground">Stake</span>
               <div className="flex items-center gap-2">
                 {[5, 10, 25, 50, 100].map(s => (
                   <button
