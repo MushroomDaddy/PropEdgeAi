@@ -21,38 +21,60 @@
  *   npx convex run adminSync:adminRefreshLineMovement
  *
  * Convex dashboard: Navigate to Functions → adminSync → run directly.
- * Dashboard runs bypass auth (they run server-side), so these are safe
- * to call from the dashboard without ADMIN_EMAILS being set.
+ * Dashboard calls run as server-side actions; the admin wrapper still
+ * enforces getAuthUserId() + ADMIN_EMAILS before delegating.
+ *
+ * Auth rules:
+ *   - adminSync public actions require getAuthUserId() (must be signed in)
+ *   - ADMIN_EMAILS env var restricts which emails can run them
+ *   - If ADMIN_EMAILS is empty, any authenticated user can run admin actions (dev mode only)
+ *   - Raw sync actions in liveProviders/apiSportsSync stay internalAction (not publicly callable)
  */
 
-import { action } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { makeFunctionReference } from "convex/server";
+import { v } from "convex/values";
+import { action } from "./_generated/server";
 
 declare const process: { env: Record<string, string | undefined> };
 
 // Internal action references (same pattern as liveProviders.ts)
 const internal = {
-  initProviderConfig: makeFunctionReference<"action">("liveProviders:initProviderConfig"),
+  initProviderConfig: makeFunctionReference<"action">(
+    "liveProviders:initProviderConfig",
+  ),
   refreshGames: makeFunctionReference<"action">("liveProviders:refreshGames"),
   refreshOdds: makeFunctionReference<"action">("liveProviders:refreshOdds"),
   refreshProps: makeFunctionReference<"action">("liveProviders:refreshProps"),
-  refreshLineMovement: makeFunctionReference<"action">("liveProviders:refreshLineMovement"),
+  refreshLineMovement: makeFunctionReference<"action">(
+    "liveProviders:refreshLineMovement",
+  ),
   // R13: API-SPORTS sync actions
   apiSportsFullSync: makeFunctionReference<"action">("apiSportsSync:fullSync"),
-  apiSportsSyncTeams: makeFunctionReference<"action">("apiSportsSync:syncTeams"),
-  apiSportsSyncGames: makeFunctionReference<"action">("apiSportsSync:syncGames"),
-  apiSportsSyncStandings: makeFunctionReference<"action">("apiSportsSync:syncStandings"),
-  apiSportsSyncInjuries: makeFunctionReference<"action">("apiSportsSync:syncInjuries"),
-  apiSportsSyncLiveScores: makeFunctionReference<"action">("apiSportsSync:syncLiveScores"),
+  apiSportsSyncTeams: makeFunctionReference<"action">(
+    "apiSportsSync:syncTeams",
+  ),
+  apiSportsSyncGames: makeFunctionReference<"action">(
+    "apiSportsSync:syncGames",
+  ),
+  apiSportsSyncStandings: makeFunctionReference<"action">(
+    "apiSportsSync:syncStandings",
+  ),
+  apiSportsSyncInjuries: makeFunctionReference<"action">(
+    "apiSportsSync:syncInjuries",
+  ),
+  apiSportsSyncLiveScores: makeFunctionReference<"action">(
+    "apiSportsSync:syncLiveScores",
+  ),
 };
 
 // ─── Admin check helper ───
 async function requireAdmin(ctx: any): Promise<string> {
   const userId = await getAuthUserId(ctx);
   if (!userId) {
-    throw new Error("Authentication required. Sign in before calling sync actions.");
+    throw new Error(
+      "Authentication required. Sign in before calling sync actions.",
+    );
   }
 
   // Look up user's email from the auth tables
@@ -60,7 +82,10 @@ async function requireAdmin(ctx: any): Promise<string> {
     makeFunctionReference<"query">("auth:currentUser"),
   );
 
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((e: string) => e.trim().toLowerCase()).filter(Boolean);
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e: string) => e.trim().toLowerCase())
+    .filter(Boolean);
 
   // If ADMIN_EMAILS is not set, allow any authenticated user (dev mode / dashboard)
   if (adminEmails.length === 0) {
@@ -69,7 +94,9 @@ async function requireAdmin(ctx: any): Promise<string> {
 
   const userEmail = (user?.email ?? "").toLowerCase();
   if (!userEmail || !adminEmails.includes(userEmail)) {
-    throw new Error(`Admin access required. ${userEmail || "No email"} is not in ADMIN_EMAILS.`);
+    throw new Error(
+      `Admin access required. ${userEmail || "No email"} is not in ADMIN_EMAILS.`,
+    );
   }
 
   return userId;
@@ -83,7 +110,7 @@ async function requireAdmin(ctx: any): Promise<string> {
 export const adminInitProviderConfig = action({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     await requireAdmin(ctx);
     return await ctx.runAction(internal.initProviderConfig, {});
   },
@@ -137,7 +164,9 @@ export const adminRefreshLineMovement = action({
   returns: v.any(),
   handler: async (ctx, args) => {
     await requireAdmin(ctx);
-    return await ctx.runAction(internal.refreshLineMovement, { sport: args.sport });
+    return await ctx.runAction(internal.refreshLineMovement, {
+      sport: args.sport,
+    });
   },
 });
 
@@ -171,7 +200,10 @@ export const adminApiSportsSyncGames = action({
   returns: v.any(),
   handler: async (ctx, args) => {
     await requireAdmin(ctx);
-    return await ctx.runAction(internal.apiSportsSyncGames, { sport: args.sport, date: args.date });
+    return await ctx.runAction(internal.apiSportsSyncGames, {
+      sport: args.sport,
+      date: args.date,
+    });
   },
 });
 
@@ -213,7 +245,9 @@ export const adminFullSync = action({
     await requireAdmin(ctx);
 
     const initResult = await ctx.runAction(internal.initProviderConfig, {});
-    const gamesResult = await ctx.runAction(internal.refreshGames, { sport: args.sport });
+    const gamesResult = await ctx.runAction(internal.refreshGames, {
+      sport: args.sport,
+    });
     const oddsResult = await ctx.runAction(internal.refreshOdds, {
       sport: args.sport,
       markets: "h2h,spreads,totals",
