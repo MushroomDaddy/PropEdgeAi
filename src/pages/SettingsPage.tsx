@@ -139,6 +139,7 @@ export function SettingsPage() {
 						</div>
 					</div>
 					<button
+						type="button"
 						onClick={() => setShowBalances(!showBalances)}
 						className="text-muted-foreground hover:text-white transition-colors"
 					>
@@ -368,6 +369,7 @@ export function SettingsPage() {
 							</p>
 						</div>
 						<button
+							type="button"
 							onClick={() => setShowKalshi(!showKalshi)}
 							className={`relative w-11 h-6 rounded-full transition-colors ${showKalshi ? "bg-[#A855F7]" : "bg-[#1E293B]"}`}
 						>
@@ -407,6 +409,7 @@ export function SettingsPage() {
 									"Esports",
 								].map((sport) => (
 									<button
+										type="button"
 										key={sport}
 										onClick={() => toggleSport(sport)}
 										className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
@@ -434,6 +437,7 @@ export function SettingsPage() {
 									"Kalshi",
 								].map((platform) => (
 									<button
+										type="button"
 										key={platform}
 										onClick={() => togglePlatform(platform)}
 										className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
@@ -464,6 +468,7 @@ export function SettingsPage() {
 									</p>
 								</div>
 								<button
+									type="button"
 									onClick={() => setAlertHigh(!alertHigh)}
 									className={`relative w-11 h-6 rounded-full transition-colors ${alertHigh ? "bg-[#00FF88]" : "bg-[#1E293B]"}`}
 								>
@@ -486,6 +491,7 @@ export function SettingsPage() {
 									</p>
 								</div>
 								<button
+									type="button"
 									onClick={() => setAlertStreak(!alertStreak)}
 									className={`relative w-11 h-6 rounded-full transition-colors ${alertStreak ? "bg-[#00FF88]" : "bg-[#1E293B]"}`}
 								>
@@ -508,6 +514,7 @@ export function SettingsPage() {
 									</p>
 								</div>
 								<button
+									type="button"
 									onClick={() => setDarkMode(!darkMode)}
 									className={`relative w-11 h-6 rounded-full transition-colors ${darkMode ? "bg-[#A855F7]" : "bg-[#1E293B]"}`}
 								>

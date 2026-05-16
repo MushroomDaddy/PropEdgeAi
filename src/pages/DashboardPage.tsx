@@ -584,6 +584,7 @@ export function DashboardPage() {
 					<div className="flex items-center gap-1.5 p-1 bg-[#111827]/80 rounded-xl border border-[#1E293B] w-fit">
 						{sportFilters.map((sport) => (
 							<button
+								type="button"
 								key={sport}
 								onClick={() => setActiveSport(sport)}
 								className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${

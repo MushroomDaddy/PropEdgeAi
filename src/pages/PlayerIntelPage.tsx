@@ -93,6 +93,7 @@ export function PlayerIntelPage() {
 					<div className="absolute top-full mt-2 left-0 right-0 rounded-xl border border-white/10 bg-card shadow-2xl z-50 max-h-64 overflow-auto">
 						{searchResults.map((p: any) => (
 							<button
+								type="button"
 								key={p._id}
 								onClick={() => {
 									setSelectedPlayer(p.name);
@@ -255,6 +256,7 @@ function PlayerProfileView({
 				<nav className="flex gap-1 -mb-px overflow-x-auto scrollbar-hide">
 					{TABS.map((tab) => (
 						<button
+							type="button"
 							key={tab.id}
 							onClick={() => setActiveTab(tab.id)}
 							className={cn(

@@ -121,6 +121,7 @@ export default function ImportPage() {
 					{ id: "screenshot" as Tab, label: "Screenshot", icon: Camera },
 				].map(({ id, label, icon: Icon }) => (
 					<button
+						type="button"
 						key={id}
 						onClick={() => {
 							setTab(id);
@@ -169,6 +170,7 @@ export default function ImportPage() {
 								</span>
 								{picks.length > 1 && (
 									<button
+										type="button"
 										onClick={() => removePick(i)}
 										className="text-red-400 hover:text-red-300"
 									>
@@ -239,12 +241,14 @@ export default function ImportPage() {
 					))}
 					<div className="flex gap-3">
 						<button
+							type="button"
 							onClick={addPick}
 							className="flex items-center gap-1 text-sm text-[#00D4FF] hover:text-[#00D4FF]/80"
 						>
 							<Plus className="size-4" /> Add Pick
 						</button>
 						<button
+							type="button"
 							onClick={handleManualSubmit}
 							disabled={submitting}
 							className="ml-auto flex items-center gap-2 px-4 py-2 bg-[#00D4FF] text-black rounded-lg font-bold text-sm hover:bg-[#00D4FF]/90 disabled:opacity-50"
@@ -297,6 +301,7 @@ export default function ImportPage() {
 								))}
 							</select>
 							<button
+								type="button"
 								onClick={handleCsvSubmit}
 								disabled={submitting || !csvText.trim()}
 								className="flex items-center gap-2 px-4 py-2 bg-[#00D4FF] text-black rounded-lg font-bold text-sm disabled:opacity-50"

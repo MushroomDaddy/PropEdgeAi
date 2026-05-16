@@ -149,7 +149,10 @@ export function LiveGameTickerPremium({ games, onGameClick }: Props) {
 						</span>
 					)}
 				</div>
-				<button className="flex items-center gap-0.5 text-[10px] text-cyan-400 hover:text-cyan-300">
+				<button
+					className="flex items-center gap-0.5 text-[10px] text-cyan-400 hover:text-cyan-300"
+					type="button"
+				>
 					View All <ChevronRight className="size-3" />
 				</button>
 			</div>

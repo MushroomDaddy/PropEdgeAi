@@ -11,7 +11,7 @@ export function usePersistFn<T extends AnyFunction>(fn: T): T {
 	if (!persistFn.current) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		persistFn.current = function (this: unknown, ...args: any[]) {
-			return fnRef.current!.apply(this, args);
+			return fnRef.current?.apply(this, args);
 		} as T;
 	}
 

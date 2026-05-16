@@ -151,6 +151,7 @@ export function AIChatPage() {
 					<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
 						{PRESETS.map((preset, i) => (
 							<button
+								type="button"
 								key={i}
 								onClick={() => handlePreset(preset.query)}
 								className="p-3 rounded-xl bg-[#111827] border border-[#1E293B] text-left hover:border-[#A855F7]/30 hover:bg-[#1A2236]/50 transition-all group"
@@ -243,6 +244,7 @@ export function AIChatPage() {
 				<div className="flex gap-1.5 py-2 overflow-x-auto scrollbar-none">
 					{PRESETS.slice(0, 8).map((preset, i) => (
 						<button
+							type="button"
 							key={i}
 							onClick={() => handlePreset(preset.query)}
 							disabled={loading}

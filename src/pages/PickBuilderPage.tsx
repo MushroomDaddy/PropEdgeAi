@@ -354,6 +354,7 @@ export function PickBuilderPage() {
 				<div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
 					{QUICK_PACKS.map((pack) => (
 						<button
+							type="button"
 							key={pack.id}
 							onClick={() => {
 								setActivePackId(pack.id);
@@ -491,6 +492,7 @@ export function PickBuilderPage() {
 						<div className="flex flex-wrap gap-2 mb-3">
 							{PLATFORM_OPTIONS.map((p) => (
 								<button
+									type="button"
 									key={p}
 									onClick={() => {
 										setSelectedPlatform(p);
@@ -509,6 +511,7 @@ export function PickBuilderPage() {
 						<div className="grid grid-cols-2 gap-2">
 							{platformEntryTypes.map((type) => (
 								<button
+									type="button"
 									key={type.id}
 									onClick={() => setEntryType(type.id)}
 									className={`p-3 rounded-lg border text-left transition-all ${
@@ -614,6 +617,7 @@ export function PickBuilderPage() {
 														Line:
 													</span>
 													<button
+														type="button"
 														onClick={() => adjustLine(pick._id, -0.5)}
 														className="size-4 rounded bg-[#1E293B] flex items-center justify-center hover:bg-[#FF4466]/20 text-muted-foreground hover:text-[#FF4466]"
 													>
@@ -625,6 +629,7 @@ export function PickBuilderPage() {
 														{(pick.line + adj).toFixed(1)}
 													</span>
 													<button
+														type="button"
 														onClick={() => adjustLine(pick._id, 0.5)}
 														className="size-4 rounded bg-[#1E293B] flex items-center justify-center hover:bg-[#00FF88]/20 text-muted-foreground hover:text-[#00FF88]"
 													>
@@ -858,6 +863,7 @@ export function PickBuilderPage() {
 							<div className="flex items-center gap-2">
 								{[5, 10, 25, 50, 100].map((s) => (
 									<button
+										type="button"
 										key={s}
 										onClick={() => setStake(s)}
 										className={`text-xs py-1.5 px-2.5 rounded-lg border transition-all ${

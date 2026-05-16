@@ -450,75 +450,75 @@ export default function DataSourcesPage() {
 									</div>
 									<div className="flex flex-wrap gap-2">
 										<button
+											type="button"
 											onClick={() =>
 												runAction("adminFullSync", adminFullSync, {
 													sport: "NBA",
 												})
 											}
-											disabled={loading["adminFullSync"]}
+											disabled={loading.adminFullSync}
 											className="px-3 py-1.5 bg-cyan-400/10 text-cyan-400 rounded text-[10px] font-bold border border-cyan-400/20 hover:bg-cyan-400/20 disabled:opacity-50"
 										>
-											{loading["adminFullSync"]
-												? "Running..."
-												: "Full Sync (NBA)"}
+											{loading.adminFullSync ? "Running..." : "Full Sync (NBA)"}
 										</button>
 										<button
+											type="button"
 											onClick={() =>
 												runAction("adminRefreshGames", adminRefreshGames, {
 													sport: "NBA",
 												})
 											}
-											disabled={loading["adminRefreshGames"]}
+											disabled={loading.adminRefreshGames}
 											className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
 										>
-											{loading["adminRefreshGames"]
+											{loading.adminRefreshGames
 												? "Running..."
 												: "Refresh Games"}
 										</button>
 										<button
+											type="button"
 											onClick={() =>
 												runAction("adminRefreshOdds", adminRefreshOdds, {
 													sport: "NBA",
 													markets: "h2h,spreads,totals",
 												})
 											}
-											disabled={loading["adminRefreshOdds"]}
+											disabled={loading.adminRefreshOdds}
 											className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
 										>
-											{loading["adminRefreshOdds"]
-												? "Running..."
-												: "Refresh Odds"}
+											{loading.adminRefreshOdds ? "Running..." : "Refresh Odds"}
 										</button>
 										<button
+											type="button"
 											onClick={() =>
 												runAction("adminRefreshProps", adminRefreshProps, {
 													sport: "NBA",
 													maxEvents: 3,
 												})
 											}
-											disabled={loading["adminRefreshProps"]}
+											disabled={loading.adminRefreshProps}
 											className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
 										>
-											{loading["adminRefreshProps"]
+											{loading.adminRefreshProps
 												? "Running..."
 												: "Refresh Props"}
 										</button>
 									</div>
 									<ResultPanel
-										result={results["adminFullSync"]}
-										error={errors["adminFullSync"]}
+										result={results.adminFullSync}
+										error={errors.adminFullSync}
 									/>
 									<ResultPanel
-										result={results["adminRefreshGames"]}
-										error={errors["adminRefreshGames"]}
+										result={results.adminRefreshGames}
+										error={errors.adminRefreshGames}
 									/>
 									<ResultPanel
-										result={results["adminRefreshOdds"]}
-										error={errors["adminRefreshOdds"]}
+										result={results.adminRefreshOdds}
+										error={errors.adminRefreshOdds}
 									/>
 									<ResultPanel
-										result={results["adminRefreshProps"]}
-										error={errors["adminRefreshProps"]}
+										result={results.adminRefreshProps}
+										error={errors.adminRefreshProps}
 									/>
 								</div>
 							)}
@@ -531,6 +531,7 @@ export default function DataSourcesPage() {
 									</div>
 									<div className="flex flex-wrap gap-2">
 										<button
+											type="button"
 											onClick={() =>
 												runAction(
 													"adminApiSportsFullSync",
@@ -538,14 +539,15 @@ export default function DataSourcesPage() {
 													{ sport: "NBA" },
 												)
 											}
-											disabled={loading["adminApiSportsFullSync"]}
+											disabled={loading.adminApiSportsFullSync}
 											className="px-3 py-1.5 bg-cyan-400/10 text-cyan-400 rounded text-[10px] font-bold border border-cyan-400/20 hover:bg-cyan-400/20 disabled:opacity-50"
 										>
-											{loading["adminApiSportsFullSync"]
+											{loading.adminApiSportsFullSync
 												? "Running..."
 												: "Full Sync (NBA)"}
 										</button>
 										<button
+											type="button"
 											onClick={() =>
 												runAction(
 													"adminApiSportsSyncTeams",
@@ -553,14 +555,15 @@ export default function DataSourcesPage() {
 													{ sport: "NBA" },
 												)
 											}
-											disabled={loading["adminApiSportsSyncTeams"]}
+											disabled={loading.adminApiSportsSyncTeams}
 											className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
 										>
-											{loading["adminApiSportsSyncTeams"]
+											{loading.adminApiSportsSyncTeams
 												? "Running..."
 												: "Sync Teams"}
 										</button>
 										<button
+											type="button"
 											onClick={() =>
 												runAction(
 													"adminApiSportsSyncGames",
@@ -568,14 +571,15 @@ export default function DataSourcesPage() {
 													{ sport: "NBA" },
 												)
 											}
-											disabled={loading["adminApiSportsSyncGames"]}
+											disabled={loading.adminApiSportsSyncGames}
 											className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
 										>
-											{loading["adminApiSportsSyncGames"]
+											{loading.adminApiSportsSyncGames
 												? "Running..."
 												: "Sync Games"}
 										</button>
 										<button
+											type="button"
 											onClick={() =>
 												runAction(
 													"adminApiSportsSyncStandings",
@@ -583,14 +587,15 @@ export default function DataSourcesPage() {
 													{ sport: "NBA" },
 												)
 											}
-											disabled={loading["adminApiSportsSyncStandings"]}
+											disabled={loading.adminApiSportsSyncStandings}
 											className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
 										>
-											{loading["adminApiSportsSyncStandings"]
+											{loading.adminApiSportsSyncStandings
 												? "Running..."
 												: "Sync Standings"}
 										</button>
 										<button
+											type="button"
 											onClick={() =>
 												runAction(
 													"adminApiSportsSyncLiveScores",
@@ -598,14 +603,15 @@ export default function DataSourcesPage() {
 													{ sport: "NBA" },
 												)
 											}
-											disabled={loading["adminApiSportsSyncLiveScores"]}
+											disabled={loading.adminApiSportsSyncLiveScores}
 											className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
 										>
-											{loading["adminApiSportsSyncLiveScores"]
+											{loading.adminApiSportsSyncLiveScores
 												? "Running..."
 												: "Sync Live Scores"}
 										</button>
 										<button
+											type="button"
 											onClick={() =>
 												runAction(
 													"adminApiSportsSyncInjuries",
@@ -613,37 +619,37 @@ export default function DataSourcesPage() {
 													{ sport: "NFL" },
 												)
 											}
-											disabled={loading["adminApiSportsSyncInjuries"]}
+											disabled={loading.adminApiSportsSyncInjuries}
 											className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
 										>
-											{loading["adminApiSportsSyncInjuries"]
+											{loading.adminApiSportsSyncInjuries
 												? "Running..."
 												: "Sync Injuries (NFL)"}
 										</button>
 									</div>
 									<ResultPanel
-										result={results["adminApiSportsFullSync"]}
-										error={errors["adminApiSportsFullSync"]}
+										result={results.adminApiSportsFullSync}
+										error={errors.adminApiSportsFullSync}
 									/>
 									<ResultPanel
-										result={results["adminApiSportsSyncTeams"]}
-										error={errors["adminApiSportsSyncTeams"]}
+										result={results.adminApiSportsSyncTeams}
+										error={errors.adminApiSportsSyncTeams}
 									/>
 									<ResultPanel
-										result={results["adminApiSportsSyncGames"]}
-										error={errors["adminApiSportsSyncGames"]}
+										result={results.adminApiSportsSyncGames}
+										error={errors.adminApiSportsSyncGames}
 									/>
 									<ResultPanel
-										result={results["adminApiSportsSyncStandings"]}
-										error={errors["adminApiSportsSyncStandings"]}
+										result={results.adminApiSportsSyncStandings}
+										error={errors.adminApiSportsSyncStandings}
 									/>
 									<ResultPanel
-										result={results["adminApiSportsSyncLiveScores"]}
-										error={errors["adminApiSportsSyncLiveScores"]}
+										result={results.adminApiSportsSyncLiveScores}
+										error={errors.adminApiSportsSyncLiveScores}
 									/>
 									<ResultPanel
-										result={results["adminApiSportsSyncInjuries"]}
-										error={errors["adminApiSportsSyncInjuries"]}
+										result={results.adminApiSportsSyncInjuries}
+										error={errors.adminApiSportsSyncInjuries}
 									/>
 								</div>
 							)}

@@ -236,6 +236,7 @@ export function ResultsPage() {
 				/>
 				{(filterSport || filterPlatform || filterStatus) && (
 					<button
+						type="button"
 						onClick={() => {
 							setFilterSport("");
 							setFilterPlatform("");
@@ -621,6 +622,7 @@ function DetailDrawerInline({
 					{formatDirection(r.overUnder)}
 				</h4>
 				<button
+					type="button"
 					onClick={onClose}
 					className="text-muted-foreground hover:text-foreground"
 				>

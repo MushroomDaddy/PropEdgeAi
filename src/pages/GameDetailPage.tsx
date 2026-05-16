@@ -165,6 +165,7 @@ export function GameDetailPage() {
 					{ key: "roster" as const, label: "Roster", icon: Users },
 				].map((tab) => (
 					<button
+						type="button"
 						key={tab.key}
 						onClick={() => setActiveTab(tab.key)}
 						className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${

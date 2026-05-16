@@ -84,6 +84,7 @@ export function BankrollPage() {
 				<div className="flex items-center gap-1 p-0.5 bg-[#111827] rounded-lg border border-[#1E293B]">
 					{(["overview", "platforms", "transactions"] as const).map((v) => (
 						<button
+							type="button"
 							key={v}
 							onClick={() => setView(v)}
 							className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all capitalize ${

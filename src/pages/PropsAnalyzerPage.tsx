@@ -178,6 +178,7 @@ export function PropsAnalyzerPage() {
 				<div className="flex items-center gap-1 p-0.5 bg-[#111827] rounded-lg border border-[#1E293B]">
 					{SPORTS.map((s) => (
 						<button
+							type="button"
 							key={s}
 							onClick={() => setSport(s)}
 							className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
