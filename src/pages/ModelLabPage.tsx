@@ -563,7 +563,8 @@ function CalibrationChart({
 
   return (
     <div className="overflow-x-auto">
-      <svg aria-hidden="true"
+      <svg
+        aria-hidden="true"
         viewBox={`0 0 ${width} ${height}`}
         className="w-full max-w-lg mx-auto"
         style={{ minWidth: 300 }}

@@ -47,8 +47,12 @@ export function ResultsPage() {
       return sortDir === "desc" ? (bVal > aVal ? 1 : -1) : aVal > bVal ? 1 : -1;
     });
 
-  const sports = [...new Set((results || []).map((r: any) => r.sport))] as string[];
-  const platforms = [...new Set((results || []).map((r: any) => r.platform))] as string[];
+  const sports = [
+    ...new Set((results || []).map((r: any) => r.sport)),
+  ] as string[];
+  const platforms = [
+    ...new Set((results || []).map((r: any) => r.platform)),
+  ] as string[];
 
   const toggleSort = (field: string) => {
     if (sortField === field) setSortDir(sortDir === "desc" ? "asc" : "desc");

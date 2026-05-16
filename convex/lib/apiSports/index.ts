@@ -143,13 +143,22 @@ export async function searchPlayer(
     };
   }
 
-    // If sport specified, search that sport only
-    if (sport) {
-      const a = requireAdapter(sport);
-      if (!a.ok) return a;
-      // API-SPORTS search requires fetching all players for a team; not implemented yet
-      return { ok: false, data: [], requestsUsed:0, requestsRemaining:0, error: { code: "not_implemented", message: "Player search not implemented" } };
-    }
+  // If sport specified, search that sport only
+  if (sport) {
+    const a = requireAdapter(sport);
+    if (!a.ok) return a;
+    // API-SPORTS search requires fetching all players for a team; not implemented yet
+    return {
+      ok: false,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+      error: {
+        code: "not_implemented",
+        message: "Player search not implemented",
+      },
+    };
+  }
 
   // Cross-sport search: try each sport
   const allPlayers: NormalizedApiPlayer[] = [];

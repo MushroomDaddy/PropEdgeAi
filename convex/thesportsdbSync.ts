@@ -20,21 +20,21 @@ export interface TheSportsDBSyncResult {
 
 export async function syncTeamMedia(
   _teamId: string,
-  _sport: string
+  _sport: string,
 ): Promise<TheSportsDBSyncResult> {
   return { ok: false, error: { code: "not_implemented" } };
 }
 
 export async function syncPlayerMedia(
   _playerId: string,
-  _sport: string
+  _sport: string,
 ): Promise<TheSportsDBSyncResult> {
   return { ok: false, error: { code: "not_implemented" } };
 }
 
 export async function syncLeagueMedia(
   _leagueId: string,
-  _sport: string
+  _sport: string,
 ): Promise<TheSportsDBSyncResult> {
   return { ok: false, error: { code: "not_implemented" } };
 }
@@ -42,6 +42,7 @@ export async function syncLeagueMedia(
 export function getStatus(): { configured: boolean; message: string } {
   return {
     configured: false,
-    message: "TheSportsDB sync not implemented yet. Set THESPORTSDB_API_KEY in Convex env to enable."
+    message:
+      "TheSportsDB sync not implemented yet. Set THESPORTSDB_API_KEY in Convex env to enable.",
   };
 }

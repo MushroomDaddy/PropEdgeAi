@@ -293,7 +293,10 @@ export function SettingsPage() {
 
           {/* Edge Sensitivity */}
           <div>
-            <label htmlFor="edgeSens" className="text-xs text-muted-foreground mb-2 block">
+            <label
+              htmlFor="edgeSens"
+              className="text-xs text-muted-foreground mb-2 block"
+            >
               Edge Sensitivity (Min Edge %)
             </label>
             <div className="flex items-center gap-3">
@@ -314,7 +317,10 @@ export function SettingsPage() {
 
           {/* Min Confidence */}
           <div>
-            <label htmlFor="minConf" className="text-xs text-muted-foreground mb-2 block">
+            <label
+              htmlFor="minConf"
+              className="text-xs text-muted-foreground mb-2 block"
+            >
               Minimum Confidence Filter
             </label>
             <div className="flex items-center gap-3">
@@ -335,7 +341,10 @@ export function SettingsPage() {
 
           {/* Default Bankroll */}
           <div>
-            <label htmlFor="bankroll" className="text-xs text-muted-foreground mb-2 block">
+            <label
+              htmlFor="bankroll"
+              className="text-xs text-muted-foreground mb-2 block"
+            >
               Default Bankroll
             </label>
             <div className="flex items-center gap-2">
@@ -380,7 +389,10 @@ export function SettingsPage() {
             </h2>
 
             <div className="mb-4">
-              <label htmlFor="favSports" className="text-xs text-muted-foreground mb-2 block">
+              <label
+                htmlFor="favSports"
+                className="text-xs text-muted-foreground mb-2 block"
+              >
                 Favorite Sports
               </label>
               <div className="flex flex-wrap gap-2">

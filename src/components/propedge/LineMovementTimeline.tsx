@@ -52,7 +52,8 @@ export function LineMovementTimeline({ snapshots }: { snapshots: Snapshot[] }) {
       {/* Visual timeline */}
       <div className="relative h-16 mb-4">
         {/* Line chart */}
-        <svg aria-hidden="true"
+        <svg
+          aria-hidden="true"
           className="w-full h-full"
           viewBox={`0 0 ${sorted.length * 100} 60`}
           preserveAspectRatio="none"
