@@ -52,8 +52,12 @@ export function getAllProviderStatuses(): NormalizedProviderStatus[] {
 	return ALL_PROVIDERS.map((p) => p.getStatus());
 }
 
-/** Get the currently active provider (demo for now) */
+/** Get the currently active provider — auto-detects from env vars */
 export function getActiveProvider(): DataProvider {
+	if (typeof process !== "undefined" && process.env) {
+		if (process.env.THE_ODDS_API_KEY) return TheOddsAPIProvider;
+		if (process.env.API_SPORTS_KEY) return ApiSportsProvider;
+	}
 	return DemoProvider;
 }
 
