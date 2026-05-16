@@ -42,31 +42,34 @@ const refreshLineMovement = makeFunctionReference<"action">(
   "liveProviders:refreshLineMovement",
 );
 
-// ─── FREE TIER SCHEDULE (~10 req/day, 300 req/month) ───
-// Runs every 4 hours — conservative, safe for 500 req/month limit
+// ─── CRON PRESETS (ALL COMMENTED OUT — Manual sync only until request usage confirmed) ───
 
-crons.interval("sync:refreshGames", { hours: 4 }, refreshGames, {
-  sport: undefined,
-});
+// ─── Free tier NBA safe (commented out, enable when ready) ───
+// crons.interval("sync:refreshGames", { hours: 4 }, refreshGames, {
+//   sport: undefined,
+// });
+// crons.interval("sync:refreshOdds", { hours: 4 }, refreshOdds, {
+//   sport: undefined,
+//   markets: "h2h,spreads,totals",
+// });
+// crons.interval("sync:refreshProps", { hours: 4 }, refreshProps, {
+//   sport: undefined,
+//   maxEvents: 1,
+// });
+// crons.interval("sync:refreshLineMovement", { hours: 8 }, refreshLineMovement, {
+//   sport: undefined,
+// });
 
-crons.interval("sync:refreshOdds", { hours: 4 }, refreshOdds, {
-  sport: undefined,
-  markets: "h2h,spreads,totals",
-});
-
-crons.interval("sync:refreshProps", { hours: 4 }, refreshProps, {
-  sport: undefined,
-  maxEvents: 1,
-});
-
-crons.interval("sync:refreshLineMovement", { hours: 8 }, refreshLineMovement, {
-  sport: undefined,
-});
-
-// ─── PAID TIER SCHEDULE (uncomment when on a paid plan) ───
+// ─── Paid NBA moderate (uncomment when on paid plan) ───
 // crons.interval("sync:refreshGames", { minutes: 30 }, refreshGames, { sport: undefined });
 // crons.interval("sync:refreshOdds", { minutes: 15 }, refreshOdds, { sport: undefined, markets: "h2h,spreads,totals" });
-// crons.interval("sync:refreshProps", { minutes: 15 }, refreshProps, { sport: undefined, maxEvents: 3 });
+// crons.interval("sync:refreshProps", { minutes: 15 }, refreshProps, { sport: undefined, maxEvents: 2 });
 // crons.interval("sync:refreshLineMovement", { minutes: 60 }, refreshLineMovement, { sport: undefined });
+
+// ─── Paid all-sports aggressive (uncomment for full coverage) ───
+// crons.interval("sync:refreshGames", { minutes: 30 }, refreshGames, {});
+// crons.interval("sync:refreshOdds", { minutes: 15 }, refreshOdds, { markets: "h2h,spreads,totals" });
+// crons.interval("sync:refreshProps", { minutes: 15 }, refreshProps, { maxEvents: 3 });
+// crons.interval("sync:refreshLineMovement", { minutes: 60 }, refreshLineMovement, {});
 
 export default crons;
