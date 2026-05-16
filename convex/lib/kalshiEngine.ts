@@ -47,14 +47,14 @@ export function kalshiNoPayout(yesPrice: number): {
 /** Expected Value for a Kalshi contract */
 export function kalshiExpectedValue(args: {
   modelProb: number; // 0-100
-  yesPrice: number;  // 0-100 cents
+  yesPrice: number; // 0-100 cents
   side: "yes" | "no";
 }): number {
   const { modelProb, yesPrice, side } = args;
   const pWin = side === "yes" ? modelProb / 100 : (100 - modelProb) / 100;
   const cost = side === "yes" ? yesPrice : 100 - yesPrice;
   const profit = 100 - cost;
-  const ev = (pWin * profit) - ((1 - pWin) * cost);
+  const ev = pWin * profit - (1 - pWin) * cost;
   return Math.round(ev * 100) / 100;
 }
 
@@ -66,7 +66,7 @@ export function kalshiEdge(args: {
 }): number {
   const { modelProb, yesPrice, side } = args;
   if (side === "yes") return Math.round((modelProb - yesPrice) * 100) / 100;
-  return Math.round(((100 - modelProb) - (100 - yesPrice)) * 100) / 100;
+  return Math.round((100 - modelProb - (100 - yesPrice)) * 100) / 100;
 }
 
 /** Liquidity score (0-100) from volume + spread */
@@ -98,7 +98,7 @@ export function kalshiSettlement(args: {
   if (settlementStatus === "open") return { result: "open", pnl: 0 };
 
   const settledYes = settlementStatus === "settled_yes";
-  const cost = side === "yes" ? yesPrice : (100 - yesPrice);
+  const cost = side === "yes" ? yesPrice : 100 - yesPrice;
 
   if ((side === "yes" && settledYes) || (side === "no" && !settledYes)) {
     return { result: "won", pnl: 100 - cost };
@@ -149,12 +149,14 @@ export function analyzeKalshiMarket(args: {
   return {
     impliedYes: kalshiImpliedYesProb(yesPrice),
     impliedNo: kalshiImpliedNoProb(yesPrice),
-    payout: side === "yes" ? kalshiYesPayout(yesPrice) : kalshiNoPayout(yesPrice),
+    payout:
+      side === "yes" ? kalshiYesPayout(yesPrice) : kalshiNoPayout(yesPrice),
     ev: kalshiExpectedValue({ modelProb, yesPrice, side }),
     edge: kalshiEdge({ modelProb, yesPrice, side }),
     liquidity: kalshiLiquidityScore({ volume, yesBid, yesAsk }),
-    closeAnalysis: closePrice !== undefined
-      ? kalshiCloseAnalysis({ entryPrice: yesPrice, closePrice, side })
-      : undefined,
+    closeAnalysis:
+      closePrice !== undefined
+        ? kalshiCloseAnalysis({ entryPrice: yesPrice, closePrice, side })
+        : undefined,
   };
 }

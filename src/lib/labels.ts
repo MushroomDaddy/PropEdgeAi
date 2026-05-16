@@ -112,14 +112,16 @@ export function formatLabel(raw: string | undefined | null): string {
   }
 
   // 3. Auto-format: handle snake_case, camelCase, kebab-case
-  return raw
-    // Insert space before uppercase letters (camelCase → camel Case)
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    // Replace underscores and hyphens with spaces
-    .replace(/[_-]/g, " ")
-    // Capitalize first letter of each word
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-    .trim();
+  return (
+    raw
+      // Insert space before uppercase letters (camelCase → camel Case)
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      // Replace underscores and hyphens with spaces
+      .replace(/[_-]/g, " ")
+      // Capitalize first letter of each word
+      .replace(/\b\w/g, c => c.toUpperCase())
+      .trim()
+  );
 }
 
 /**

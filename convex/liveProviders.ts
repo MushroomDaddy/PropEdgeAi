@@ -14,16 +14,25 @@
  * dashboard can trigger them. This protects API request budget.
  */
 
-import { query, internalMutation, internalAction } from "./_generated/server";
-import { v } from "convex/values";
 import { makeFunctionReference } from "convex/server";
+import { v } from "convex/values";
+import { internalAction, internalMutation, query } from "./_generated/server";
+
 // Internal function references (avoids dependency on codegen _generated/api)
 const ref = {
-  upsertProviderConfig: makeFunctionReference<"mutation">("liveProviders:upsertProviderConfig"),
-  recordSyncResult: makeFunctionReference<"mutation">("liveProviders:recordSyncResult"),
-  storeLiveEvents: makeFunctionReference<"mutation">("liveProviders:storeLiveEvents"),
-  storeLiveOdds: makeFunctionReference<"mutation">("liveProviders:storeLiveOdds"),
-  refreshOdds: makeFunctionReference<"action">("liveProviders:refreshOdds"),  // internalAction still uses "action" type in makeFunctionReference
+  upsertProviderConfig: makeFunctionReference<"mutation">(
+    "liveProviders:upsertProviderConfig",
+  ),
+  recordSyncResult: makeFunctionReference<"mutation">(
+    "liveProviders:recordSyncResult",
+  ),
+  storeLiveEvents: makeFunctionReference<"mutation">(
+    "liveProviders:storeLiveEvents",
+  ),
+  storeLiveOdds: makeFunctionReference<"mutation">(
+    "liveProviders:storeLiveOdds",
+  ),
+  refreshOdds: makeFunctionReference<"action">("liveProviders:refreshOdds"), // internalAction still uses "action" type in makeFunctionReference
 };
 
 // ─── Sport key mapping ───
@@ -38,11 +47,14 @@ const SPORT_KEY_MAP: Record<string, string> = {
 };
 
 const REVERSE_SPORT_MAP: Record<string, string> = Object.fromEntries(
-  Object.entries(SPORT_KEY_MAP).map(([k, v]) => [v, k])
+  Object.entries(SPORT_KEY_MAP).map(([k, v]) => [v, k]),
 );
 
 // ─── Stale status calculation ───
-function computeRefreshStatus(lastUpdated: number, staleAfterMinutes: number): string {
+function computeRefreshStatus(
+  lastUpdated: number,
+  staleAfterMinutes: number,
+): string {
   const ageMinutes = (Date.now() - lastUpdated) / 60000;
   if (ageMinutes < staleAfterMinutes * 0.5) return "fresh";
   if (ageMinutes < staleAfterMinutes) return "updating";
@@ -63,9 +75,9 @@ function americanToImplied(odds: number): number {
 export const getProviderConfigStatus = query({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     const configs = await ctx.db.query("providerConfig").collect();
-    return configs.map((c) => ({
+    return configs.map(c => ({
       provider: c.provider,
       enabled: c.enabled,
       apiKeyConfigured: c.apiKeyConfigured,
@@ -90,7 +102,7 @@ export const getLiveEvents = query({
     if (sport) {
       return ctx.db
         .query("liveEvents")
-        .withIndex("by_sport", (q) => q.eq("sport", sport))
+        .withIndex("by_sport", q => q.eq("sport", sport))
         .collect();
     }
     return ctx.db.query("liveEvents").collect();
@@ -104,7 +116,9 @@ export const getLiveOdds = query({
   handler: async (ctx, { eventExternalId }) => {
     return ctx.db
       .query("liveOdds")
-      .withIndex("by_eventExternalId", (q) => q.eq("eventExternalId", eventExternalId))
+      .withIndex("by_eventExternalId", q =>
+        q.eq("eventExternalId", eventExternalId),
+      )
       .collect();
   },
 });
@@ -113,29 +127,29 @@ export const getLiveOdds = query({
 export const providerHealthCheck = query({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     const configs = await ctx.db.query("providerConfig").collect();
     const liveEventCount = (await ctx.db.query("liveEvents").collect()).length;
     const liveOddsCount = (await ctx.db.query("liveOdds").collect()).length;
 
-    const theOddsApi = configs.find((c) => c.provider === "the_odds_api");
+    const theOddsApi = configs.find(c => c.provider === "the_odds_api");
 
     const staleEvents = (await ctx.db.query("liveEvents").collect()).filter(
-      (e) => computeRefreshStatus(e.lastUpdated, e.staleAfterMinutes) === "stale"
+      e => computeRefreshStatus(e.lastUpdated, e.staleAfterMinutes) === "stale",
     ).length;
 
     return {
-      providers: configs.map((c) => ({
+      providers: configs.map(c => ({
         provider: c.provider,
         enabled: c.enabled,
         apiKeyConfigured: c.apiKeyConfigured,
         status: !c.apiKeyConfigured
           ? "not_connected"
           : c.lastSyncStatus === "error"
-          ? "error"
-          : c.enabled
-          ? "active"
-          : "inactive",
+            ? "error"
+            : c.enabled
+              ? "active"
+              : "inactive",
         lastSyncTime: c.lastSyncTime,
         lastSyncStatus: c.lastSyncStatus,
         lastSyncError: c.lastSyncError,
@@ -171,7 +185,7 @@ export const upsertProviderConfig = internalMutation({
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("providerConfig")
-      .withIndex("by_provider", (q) => q.eq("provider", args.provider))
+      .withIndex("by_provider", q => q.eq("provider", args.provider))
       .first();
 
     if (existing) {
@@ -215,7 +229,7 @@ export const recordSyncResult = internalMutation({
   handler: async (ctx, args) => {
     const config = await ctx.db
       .query("providerConfig")
-      .withIndex("by_provider", (q) => q.eq("provider", args.provider))
+      .withIndex("by_provider", q => q.eq("provider", args.provider))
       .first();
 
     if (!config) return;
@@ -244,7 +258,7 @@ export const storeLiveEvents = internalMutation({
         awayTeam: v.string(),
         commenceTime: v.number(),
         status: v.string(),
-      })
+      }),
     ),
   },
   handler: async (ctx, { events }) => {
@@ -255,7 +269,7 @@ export const storeLiveEvents = internalMutation({
       // Upsert by externalId
       const existing = await ctx.db
         .query("liveEvents")
-        .withIndex("by_externalId", (q) => q.eq("externalId", event.externalId))
+        .withIndex("by_externalId", q => q.eq("externalId", event.externalId))
         .first();
 
       if (existing) {
@@ -312,7 +326,7 @@ export const storeLiveOdds = internalMutation({
         drawOdds: v.optional(v.number()),
         spread: v.optional(v.number()),
         total: v.optional(v.number()),
-      })
+      }),
     ),
   },
   handler: async (ctx, { odds }) => {
@@ -324,21 +338,28 @@ export const storeLiveOdds = internalMutation({
       // For player props, upsert by event+bookmaker+player+stat
       const existingOdds = await ctx.db
         .query("liveOdds")
-        .withIndex("by_eventExternalId", (q) => q.eq("eventExternalId", odd.eventExternalId))
+        .withIndex("by_eventExternalId", q =>
+          q.eq("eventExternalId", odd.eventExternalId),
+        )
         .collect();
 
       // R11.1: Dedupe includes line — same player can have different alt lines
-      const match = existingOdds.find((o) =>
-        o.bookmaker === odd.bookmaker &&
-        o.marketType === odd.marketType &&
-        (odd.marketType !== "player_props" ||
-          (o.playerName === odd.playerName && o.statType === odd.statType && o.line === odd.line))
+      const match = existingOdds.find(
+        o =>
+          o.bookmaker === odd.bookmaker &&
+          o.marketType === odd.marketType &&
+          (odd.marketType !== "player_props" ||
+            (o.playerName === odd.playerName &&
+              o.statType === odd.statType &&
+              o.line === odd.line)),
       );
 
       // Resolve liveEventId
       const liveEvent = await ctx.db
         .query("liveEvents")
-        .withIndex("by_externalId", (q) => q.eq("externalId", odd.eventExternalId))
+        .withIndex("by_externalId", q =>
+          q.eq("externalId", odd.eventExternalId),
+        )
         .first();
 
       if (match) {
@@ -397,7 +418,7 @@ export const storeLiveOdds = internalMutation({
 export const initProviderConfig = internalAction({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     const apiKey = process.env.THE_ODDS_API_KEY;
     const sdKey = process.env.SPORTSDATA_IO_KEY;
 
@@ -418,7 +439,12 @@ export const initProviderConfig = internalAction({
       enabled: false,
       apiKeyConfigured: !!sdKey,
       supportedSports: ["NBA", "NFL", "MLB", "NHL"],
-      supportedMarkets: ["player_stats", "projections", "injuries", "game_scores"],
+      supportedMarkets: [
+        "player_stats",
+        "projections",
+        "injuries",
+        "game_scores",
+      ],
       rateLimitPerMonth: 1000,
       staleAfterMinutes: 30,
     });
@@ -449,7 +475,11 @@ export const refreshGames = internalAction({
   handler: async (ctx, { sport }) => {
     const apiKey = process.env.THE_ODDS_API_KEY;
     if (!apiKey) {
-      return { success: false, error: "THE_ODDS_API_KEY not configured", events: 0 };
+      return {
+        success: false,
+        error: "THE_ODDS_API_KEY not configured",
+        events: 0,
+      };
     }
 
     const sports = sport ? [sport] : ["NBA", "NFL", "MLB", "NHL"];
@@ -471,11 +501,13 @@ export const refreshGames = internalAction({
 
         if (!response.ok) {
           const errText = await response.text();
-          errors.push(`${s}: HTTP ${response.status} — ${errText.slice(0, 200)}`);
+          errors.push(
+            `${s}: HTTP ${response.status} — ${errText.slice(0, 200)}`,
+          );
           continue;
         }
 
-        const data = await response.json() as any[];
+        const data = (await response.json()) as any[];
 
         // Normalize events
         const events = data.map((e: any) => ({
@@ -485,10 +517,15 @@ export const refreshGames = internalAction({
           sportKey,
           homeTeam: e.home_team,
           awayTeam: e.away_team,
-          commenceTime: typeof e.commence_time === "number"
-            ? e.commence_time * 1000  // unix seconds → ms
-            : new Date(e.commence_time).getTime(),
-          status: e.completed ? "completed" : new Date(e.commence_time * 1000) <= new Date() ? "live" : "upcoming",
+          commenceTime:
+            typeof e.commence_time === "number"
+              ? e.commence_time * 1000 // unix seconds → ms
+              : new Date(e.commence_time).getTime(),
+          status: e.completed
+            ? "completed"
+            : new Date(e.commence_time * 1000) <= new Date()
+              ? "live"
+              : "upcoming",
         }));
 
         if (events.length > 0) {
@@ -530,7 +567,11 @@ export const refreshOdds = internalAction({
   handler: async (ctx, { sport, markets }) => {
     const apiKey = process.env.THE_ODDS_API_KEY;
     if (!apiKey) {
-      return { success: false, error: "THE_ODDS_API_KEY not configured", odds: 0 };
+      return {
+        success: false,
+        error: "THE_ODDS_API_KEY not configured",
+        odds: 0,
+      };
     }
 
     const sports = sport ? [sport] : ["NBA", "NFL", "MLB", "NHL"];
@@ -550,20 +591,28 @@ export const refreshOdds = internalAction({
 
         if (!response.ok) {
           const errText = await response.text();
-          errors.push(`${s}: HTTP ${response.status} — ${errText.slice(0, 200)}`);
+          errors.push(
+            `${s}: HTTP ${response.status} — ${errText.slice(0, 200)}`,
+          );
           continue;
         }
 
-        const data = await response.json() as any[];
+        const data = (await response.json()) as any[];
         const oddsRecords: any[] = [];
 
         for (const event of data) {
-          for (const bookmaker of (event.bookmakers || [])) {
-            for (const market of (bookmaker.markets || [])) {
+          for (const bookmaker of event.bookmakers || []) {
+            for (const market of bookmaker.markets || []) {
               if (market.key === "h2h") {
-                const homeOutcome = market.outcomes?.find((o: any) => o.name === event.home_team);
-                const awayOutcome = market.outcomes?.find((o: any) => o.name === event.away_team);
-                const drawOutcome = market.outcomes?.find((o: any) => o.name === "Draw");
+                const homeOutcome = market.outcomes?.find(
+                  (o: any) => o.name === event.home_team,
+                );
+                const awayOutcome = market.outcomes?.find(
+                  (o: any) => o.name === event.away_team,
+                );
+                const drawOutcome = market.outcomes?.find(
+                  (o: any) => o.name === "Draw",
+                );
                 oddsRecords.push({
                   provider: "the_odds_api",
                   eventExternalId: event.id,
@@ -575,7 +624,9 @@ export const refreshOdds = internalAction({
                   drawOdds: drawOutcome?.price,
                 });
               } else if (market.key === "spreads") {
-                const homeOutcome = market.outcomes?.find((o: any) => o.name === event.home_team);
+                const homeOutcome = market.outcomes?.find(
+                  (o: any) => o.name === event.home_team,
+                );
                 oddsRecords.push({
                   provider: "the_odds_api",
                   eventExternalId: event.id,
@@ -586,8 +637,12 @@ export const refreshOdds = internalAction({
                   spread: homeOutcome?.point,
                 });
               } else if (market.key === "totals") {
-                const overOutcome = market.outcomes?.find((o: any) => o.name === "Over");
-                const underOutcome = market.outcomes?.find((o: any) => o.name === "Under");
+                const overOutcome = market.outcomes?.find(
+                  (o: any) => o.name === "Over",
+                );
+                const underOutcome = market.outcomes?.find(
+                  (o: any) => o.name === "Under",
+                );
                 oddsRecords.push({
                   provider: "the_odds_api",
                   eventExternalId: event.id,
@@ -596,8 +651,12 @@ export const refreshOdds = internalAction({
                   marketType: "totals",
                   overPrice: overOutcome?.price,
                   underPrice: underOutcome?.price,
-                  overImplied: overOutcome?.price ? americanToImplied(overOutcome.price) : undefined,
-                  underImplied: underOutcome?.price ? americanToImplied(underOutcome.price) : undefined,
+                  overImplied: overOutcome?.price
+                    ? americanToImplied(overOutcome.price)
+                    : undefined,
+                  underImplied: underOutcome?.price
+                    ? americanToImplied(underOutcome.price)
+                    : undefined,
                   total: overOutcome?.point,
                 });
               }
@@ -642,7 +701,11 @@ export const refreshProps = internalAction({
   handler: async (ctx, { sport, maxEvents }) => {
     const apiKey = process.env.THE_ODDS_API_KEY;
     if (!apiKey) {
-      return { success: false, error: "THE_ODDS_API_KEY not configured", props: 0 };
+      return {
+        success: false,
+        error: "THE_ODDS_API_KEY not configured",
+        props: 0,
+      };
     }
 
     const sports = sport ? [sport] : ["NBA"];
@@ -666,7 +729,7 @@ export const refreshProps = internalAction({
           continue;
         }
 
-        const events = (await eventsResp.json() as any[])
+        const events = ((await eventsResp.json()) as any[])
           .filter((e: any) => !e.completed)
           .slice(0, max);
 
@@ -682,7 +745,7 @@ export const refreshProps = internalAction({
               continue;
             }
 
-            const propsData = await propsResp.json() as any;
+            const propsData = (await propsResp.json()) as any;
             const oddsRecords: any[] = [];
 
             // R11.1: Fixed player prop parsing — group by player description,
@@ -690,8 +753,8 @@ export const refreshProps = internalAction({
             //   { name: "Over", description: "LeBron James", price: -115, point: 27.5 }
             //   { name: "Under", description: "LeBron James", price: -105, point: 27.5 }
             // All outcomes have name "Over" or "Under" — never the player name.
-            for (const bookmaker of (propsData.bookmakers || [])) {
-              for (const market of (bookmaker.markets || [])) {
+            for (const bookmaker of propsData.bookmakers || []) {
+              for (const market of bookmaker.markets || []) {
                 // Map market key → human-readable stat type
                 const STAT_MAP: Record<string, string> = {
                   player_points: "Points",
@@ -705,8 +768,11 @@ export const refreshProps = internalAction({
                 const statType = STAT_MAP[market.key] || market.key;
 
                 // Group outcomes by player description
-                const playerMap = new Map<string, { over?: any; under?: any }>();
-                for (const outcome of (market.outcomes || [])) {
+                const playerMap = new Map<
+                  string,
+                  { over?: any; under?: any }
+                >();
+                for (const outcome of market.outcomes || []) {
                   const playerKey = `${outcome.description}|${outcome.point}`;
                   if (!playerMap.has(playerKey)) {
                     playerMap.set(playerKey, {});
@@ -719,7 +785,8 @@ export const refreshProps = internalAction({
                 // Build one record per player/stat/bookmaker/line
                 for (const [, pair] of playerMap) {
                   if (!pair.over && !pair.under) continue;
-                  const playerName = pair.over?.description || pair.under?.description;
+                  const playerName =
+                    pair.over?.description || pair.under?.description;
                   const line = pair.over?.point ?? pair.under?.point;
 
                   oddsRecords.push({
@@ -733,8 +800,12 @@ export const refreshProps = internalAction({
                     line,
                     overPrice: pair.over?.price,
                     underPrice: pair.under?.price,
-                    overImplied: pair.over?.price ? americanToImplied(pair.over.price) : undefined,
-                    underImplied: pair.under?.price ? americanToImplied(pair.under.price) : undefined,
+                    overImplied: pair.over?.price
+                      ? americanToImplied(pair.over.price)
+                      : undefined,
+                    underImplied: pair.under?.price
+                      ? americanToImplied(pair.under.price)
+                      : undefined,
                   });
                 }
               }
@@ -743,7 +814,7 @@ export const refreshProps = internalAction({
             if (oddsRecords.length > 0) {
               // R11.1: Dedupe by eventExternalId+bookmaker+marketType+playerName+statType+line
               const seen = new Set<string>();
-              const unique = oddsRecords.filter((r) => {
+              const unique = oddsRecords.filter(r => {
                 const key = `${r.eventExternalId}|${r.bookmaker}|${r.marketType}|${r.playerName}|${r.statType}|${r.line}`;
                 if (seen.has(key)) return false;
                 seen.add(key);
@@ -789,7 +860,11 @@ export const refreshLineMovement = internalAction({
   handler: async (ctx, { sport }) => {
     const apiKey = process.env.THE_ODDS_API_KEY;
     if (!apiKey) {
-      return { success: false, error: "THE_ODDS_API_KEY not configured", snapshots: 0 };
+      return {
+        success: false,
+        error: "THE_ODDS_API_KEY not configured",
+        snapshots: 0,
+      };
     }
 
     // R11.1: Line movement currently triggers a re-fetch of odds.

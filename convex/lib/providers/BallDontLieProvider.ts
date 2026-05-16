@@ -21,16 +21,23 @@ export const BallDontLieProvider: DataProvider = {
   displayName: "BALLDONTLIE",
   isLive: false,
   supportedSports: ["NBA"],
-  supportedMarkets: ["players", "teams", "games", "statistics", "season_averages"],
+  supportedMarkets: [
+    "players",
+    "teams",
+    "games",
+    "statistics",
+    "season_averages",
+  ],
   supportedPlatforms: [],
   requiresApiKey: false, // Basic tier works without key
   getStatus(): NormalizedProviderStatus {
     // BALLDONTLIE works without a key (basic tier) but key gives higher limits
-    const hasKey = typeof process !== "undefined" && !!process.env?.BALLDONTLIE_KEY;
+    const hasKey =
+      typeof process !== "undefined" && !!process.env?.BALLDONTLIE_KEY;
     return {
       provider: "balldontlie",
       displayName: "BALLDONTLIE",
-      status: "inactive",  // Will be "active" once we implement the adapter
+      status: "inactive", // Will be "active" once we implement the adapter
       isLive: false,
       isDemoMode: false,
       recordsUpdated: 0,

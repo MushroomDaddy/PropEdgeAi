@@ -5,23 +5,25 @@
  * over vs under, best/worst breakdowns.
  */
 
-import { query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { query } from "./_generated/server";
 
 /** Get learning insights from graded results */
 export const learningInsights = query({
   args: {},
   returns: undefined as any,
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
 
     const results = await ctx.db
       .query("pickResults")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .withIndex("by_userId", q => q.eq("userId", userId))
       .collect();
 
-    const graded = results.filter((r) => r.resultStatus === "won" || r.resultStatus === "lost");
+    const graded = results.filter(
+      r => r.resultStatus === "won" || r.resultStatus === "lost",
+    );
     if (graded.length < 3) return null;
 
     // Helper: group and compute hit rates
@@ -35,7 +37,11 @@ export const learningInsights = query({
         map.set(k, entry);
       }
       return Array.from(map.entries())
-        .map(([key, v]) => ({ key, ...v, hitRate: Math.round((v.hits / v.total) * 100) }))
+        .map(([key, v]) => ({
+          key,
+          ...v,
+          hitRate: Math.round((v.hits / v.total) * 100),
+        }))
         .sort((a, b) => b.hitRate - a.hitRate);
     };
 
@@ -44,10 +50,10 @@ export const learningInsights = query({
     const byPlatform = groupBy("platform");
 
     // Over vs Under
-    const overs = graded.filter((r) => r.overUnder === "over");
-    const unders = graded.filter((r) => r.overUnder === "under");
-    const overHits = overs.filter((r) => r.resultStatus === "won").length;
-    const underHits = unders.filter((r) => r.resultStatus === "won").length;
+    const overs = graded.filter(r => r.overUnder === "over");
+    const unders = graded.filter(r => r.overUnder === "under");
+    const overHits = overs.filter(r => r.resultStatus === "won").length;
+    const underHits = unders.filter(r => r.resultStatus === "won").length;
 
     // Confidence bucket calibration (from modelProb field)
     const buckets = [
@@ -60,34 +66,45 @@ export const learningInsights = query({
       { label: "90+", min: 90, max: 100 },
     ];
 
-    const calibrationBuckets = buckets.map((b) => {
-      const inBucket = graded.filter((r) => {
-        const prob = (r as any).pickModelProb || 50;
-        return prob >= b.min && prob < b.max;
-      });
-      const hits = inBucket.filter((r) => r.resultStatus === "won").length;
-      const total = inBucket.length;
-      const actualHitRate = total > 0 ? Math.round((hits / total) * 100) : 0;
-      const midpoint = (b.min + b.max) / 2;
-      return {
-        bucketLabel: b.label,
-        bucketMidpoint: midpoint,
-        totalPredictions: total,
-        hits,
-        actualHitRate,
-        calibrationError: total > 0 ? Math.round(Math.abs(actualHitRate - midpoint) * 10) / 10 : 0,
-      };
-    }).filter((b) => b.totalPredictions > 0);
+    const calibrationBuckets = buckets
+      .map(b => {
+        const inBucket = graded.filter(r => {
+          const prob = (r as any).pickModelProb || 50;
+          return prob >= b.min && prob < b.max;
+        });
+        const hits = inBucket.filter(r => r.resultStatus === "won").length;
+        const total = inBucket.length;
+        const actualHitRate = total > 0 ? Math.round((hits / total) * 100) : 0;
+        const midpoint = (b.min + b.max) / 2;
+        return {
+          bucketLabel: b.label,
+          bucketMidpoint: midpoint,
+          totalPredictions: total,
+          hits,
+          actualHitRate,
+          calibrationError:
+            total > 0
+              ? Math.round(Math.abs(actualHitRate - midpoint) * 10) / 10
+              : 0,
+        };
+      })
+      .filter(b => b.totalPredictions > 0);
 
     return {
       totalGraded: graded.length,
-      overallHitRate: Math.round((graded.filter((r) => r.resultStatus === "won").length / graded.length) * 100),
+      overallHitRate: Math.round(
+        (graded.filter(r => r.resultStatus === "won").length / graded.length) *
+          100,
+      ),
 
       strengths: {
         bestSport: bySport[0] || null,
         bestStatType: byStatType[0] || null,
         bestPlatform: byPlatform[0] || null,
-        bestConfBucket: calibrationBuckets.sort((a, b) => b.actualHitRate - a.actualHitRate)[0] || null,
+        bestConfBucket:
+          calibrationBuckets.sort(
+            (a, b) => b.actualHitRate - a.actualHitRate,
+          )[0] || null,
       },
 
       weaknesses: {
@@ -117,12 +134,16 @@ export const learningInsights = query({
         over: {
           total: overs.length,
           hits: overHits,
-          hitRate: overs.length > 0 ? Math.round((overHits / overs.length) * 100) : 0,
+          hitRate:
+            overs.length > 0 ? Math.round((overHits / overs.length) * 100) : 0,
         },
         under: {
           total: unders.length,
           hits: underHits,
-          hitRate: unders.length > 0 ? Math.round((underHits / unders.length) * 100) : 0,
+          hitRate:
+            unders.length > 0
+              ? Math.round((underHits / unders.length) * 100)
+              : 0,
         },
       },
 

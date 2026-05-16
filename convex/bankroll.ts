@@ -1,17 +1,17 @@
-import { query } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { query } from "./_generated/server";
 
 export const myBankroll = query({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
     return await ctx.db
       .query("bankroll")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .withIndex("by_userId", q => q.eq("userId", userId))
       .collect();
   },
 });
@@ -19,15 +19,15 @@ export const myBankroll = query({
 export const myTransactions = query({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
     const txns = await ctx.db
       .query("bankrollTransactions")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .withIndex("by_userId", q => q.eq("userId", userId))
       .collect();
-    
+
     return txns.sort((a, b) => b.timestamp - a.timestamp);
   },
 });
@@ -35,13 +35,13 @@ export const myTransactions = query({
 export const bankrollSummary = query({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
 
     const records = await ctx.db
       .query("bankroll")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .withIndex("by_userId", q => q.eq("userId", userId))
       .collect();
 
     if (records.length === 0) return null;
@@ -55,16 +55,23 @@ export const bankrollSummary = query({
     const totalEntries = records.reduce((s, r) => s + r.totalEntries, 0);
     const wonEntries = records.reduce((s, r) => s + r.wonEntries, 0);
     const netProfit = totalBalance + totalWithdrawn - totalDeposited;
-    const overallRoi = totalWagered > 0 ? Math.round((netProfit / totalWagered) * 1000) / 10 : 0;
-    const overallWinRate = totalEntries > 0 ? Math.round((wonEntries / totalEntries) * 1000) / 10 : 0;
+    const overallRoi =
+      totalWagered > 0 ? Math.round((netProfit / totalWagered) * 1000) / 10 : 0;
+    const overallWinRate =
+      totalEntries > 0
+        ? Math.round((wonEntries / totalEntries) * 1000) / 10
+        : 0;
 
     // Best platform
-    const bestPlatform = records.reduce((best, r) => r.roi > (best?.roi || -Infinity) ? r : best, records[0]);
+    const bestPlatform = records.reduce(
+      (best, r) => (r.roi > (best?.roi || -Infinity) ? r : best),
+      records[0],
+    );
 
     // Sport breakdown from transactions
     const txns = await ctx.db
       .query("bankrollTransactions")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .withIndex("by_userId", q => q.eq("userId", userId))
       .collect();
 
     const sportPnL: Record<string, number> = {};

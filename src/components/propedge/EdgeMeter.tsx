@@ -3,8 +3,12 @@ export function EdgeMeter({ edge, max = 20 }: { edge: number; max?: number }) {
   const pct = Math.min(100, (Math.abs(edge) / max) * 100);
   const isPositive = edge > 0;
   const color = isPositive
-    ? edge >= 10 ? "bg-emerald-400" : "bg-emerald-500/80"
-    : edge <= -10 ? "bg-red-400" : "bg-red-500/80";
+    ? edge >= 10
+      ? "bg-emerald-400"
+      : "bg-emerald-500/80"
+    : edge <= -10
+      ? "bg-red-400"
+      : "bg-red-500/80";
 
   return (
     <div className="flex items-center gap-2 w-full">
@@ -14,8 +18,11 @@ export function EdgeMeter({ edge, max = 20 }: { edge: number; max?: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className={`text-xs font-mono font-bold min-w-[40px] text-right ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
-        {edge > 0 ? "+" : ""}{edge}%
+      <span
+        className={`text-xs font-mono font-bold min-w-[40px] text-right ${isPositive ? "text-emerald-400" : "text-red-400"}`}
+      >
+        {edge > 0 ? "+" : ""}
+        {edge}%
       </span>
     </div>
   );

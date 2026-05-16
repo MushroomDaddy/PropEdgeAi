@@ -1,6 +1,6 @@
 import { runTest } from "./auth";
 
-runTest("PropEdge AI Screenshots", async (helper) => {
+runTest("PropEdge AI Screenshots", async helper => {
   const { page } = helper;
 
   console.log("Starting screenshot tour...");
@@ -9,7 +9,10 @@ runTest("PropEdge AI Screenshots", async (helper) => {
   await helper.goto("/dashboard");
   console.log("On dashboard, waiting for data...");
   await page.waitForTimeout(3000);
-  await page.screenshot({ path: "screenshots/02-dashboard.png", fullPage: false });
+  await page.screenshot({
+    path: "screenshots/02-dashboard.png",
+    fullPage: false,
+  });
   console.log("Dashboard screenshot taken");
 
   // Props Analyzer
@@ -30,32 +33,44 @@ runTest("PropEdge AI Screenshots", async (helper) => {
   await helper.goto("/builder");
   console.log("On builder page...");
   await page.waitForTimeout(1500);
-  await page.screenshot({ path: "screenshots/05-builder.png", fullPage: false });
+  await page.screenshot({
+    path: "screenshots/05-builder.png",
+    fullPage: false,
+  });
   console.log("Builder screenshot taken");
 
   // My Picks
   await helper.goto("/my-picks");
   console.log("On my picks page...");
   await page.waitForTimeout(1500);
-  await page.screenshot({ path: "screenshots/06-my-picks.png", fullPage: false });
+  await page.screenshot({
+    path: "screenshots/06-my-picks.png",
+    fullPage: false,
+  });
   console.log("My picks screenshot taken");
 
   // Leaderboard
   await helper.goto("/leaderboard");
   console.log("On leaderboard page...");
   await page.waitForTimeout(2500);
-  await page.screenshot({ path: "screenshots/07-leaderboard.png", fullPage: false });
+  await page.screenshot({
+    path: "screenshots/07-leaderboard.png",
+    fullPage: false,
+  });
   console.log("Leaderboard screenshot taken");
 
   // Settings
   await helper.goto("/settings");
   console.log("On settings page...");
   await page.waitForTimeout(1500);
-  await page.screenshot({ path: "screenshots/08-settings.png", fullPage: false });
+  await page.screenshot({
+    path: "screenshots/08-settings.png",
+    fullPage: false,
+  });
   console.log("Settings screenshot taken");
 
   console.log("All screenshots taken!");
-}).catch((e) => {
+}).catch(e => {
   console.error("Test failed:", e);
   process.exit(1);
 });

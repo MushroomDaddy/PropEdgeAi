@@ -11,22 +11,22 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { api } from "../../convex/_generated/api";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { api } from "../../convex/_generated/api";
 
 const CHART_COLORS = ["#00FF88", "#00D4FF", "#A855F7", "#FF4466", "#FFB800"];
 
@@ -54,7 +54,11 @@ export function SettingsPage() {
   const [showKalshi, setShowKalshi] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [favSports, setFavSports] = useState(["NBA", "NFL", "MLB", "NHL"]);
-  const [favPlatforms, setFavPlatforms] = useState(["PrizePicks", "Underdog", "Kalshi"]);
+  const [favPlatforms, setFavPlatforms] = useState([
+    "PrizePicks",
+    "Underdog",
+    "Kalshi",
+  ]);
   const [alertHigh, setAlertHigh] = useState(true);
   const [alertStreak, setAlertStreak] = useState(true);
   const [defaultBankroll, setDefaultBankroll] = useState(1000);
@@ -64,7 +68,9 @@ export function SettingsPage() {
     if (settings) {
       setDarkMode(settings.darkMode ?? true);
       setFavSports(settings.favoriteSports ?? ["NBA", "NFL", "MLB", "NHL"]);
-      setFavPlatforms(settings.favoritePlatforms ?? ["PrizePicks", "Underdog", "Kalshi"]);
+      setFavPlatforms(
+        settings.favoritePlatforms ?? ["PrizePicks", "Underdog", "Kalshi"],
+      );
       setDefaultBankroll(settings.defaultBankroll ?? 1000);
     }
   }, [settings]);
@@ -74,7 +80,12 @@ export function SettingsPage() {
       await updateSettings({
         darkMode,
         notifications: alertHigh,
-        riskTolerance: edgeSens <= 3 ? "conservative" : edgeSens <= 8 ? "moderate" : "aggressive",
+        riskTolerance:
+          edgeSens <= 3
+            ? "conservative"
+            : edgeSens <= 8
+              ? "moderate"
+              : "aggressive",
         favoriteSports: favSports,
         favoritePlatforms: favPlatforms,
         defaultBankroll: defaultBankroll,
@@ -86,14 +97,16 @@ export function SettingsPage() {
   };
 
   const toggleSport = (sport: string) => {
-    setFavSports((prev) =>
-      prev.includes(sport) ? prev.filter((s) => s !== sport) : [...prev, sport]
+    setFavSports(prev =>
+      prev.includes(sport) ? prev.filter(s => s !== sport) : [...prev, sport],
     );
   };
 
   const togglePlatform = (platform: string) => {
-    setFavPlatforms((prev) =>
-      prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]
+    setFavPlatforms(prev =>
+      prev.includes(platform)
+        ? prev.filter(p => p !== platform)
+        : [...prev, platform],
     );
   };
 
@@ -120,11 +133,20 @@ export function SettingsPage() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Bankroll Tracker</h2>
-              <p className="text-xs text-muted-foreground">Track balances and P/L across platforms</p>
+              <p className="text-xs text-muted-foreground">
+                Track balances and P/L across platforms
+              </p>
             </div>
           </div>
-          <button onClick={() => setShowBalances(!showBalances)} className="text-muted-foreground hover:text-white transition-colors">
-            {showBalances ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+          <button
+            onClick={() => setShowBalances(!showBalances)}
+            className="text-muted-foreground hover:text-white transition-colors"
+          >
+            {showBalances ? (
+              <Eye className="size-4" />
+            ) : (
+              <EyeOff className="size-4" />
+            )}
           </button>
         </div>
 
@@ -138,17 +160,27 @@ export function SettingsPage() {
           </div>
           <div className="bg-[#111827] rounded-lg border border-[#1E293B] p-3">
             <div className="text-xs text-muted-foreground">Total P/L</div>
-            <div className={`text-2xl font-bold font-mono ${totalPnL >= 0 ? "text-[#00FF88]" : "text-[#FF4466]"}`}>
-              {showBalances ? `${totalPnL >= 0 ? "+" : ""}$${totalPnL.toLocaleString()}` : "••••"}
+            <div
+              className={`text-2xl font-bold font-mono ${totalPnL >= 0 ? "text-[#00FF88]" : "text-[#FF4466]"}`}
+            >
+              {showBalances
+                ? `${totalPnL >= 0 ? "+" : ""}$${totalPnL.toLocaleString()}`
+                : "••••"}
             </div>
           </div>
           <div className="bg-[#111827] rounded-lg border border-[#1E293B] p-3">
-            <div className="text-xs text-muted-foreground">Default Bankroll</div>
-            <div className="text-2xl font-bold font-mono text-[#A855F7]">${defaultBankroll.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">
+              Default Bankroll
+            </div>
+            <div className="text-2xl font-bold font-mono text-[#A855F7]">
+              ${defaultBankroll.toLocaleString()}
+            </div>
           </div>
           <div className="bg-[#111827] rounded-lg border border-[#1E293B] p-3">
             <div className="text-xs text-muted-foreground">ROI</div>
-            <div className={`text-2xl font-bold font-mono ${totalPnL >= 0 ? "text-[#00FF88]" : "text-[#FF4466]"}`}>
+            <div
+              className={`text-2xl font-bold font-mono ${totalPnL >= 0 ? "text-[#00FF88]" : "text-[#FF4466]"}`}
+            >
               {((totalPnL / totalBalance) * 100).toFixed(1)}%
             </div>
           </div>
@@ -158,18 +190,37 @@ export function SettingsPage() {
         <div className="grid lg:grid-cols-2 gap-5">
           <div className="bg-[#111827] rounded-lg border border-[#1E293B] p-4">
             <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <DollarSign className="size-4 text-[#00D4FF]" /> Balance by Platform
+              <DollarSign className="size-4 text-[#00D4FF]" /> Balance by
+              Platform
             </h3>
             <div className="h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={PLATFORMS_DEFAULT} barSize={32}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                  <XAxis dataKey="name" tick={{ fill: "#7B8BA8", fontSize: 10 }} axisLine={{ stroke: "#1E293B" }} />
-                  <YAxis tick={{ fill: "#7B8BA8", fontSize: 10 }} axisLine={{ stroke: "#1E293B" }} />
-                  <Tooltip contentStyle={{ backgroundColor: "#111827", border: "1px solid #1E293B", borderRadius: "8px", color: "#E8ECF4", fontSize: "12px" }} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: "#7B8BA8", fontSize: 10 }}
+                    axisLine={{ stroke: "#1E293B" }}
+                  />
+                  <YAxis
+                    tick={{ fill: "#7B8BA8", fontSize: 10 }}
+                    axisLine={{ stroke: "#1E293B" }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#111827",
+                      border: "1px solid #1E293B",
+                      borderRadius: "8px",
+                      color: "#E8ECF4",
+                      fontSize: "12px",
+                    }}
+                  />
                   <Bar dataKey="balance" radius={[4, 4, 0, 0]}>
                     {PLATFORMS_DEFAULT.map((_, index) => (
-                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      <Cell
+                        key={index}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
                     ))}
                   </Bar>
                 </BarChart>
@@ -194,18 +245,36 @@ export function SettingsPage() {
                     dataKey="value"
                   >
                     {PL_BY_SPORT.filter(s => s.value > 0).map((_, index) => (
-                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      <Cell
+                        key={index}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: "#111827", border: "1px solid #1E293B", borderRadius: "8px", color: "#E8ECF4", fontSize: "12px" }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#111827",
+                      border: "1px solid #1E293B",
+                      borderRadius: "8px",
+                      color: "#E8ECF4",
+                      fontSize: "12px",
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
             <div className="flex flex-wrap justify-center gap-3 mt-2">
               {PL_BY_SPORT.map((s, i) => (
                 <div key={s.name} className="flex items-center gap-1.5 text-xs">
-                  <div className="size-2 rounded-full" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
-                  <span className={s.pnl >= 0 ? "text-[#00FF88]" : "text-[#FF4466]"}>
+                  <div
+                    className="size-2 rounded-full"
+                    style={{
+                      backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
+                    }}
+                  />
+                  <span
+                    className={s.pnl >= 0 ? "text-[#00FF88]" : "text-[#FF4466]"}
+                  >
                     {s.name} ({s.pnl >= 0 ? "+" : ""}${s.pnl})
                   </span>
                 </div>
@@ -224,45 +293,55 @@ export function SettingsPage() {
 
           {/* Edge Sensitivity */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">Edge Sensitivity (Min Edge %)</label>
+            <label className="text-xs text-muted-foreground mb-2 block">
+              Edge Sensitivity (Min Edge %)
+            </label>
             <div className="flex items-center gap-3">
               <input
                 type="range"
                 min={0}
                 max={20}
                 value={edgeSens}
-                onChange={(e) => setEdgeSens(Number(e.target.value))}
+                onChange={e => setEdgeSens(Number(e.target.value))}
                 className="flex-1 h-1.5 bg-[#1E293B] rounded-full appearance-none accent-[#00FF88]"
               />
-              <span className="text-sm font-mono text-[#00FF88] w-10 text-right">{edgeSens}%</span>
+              <span className="text-sm font-mono text-[#00FF88] w-10 text-right">
+                {edgeSens}%
+              </span>
             </div>
           </div>
 
           {/* Min Confidence */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">Minimum Confidence Filter</label>
+            <label className="text-xs text-muted-foreground mb-2 block">
+              Minimum Confidence Filter
+            </label>
             <div className="flex items-center gap-3">
               <input
                 type="range"
                 min={30}
                 max={90}
                 value={minConf}
-                onChange={(e) => setMinConf(Number(e.target.value))}
+                onChange={e => setMinConf(Number(e.target.value))}
                 className="flex-1 h-1.5 bg-[#1E293B] rounded-full appearance-none accent-[#00D4FF]"
               />
-              <span className="text-sm font-mono text-[#00D4FF] w-10 text-right">{minConf}%</span>
+              <span className="text-sm font-mono text-[#00D4FF] w-10 text-right">
+                {minConf}%
+              </span>
             </div>
           </div>
 
           {/* Default Bankroll */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">Default Bankroll</label>
+            <label className="text-xs text-muted-foreground mb-2 block">
+              Default Bankroll
+            </label>
             <div className="flex items-center gap-2">
               <DollarSign className="size-4 text-muted-foreground" />
               <Input
                 type="number"
                 value={defaultBankroll}
-                onChange={(e) => setDefaultBankroll(Number(e.target.value))}
+                onChange={e => setDefaultBankroll(Number(e.target.value))}
                 className="bg-[#0A0E17] border-[#1E293B] text-white max-w-[150px]"
               />
             </div>
@@ -272,13 +351,20 @@ export function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <span className="text-sm text-white">Show Kalshi Markets</span>
-              <p className="text-xs text-muted-foreground">Display prediction market data</p>
+              <p className="text-xs text-muted-foreground">
+                Display prediction market data
+              </p>
             </div>
             <button
               onClick={() => setShowKalshi(!showKalshi)}
               className={`relative w-11 h-6 rounded-full transition-colors ${showKalshi ? "bg-[#A855F7]" : "bg-[#1E293B]"}`}
             >
-              <div className={`absolute top-0.5 size-5 rounded-full bg-white transition-transform ${showKalshi ? "translate-x-5.5 left-0.5" : "left-0.5"}`} style={{ transform: showKalshi ? "translateX(22px)" : "translateX(0)" }} />
+              <div
+                className={`absolute top-0.5 size-5 rounded-full bg-white transition-transform ${showKalshi ? "translate-x-5.5 left-0.5" : "left-0.5"}`}
+                style={{
+                  transform: showKalshi ? "translateX(22px)" : "translateX(0)",
+                }}
+              />
             </button>
           </div>
         </div>
@@ -291,9 +377,20 @@ export function SettingsPage() {
             </h2>
 
             <div className="mb-4">
-              <label className="text-xs text-muted-foreground mb-2 block">Favorite Sports</label>
+              <label className="text-xs text-muted-foreground mb-2 block">
+                Favorite Sports
+              </label>
               <div className="flex flex-wrap gap-2">
-                {["NBA", "NFL", "MLB", "NHL", "CFB", "Soccer", "Tennis", "Esports"].map((sport) => (
+                {[
+                  "NBA",
+                  "NFL",
+                  "MLB",
+                  "NHL",
+                  "CFB",
+                  "Soccer",
+                  "Tennis",
+                  "Esports",
+                ].map(sport => (
                   <button
                     key={sport}
                     onClick={() => toggleSport(sport)}
@@ -310,9 +407,17 @@ export function SettingsPage() {
             </div>
 
             <div>
-              <label className="text-xs text-muted-foreground mb-2 block">Tracked Platforms</label>
+              <label className="text-xs text-muted-foreground mb-2 block">
+                Tracked Platforms
+              </label>
               <div className="flex flex-wrap gap-2">
-                {["PrizePicks", "Underdog", "Sleeper", "DraftKings Pick6", "Kalshi"].map((platform) => (
+                {[
+                  "PrizePicks",
+                  "Underdog",
+                  "Sleeper",
+                  "DraftKings Pick6",
+                  "Kalshi",
+                ].map(platform => (
                   <button
                     key={platform}
                     onClick={() => togglePlatform(platform)}
@@ -339,39 +444,66 @@ export function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm text-white">High Edge Alerts</span>
-                  <p className="text-xs text-muted-foreground">Notify when edge &gt; 15%</p>
+                  <p className="text-xs text-muted-foreground">
+                    Notify when edge &gt; 15%
+                  </p>
                 </div>
                 <button
                   onClick={() => setAlertHigh(!alertHigh)}
                   className={`relative w-11 h-6 rounded-full transition-colors ${alertHigh ? "bg-[#00FF88]" : "bg-[#1E293B]"}`}
                 >
-                  <div className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform" style={{ transform: alertHigh ? "translateX(22px)" : "translateX(0)" }} />
+                  <div
+                    className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform"
+                    style={{
+                      transform: alertHigh
+                        ? "translateX(22px)"
+                        : "translateX(0)",
+                    }}
+                  />
                 </button>
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm text-white">Hot Streak Alerts</span>
-                  <p className="text-xs text-muted-foreground">Notify on hot/cold streaks</p>
+                  <p className="text-xs text-muted-foreground">
+                    Notify on hot/cold streaks
+                  </p>
                 </div>
                 <button
                   onClick={() => setAlertStreak(!alertStreak)}
                   className={`relative w-11 h-6 rounded-full transition-colors ${alertStreak ? "bg-[#00FF88]" : "bg-[#1E293B]"}`}
                 >
-                  <div className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform" style={{ transform: alertStreak ? "translateX(22px)" : "translateX(0)" }} />
+                  <div
+                    className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform"
+                    style={{
+                      transform: alertStreak
+                        ? "translateX(22px)"
+                        : "translateX(0)",
+                    }}
+                  />
                 </button>
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm text-white">Dark Mode</span>
-                  <p className="text-xs text-muted-foreground">Premium dark theme</p>
+                  <p className="text-xs text-muted-foreground">
+                    Premium dark theme
+                  </p>
                 </div>
                 <button
                   onClick={() => setDarkMode(!darkMode)}
                   className={`relative w-11 h-6 rounded-full transition-colors ${darkMode ? "bg-[#A855F7]" : "bg-[#1E293B]"}`}
                 >
-                  <div className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform" style={{ transform: darkMode ? "translateX(22px)" : "translateX(0)" }} />
+                  <div
+                    className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform"
+                    style={{
+                      transform: darkMode
+                        ? "translateX(22px)"
+                        : "translateX(0)",
+                    }}
+                  />
                 </button>
               </div>
             </div>
@@ -381,7 +513,10 @@ export function SettingsPage() {
 
       {/* Save Button */}
       <div className="flex justify-end pt-2">
-        <Button onClick={handleSave} className="bg-[#00FF88] hover:bg-[#00FF88]/90 text-[#0A0E17] font-bold px-8 gap-2">
+        <Button
+          onClick={handleSave}
+          className="bg-[#00FF88] hover:bg-[#00FF88]/90 text-[#0A0E17] font-bold px-8 gap-2"
+        >
           <Save className="size-4" /> Save Settings
         </Button>
       </div>

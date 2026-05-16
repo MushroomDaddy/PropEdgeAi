@@ -21,13 +21,21 @@ const SIZES = {
   lg: { w: "w-14", h: "h-16", text: "text-base", name: "text-[10px]" },
 };
 
-export function JerseyAvatar({ playerName, team, number, size = "md", className = "" }: Props) {
+export function JerseyAvatar({
+  playerName,
+  team,
+  number,
+  size = "md",
+  className = "",
+}: Props) {
   const colors = getTeamColors(team || "");
   const s = SIZES[size];
   const lastName = playerName.split(" ").pop() || "";
 
   return (
-    <div className={`${s.w} ${s.h} relative flex flex-col items-center justify-center ${className}`}>
+    <div
+      className={`${s.w} ${s.h} relative flex flex-col items-center justify-center ${className}`}
+    >
       {/* Jersey shape */}
       <svg viewBox="0 0 40 48" className="absolute inset-0 w-full h-full">
         <path
@@ -43,7 +51,13 @@ export function JerseyAvatar({ playerName, team, number, size = "md", className 
           opacity={0.5}
         />
         {/* Collar */}
-        <path d="M14 0 Q20 6 26 0" fill="none" stroke={colors.secondary} strokeWidth={1.5} opacity={0.6} />
+        <path
+          d="M14 0 Q20 6 26 0"
+          fill="none"
+          stroke={colors.secondary}
+          strokeWidth={1.5}
+          opacity={0.6}
+        />
       </svg>
 
       {/* Number */}
@@ -52,7 +66,9 @@ export function JerseyAvatar({ playerName, team, number, size = "md", className 
       </span>
 
       {/* Name under jersey */}
-      <span className={`${s.name} text-muted-foreground truncate max-w-full relative z-10 mt-0.5`}>
+      <span
+        className={`${s.name} text-muted-foreground truncate max-w-full relative z-10 mt-0.5`}
+      >
         {lastName.substring(0, 6)}
       </span>
     </div>

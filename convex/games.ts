@@ -1,5 +1,5 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
 
 export const listBySport = query({
   args: { sport: v.string() },
@@ -7,7 +7,7 @@ export const listBySport = query({
   handler: async (ctx, { sport }) => {
     return await ctx.db
       .query("games")
-      .withIndex("by_sport", (q) => q.eq("sport", sport))
+      .withIndex("by_sport", q => q.eq("sport", sport))
       .collect();
   },
 });
@@ -15,7 +15,7 @@ export const listBySport = query({
 export const listUpcoming = query({
   args: {},
   returns: v.array(v.any()),
-  handler: async (ctx) => {
+  handler: async ctx => {
     // Return both upcoming and live games
     const all = await ctx.db.query("games").collect();
     return all.filter(g => g.status === "upcoming" || g.status === "live");
@@ -25,10 +25,10 @@ export const listUpcoming = query({
 export const listLive = query({
   args: {},
   returns: v.array(v.any()),
-  handler: async (ctx) => {
+  handler: async ctx => {
     return await ctx.db
       .query("games")
-      .withIndex("by_status", (q) => q.eq("status", "live"))
+      .withIndex("by_status", q => q.eq("status", "live"))
       .collect();
   },
 });
@@ -36,7 +36,7 @@ export const listLive = query({
 export const listAll = query({
   args: {},
   returns: v.array(v.any()),
-  handler: async (ctx) => {
+  handler: async ctx => {
     return await ctx.db.query("games").collect();
   },
 });

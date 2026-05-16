@@ -24,35 +24,43 @@ const schema = defineSchema({
     jerseyNumber: v.optional(v.number()),
     teamColor: v.optional(v.string()),
     // R12: Sports asset architecture
-    headshotUrl: v.optional(v.string()),         // Player headshot from SportsDataIO/Sportradar
-    teamColors: v.optional(v.object({
-      primary: v.string(),
-      secondary: v.string(),
-      accent: v.optional(v.string()),
-    })),
-    league: v.optional(v.string()),               // "NBA", "NFL", etc.
-    externalIds: v.optional(v.object({
-      sportsDataIoId: v.optional(v.string()),
-      sportradarId: v.optional(v.string()),
-      espnId: v.optional(v.string()),
-      apiSportsId: v.optional(v.string()),
-      ballDontLieId: v.optional(v.string()),
-      theSportsDbId: v.optional(v.string()),
-    })),
+    headshotUrl: v.optional(v.string()), // Player headshot from SportsDataIO/Sportradar
+    teamColors: v.optional(
+      v.object({
+        primary: v.string(),
+        secondary: v.string(),
+        accent: v.optional(v.string()),
+      }),
+    ),
+    league: v.optional(v.string()), // "NBA", "NFL", etc.
+    externalIds: v.optional(
+      v.object({
+        sportsDataIoId: v.optional(v.string()),
+        sportradarId: v.optional(v.string()),
+        espnId: v.optional(v.string()),
+        apiSportsId: v.optional(v.string()),
+        ballDontLieId: v.optional(v.string()),
+        theSportsDbId: v.optional(v.string()),
+      }),
+    ),
     injuryStatus: v.optional(v.string()),
     recentForm: v.optional(v.string()),
-    seasonAvg: v.optional(v.object({
-      points: v.optional(v.number()),
-      rebounds: v.optional(v.number()),
-      assists: v.optional(v.number()),
-      threePointers: v.optional(v.number()),
-    })),
-    last5Avg: v.optional(v.object({
-      points: v.optional(v.number()),
-      rebounds: v.optional(v.number()),
-      assists: v.optional(v.number()),
-      threePointers: v.optional(v.number()),
-    })),
+    seasonAvg: v.optional(
+      v.object({
+        points: v.optional(v.number()),
+        rebounds: v.optional(v.number()),
+        assists: v.optional(v.number()),
+        threePointers: v.optional(v.number()),
+      }),
+    ),
+    last5Avg: v.optional(
+      v.object({
+        points: v.optional(v.number()),
+        rebounds: v.optional(v.number()),
+        assists: v.optional(v.number()),
+        threePointers: v.optional(v.number()),
+      }),
+    ),
   })
     .index("by_sport", ["sport"])
     .index("by_name", ["name"])
@@ -71,56 +79,68 @@ const schema = defineSchema({
     quarter: v.optional(v.string()),
     gameClock: v.optional(v.string()),
     broadcast: v.optional(v.string()),
-    playByPlay: v.optional(v.array(v.object({
-      time: v.string(),
-      quarter: v.string(),
-      description: v.string(),
-      team: v.string(),
-      type: v.string(),
-      points: v.optional(v.number()),
-    }))),
-    boxScore: v.optional(v.object({
-      home: v.array(v.object({
-        name: v.string(),
-        position: v.string(),
-        minutes: v.number(),
-        points: v.number(),
-        rebounds: v.number(),
-        assists: v.number(),
-        steals: v.number(),
-        blocks: v.number(),
-        turnovers: v.number(),
-        fg: v.string(),
-        threePt: v.string(),
-        ft: v.string(),
-        plusMinus: v.number(),
-      })),
-      away: v.array(v.object({
-        name: v.string(),
-        position: v.string(),
-        minutes: v.number(),
-        points: v.number(),
-        rebounds: v.number(),
-        assists: v.number(),
-        steals: v.number(),
-        blocks: v.number(),
-        turnovers: v.number(),
-        fg: v.string(),
-        threePt: v.string(),
-        ft: v.string(),
-        plusMinus: v.number(),
-      })),
-    })),
-    roster: v.optional(v.object({
-      home: v.object({
-        active: v.array(v.string()),
-        out: v.array(v.object({ name: v.string(), reason: v.string() })),
+    playByPlay: v.optional(
+      v.array(
+        v.object({
+          time: v.string(),
+          quarter: v.string(),
+          description: v.string(),
+          team: v.string(),
+          type: v.string(),
+          points: v.optional(v.number()),
+        }),
+      ),
+    ),
+    boxScore: v.optional(
+      v.object({
+        home: v.array(
+          v.object({
+            name: v.string(),
+            position: v.string(),
+            minutes: v.number(),
+            points: v.number(),
+            rebounds: v.number(),
+            assists: v.number(),
+            steals: v.number(),
+            blocks: v.number(),
+            turnovers: v.number(),
+            fg: v.string(),
+            threePt: v.string(),
+            ft: v.string(),
+            plusMinus: v.number(),
+          }),
+        ),
+        away: v.array(
+          v.object({
+            name: v.string(),
+            position: v.string(),
+            minutes: v.number(),
+            points: v.number(),
+            rebounds: v.number(),
+            assists: v.number(),
+            steals: v.number(),
+            blocks: v.number(),
+            turnovers: v.number(),
+            fg: v.string(),
+            threePt: v.string(),
+            ft: v.string(),
+            plusMinus: v.number(),
+          }),
+        ),
       }),
-      away: v.object({
-        active: v.array(v.string()),
-        out: v.array(v.object({ name: v.string(), reason: v.string() })),
+    ),
+    roster: v.optional(
+      v.object({
+        home: v.object({
+          active: v.array(v.string()),
+          out: v.array(v.object({ name: v.string(), reason: v.string() })),
+        }),
+        away: v.object({
+          active: v.array(v.string()),
+          out: v.array(v.object({ name: v.string(), reason: v.string() })),
+        }),
       }),
-    })),
+    ),
   })
     .index("by_sport", ["sport"])
     .index("by_status", ["status"])
@@ -136,7 +156,9 @@ const schema = defineSchema({
     statType: v.string(),
     line: v.number(),
     projection: v.number(),
-    projectionSources: v.array(v.object({ source: v.string(), value: v.number() })),
+    projectionSources: v.array(
+      v.object({ source: v.string(), value: v.number() }),
+    ),
     platform: v.string(),
     edge: v.number(),
     modelProb: v.optional(v.number()),
@@ -157,18 +179,38 @@ const schema = defineSchema({
     correlatedWith: v.optional(v.array(v.string())),
     impliedProb: v.optional(v.number()),
     isKalshiMarket: v.optional(v.boolean()),
-    kalshiPayout: v.optional(v.object({ yesPayout: v.number(), noPayout: v.number() })),
+    kalshiPayout: v.optional(
+      v.object({ yesPayout: v.number(), noPayout: v.number() }),
+    ),
     bustRisk: v.optional(v.number()),
-    projectionConsensus: v.optional(v.object({
-      avg: v.number(), numSources: v.number(), numOverLine: v.number(), spread: v.number(),
-    })),
-    hotColdStreak: v.optional(v.object({ type: v.string(), games: v.number(), label: v.string() })),
-    monteCarloSim: v.optional(v.object({
-      simulations: v.number(), hitRate: v.number(), p10: v.number(), p50: v.number(), p90: v.number(), stdDev: v.number(),
-    })),
-    historicalHitRate: v.optional(v.object({
-      similarLines: v.number(), sampleSize: v.number(), vsTeam: v.optional(v.number()),
-    })),
+    projectionConsensus: v.optional(
+      v.object({
+        avg: v.number(),
+        numSources: v.number(),
+        numOverLine: v.number(),
+        spread: v.number(),
+      }),
+    ),
+    hotColdStreak: v.optional(
+      v.object({ type: v.string(), games: v.number(), label: v.string() }),
+    ),
+    monteCarloSim: v.optional(
+      v.object({
+        simulations: v.number(),
+        hitRate: v.number(),
+        p10: v.number(),
+        p50: v.number(),
+        p90: v.number(),
+        stdDev: v.number(),
+      }),
+    ),
+    historicalHitRate: v.optional(
+      v.object({
+        similarLines: v.number(),
+        sampleSize: v.number(),
+        vsTeam: v.optional(v.number()),
+      }),
+    ),
   })
     .index("by_sport", ["sport"])
     .index("by_platform", ["platform"])
@@ -195,12 +237,12 @@ const schema = defineSchema({
     result: v.optional(v.number()),
     addedAt: v.number(),
     // Import tracking (R10.1)
-    sourceType: v.optional(v.string()),              // "manual" | "csv" | "screenshot" | "live" | "demo"
+    sourceType: v.optional(v.string()), // "manual" | "csv" | "screenshot" | "live" | "demo"
     importJobId: v.optional(v.id("importJobs")),
     // Match result
-    matchStatus: v.optional(v.string()),              // "matched" | "unmatched" | "partial" | "needs_review"
-    matchedPropId: v.optional(v.id("props")),         // the matched prop (if any)
-    matchConfidence: v.optional(v.number()),           // 0-1 confidence in the match
+    matchStatus: v.optional(v.string()), // "matched" | "unmatched" | "partial" | "needs_review"
+    matchedPropId: v.optional(v.id("props")), // the matched prop (if any)
+    matchConfidence: v.optional(v.number()), // 0-1 confidence in the match
     // Original imported data (full audit trail)
     originalImportedLine: v.optional(v.number()),
     originalImportedPlatform: v.optional(v.string()),
@@ -208,10 +250,10 @@ const schema = defineSchema({
     originalImportedStatType: v.optional(v.string()),
     originalImportedDirection: v.optional(v.string()), // "over" | "under"
     originalImportedSport: v.optional(v.string()),
-    originalImportedOdds: v.optional(v.number()),      // e.g. -110, +120
-    originalImportedStake: v.optional(v.number()),     // wager amount
+    originalImportedOdds: v.optional(v.number()), // e.g. -110, +120
+    originalImportedStake: v.optional(v.number()), // wager amount
     // Review workflow
-    reviewStatus: v.optional(v.string()),              // "pending" | "accepted" | "rejected" | "corrected"
+    reviewStatus: v.optional(v.string()), // "pending" | "accepted" | "rejected" | "corrected"
   })
     .index("by_userId", ["userId"])
     .index("by_userId_status", ["userId", "status"]),
@@ -421,7 +463,7 @@ const schema = defineSchema({
   importJobs: defineTable({
     userId: v.id("users"),
     importSource: v.string(), // "manual" | "csv" | "screenshot"
-    status: v.string(),       // "pending" | "processing" | "completed" | "failed"
+    status: v.string(), // "pending" | "processing" | "completed" | "failed"
     totalPicks: v.number(),
     successfulPicks: v.number(),
     failedPicks: v.number(),
@@ -468,38 +510,37 @@ const schema = defineSchema({
 
   // ─── R11: Provider Config (live data integration) ───
   providerConfig: defineTable({
-    provider: v.string(),            // "the_odds_api" | "sportsdata_io" | "kalshi" | ...
+    provider: v.string(), // "the_odds_api" | "sportsdata_io" | "kalshi" | ...
     enabled: v.boolean(),
-    apiKeyConfigured: v.boolean(),   // true if env var is set
+    apiKeyConfigured: v.boolean(), // true if env var is set
     supportedSports: v.array(v.string()),
     supportedMarkets: v.array(v.string()),
     rateLimitPerMonth: v.optional(v.number()),
     requestsUsedThisMonth: v.number(),
     rateLimitResetAt: v.optional(v.number()),
     lastSyncTime: v.optional(v.number()),
-    lastSyncStatus: v.string(),      // "success" | "error" | "never"
+    lastSyncStatus: v.string(), // "success" | "error" | "never"
     lastSyncError: v.optional(v.string()),
     lastSyncRecords: v.number(),
     nextSyncAfter: v.optional(v.number()),
-    staleAfterMinutes: v.number(),   // when data becomes stale
+    staleAfterMinutes: v.number(), // when data becomes stale
     updatedAt: v.number(),
-  })
-    .index("by_provider", ["provider"]),
+  }).index("by_provider", ["provider"]),
 
   // ─── R11: Live Events (from external APIs) ───
   liveEvents: defineTable({
     provider: v.string(),
-    externalId: v.string(),          // API-specific event ID
+    externalId: v.string(), // API-specific event ID
     sport: v.string(),
-    sportKey: v.string(),            // API sport key e.g. "basketball_nba"
+    sportKey: v.string(), // API sport key e.g. "basketball_nba"
     homeTeam: v.string(),
     awayTeam: v.string(),
-    commenceTime: v.number(),        // ms epoch
-    status: v.string(),              // "upcoming" | "live" | "completed"
-    sourceType: v.string(),          // "live" | "demo"
+    commenceTime: v.number(), // ms epoch
+    status: v.string(), // "upcoming" | "live" | "completed"
+    sourceType: v.string(), // "live" | "demo"
     lastUpdated: v.number(),
     staleAfterMinutes: v.number(),
-    refreshStatus: v.string(),       // "fresh" | "updating" | "stale" | "failed" | "demo"
+    refreshStatus: v.string(), // "fresh" | "updating" | "stale" | "failed" | "demo"
   })
     .index("by_provider", ["provider"])
     .index("by_sport", ["sport"])
@@ -512,16 +553,16 @@ const schema = defineSchema({
     eventExternalId: v.string(),
     liveEventId: v.optional(v.id("liveEvents")),
     sport: v.string(),
-    bookmaker: v.string(),           // "draftkings", "fanduel", etc.
-    marketType: v.string(),          // "h2h" | "spreads" | "totals" | "player_props"
+    bookmaker: v.string(), // "draftkings", "fanduel", etc.
+    marketType: v.string(), // "h2h" | "spreads" | "totals" | "player_props"
     // For player props
     playerName: v.optional(v.string()),
     statType: v.optional(v.string()),
     line: v.optional(v.number()),
-    overPrice: v.optional(v.number()),   // American odds
-    underPrice: v.optional(v.number()),  // American odds
+    overPrice: v.optional(v.number()), // American odds
+    underPrice: v.optional(v.number()), // American odds
     overImplied: v.optional(v.number()), // 0-100
-    underImplied: v.optional(v.number()),// 0-100
+    underImplied: v.optional(v.number()), // 0-100
     // For game-level odds
     homeOdds: v.optional(v.number()),
     awayOdds: v.optional(v.number()),
@@ -545,7 +586,7 @@ const schema = defineSchema({
   // Each refresh of liveOdds should insert a snapshot row here,
   // allowing before/after price comparison and trend visualisation.
   liveOddsSnapshots: defineTable({
-    liveOddsId: v.id("liveOdds"),          // FK to the current liveOdds record
+    liveOddsId: v.id("liveOdds"), // FK to the current liveOdds record
     eventExternalId: v.string(),
     bookmaker: v.string(),
     marketType: v.string(),
@@ -557,10 +598,10 @@ const schema = defineSchema({
     currentOverPrice: v.optional(v.number()),
     previousUnderPrice: v.optional(v.number()),
     currentUnderPrice: v.optional(v.number()),
-    openingOverPrice: v.optional(v.number()),   // first seen
-    openingUnderPrice: v.optional(v.number()),  // first seen
-    closingOverPrice: v.optional(v.number()),   // most recent before game start
-    closingUnderPrice: v.optional(v.number()),  // most recent before game start
+    openingOverPrice: v.optional(v.number()), // first seen
+    openingUnderPrice: v.optional(v.number()), // first seen
+    closingOverPrice: v.optional(v.number()), // most recent before game start
+    closingUnderPrice: v.optional(v.number()), // most recent before game start
     // For game-level
     previousHomeOdds: v.optional(v.number()),
     currentHomeOdds: v.optional(v.number()),
@@ -571,8 +612,8 @@ const schema = defineSchema({
     previousTotal: v.optional(v.number()),
     currentTotal: v.optional(v.number()),
     // Movement
-    movementDirection: v.optional(v.string()),  // "up" | "down" | "stable"
-    snapshotTime: v.number(),                   // ms epoch when snapshot was taken
+    movementDirection: v.optional(v.string()), // "up" | "down" | "stable"
+    snapshotTime: v.number(), // ms epoch when snapshot was taken
   })
     .index("by_liveOddsId", ["liveOddsId"])
     .index("by_eventExternalId", ["eventExternalId"])
@@ -601,12 +642,12 @@ const schema = defineSchema({
 
   // ─── R13: API-SPORTS Cache ───
   apiSportsCache: defineTable({
-    dataType: v.string(),            // "teams" | "players" | "games" | "standings" | "playerStats" | "injuries"
-    sport: v.string(),               // "NBA" | "NFL" | "MLB" | "NHL"
-    apiSportsId: v.number(),         // API-SPORTS entity ID
-    data: v.any(),                   // Normalized data object
-    lastUpdated: v.number(),         // ms epoch
-    staleAfterMinutes: v.number(),   // when this record is stale
+    dataType: v.string(), // "teams" | "players" | "games" | "standings" | "playerStats" | "injuries"
+    sport: v.string(), // "NBA" | "NFL" | "MLB" | "NHL"
+    apiSportsId: v.number(), // API-SPORTS entity ID
+    data: v.any(), // Normalized data object
+    lastUpdated: v.number(), // ms epoch
+    staleAfterMinutes: v.number(), // when this record is stale
   })
     .index("by_type", ["dataType"])
     .index("by_type_sport", ["dataType", "sport"])
@@ -615,17 +656,17 @@ const schema = defineSchema({
 
   // ─── R13: Media Assets (player headshots, team logos, badges, fanart) ───
   mediaAssets: defineTable({
-    entityType: v.string(),          // "player" | "team" | "league" | "event"
-    entityId: v.string(),            // Internal PropEdge ID or name
-    entityName: v.string(),          // Display name for lookup
-    provider: v.string(),            // "thesportsdb" | "api_sports" | "manual" | "generated"
-    sourceUrl: v.string(),           // Original image URL
+    entityType: v.string(), // "player" | "team" | "league" | "event"
+    entityId: v.string(), // Internal PropEdge ID or name
+    entityName: v.string(), // Display name for lookup
+    provider: v.string(), // "thesportsdb" | "api_sports" | "manual" | "generated"
+    sourceUrl: v.string(), // Original image URL
     cachedUrl: v.optional(v.string()), // Cached/CDN URL
-    imageType: v.string(),           // "headshot" | "logo" | "badge" | "jersey" | "fanart" | "silhouette"
+    imageType: v.string(), // "headshot" | "logo" | "badge" | "jersey" | "fanart" | "silhouette"
     license: v.optional(v.string()), // License/source note
-    lastChecked: v.number(),         // ms epoch
-    isFallback: v.boolean(),         // true if generated/placeholder
-    confidence: v.number(),          // 0-100 match confidence
+    lastChecked: v.number(), // ms epoch
+    isFallback: v.boolean(), // true if generated/placeholder
+    confidence: v.number(), // 0-100 match confidence
     sport: v.optional(v.string()),
   })
     .index("by_entity", ["entityType", "entityId"])
@@ -635,14 +676,14 @@ const schema = defineSchema({
 
   // ─── R13: Provider Usage Log ───
   providerUsageLog: defineTable({
-    provider: v.string(),            // "api_sports" | "the_odds_api" | "thesportsdb" | etc.
-    endpoint: v.string(),            // "teams" | "players" | "games" | etc.
+    provider: v.string(), // "api_sports" | "the_odds_api" | "thesportsdb" | etc.
+    endpoint: v.string(), // "teams" | "players" | "games" | etc.
     sport: v.string(),
     requestsUsed: v.number(),
     recordsFetched: v.number(),
     success: v.boolean(),
     error: v.optional(v.string()),
-    timestamp: v.number(),           // ms epoch
+    timestamp: v.number(), // ms epoch
   })
     .index("by_provider", ["provider"])
     .index("by_timestamp", ["timestamp"])

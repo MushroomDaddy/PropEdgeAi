@@ -1,5 +1,5 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
 
 export const list = query({
   args: { sport: v.optional(v.string()) },
@@ -8,7 +8,7 @@ export const list = query({
     if (sport) {
       return await ctx.db
         .query("players")
-        .withIndex("by_sport", (q) => q.eq("sport", sport))
+        .withIndex("by_sport", q => q.eq("sport", sport))
         .collect();
     }
     return await ctx.db.query("players").collect();
@@ -22,10 +22,10 @@ export const search = query({
     const all = await ctx.db.query("players").collect();
     const lower = searchQuery.toLowerCase();
     return all.filter(
-      (p) =>
+      p =>
         p.name.toLowerCase().includes(lower) ||
         p.team.toLowerCase().includes(lower) ||
-        p.position.toLowerCase().includes(lower)
+        p.position.toLowerCase().includes(lower),
     );
   },
 });

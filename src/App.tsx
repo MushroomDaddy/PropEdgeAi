@@ -5,26 +5,58 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicLayout } from "./components/PublicLayout";
 import { PublicOnlyRoute } from "./components/PublicOnlyRoute";
+import { SeedProvider } from "./components/SeedProvider";
 import { Toaster } from "./components/ui/sonner";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { SeedProvider } from "./components/SeedProvider";
 
 // ── Route-level code splitting ──
-const LandingPage = lazy(() => import("./pages/LandingPage").then((m) => ({ default: m.LandingPage })));
-const LoginPage = lazy(() => import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })));
-const SignupPage = lazy(() => import("./pages/SignupPage").then((m) => ({ default: m.SignupPage })));
-const DashboardPage = lazy(() => import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
-const PropsAnalyzerPage = lazy(() => import("./pages/PropsAnalyzerPage").then((m) => ({ default: m.PropsAnalyzerPage })));
-const AIChatPage = lazy(() => import("./pages/AIChatPage").then((m) => ({ default: m.AIChatPage })));
-const PickBuilderPage = lazy(() => import("./pages/PickBuilderPage").then((m) => ({ default: m.PickBuilderPage })));
-const MyPicksPage = lazy(() => import("./pages/MyPicksPage").then((m) => ({ default: m.MyPicksPage })));
-const ResultsPage = lazy(() => import("./pages/ResultsPage").then((m) => ({ default: m.ResultsPage })));
-const ModelLabPage = lazy(() => import("./pages/ModelLabPage").then((m) => ({ default: m.ModelLabPage })));
-const PlayerIntelPage = lazy(() => import("./pages/PlayerIntelPage").then((m) => ({ default: m.PlayerIntelPage })));
-const BankrollPage = lazy(() => import("./pages/BankrollPage").then((m) => ({ default: m.BankrollPage })));
-const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })));
-const SettingsPage = lazy(() => import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage })));
-const GameDetailPage = lazy(() => import("./pages/GameDetailPage").then((m) => ({ default: m.GameDetailPage })));
+const LandingPage = lazy(() =>
+  import("./pages/LandingPage").then(m => ({ default: m.LandingPage })),
+);
+const LoginPage = lazy(() =>
+  import("./pages/LoginPage").then(m => ({ default: m.LoginPage })),
+);
+const SignupPage = lazy(() =>
+  import("./pages/SignupPage").then(m => ({ default: m.SignupPage })),
+);
+const DashboardPage = lazy(() =>
+  import("./pages/DashboardPage").then(m => ({ default: m.DashboardPage })),
+);
+const PropsAnalyzerPage = lazy(() =>
+  import("./pages/PropsAnalyzerPage").then(m => ({
+    default: m.PropsAnalyzerPage,
+  })),
+);
+const AIChatPage = lazy(() =>
+  import("./pages/AIChatPage").then(m => ({ default: m.AIChatPage })),
+);
+const PickBuilderPage = lazy(() =>
+  import("./pages/PickBuilderPage").then(m => ({ default: m.PickBuilderPage })),
+);
+const MyPicksPage = lazy(() =>
+  import("./pages/MyPicksPage").then(m => ({ default: m.MyPicksPage })),
+);
+const ResultsPage = lazy(() =>
+  import("./pages/ResultsPage").then(m => ({ default: m.ResultsPage })),
+);
+const ModelLabPage = lazy(() =>
+  import("./pages/ModelLabPage").then(m => ({ default: m.ModelLabPage })),
+);
+const PlayerIntelPage = lazy(() =>
+  import("./pages/PlayerIntelPage").then(m => ({ default: m.PlayerIntelPage })),
+);
+const BankrollPage = lazy(() =>
+  import("./pages/BankrollPage").then(m => ({ default: m.BankrollPage })),
+);
+const LeaderboardPage = lazy(() =>
+  import("./pages/LeaderboardPage").then(m => ({ default: m.LeaderboardPage })),
+);
+const SettingsPage = lazy(() =>
+  import("./pages/SettingsPage").then(m => ({ default: m.SettingsPage })),
+);
+const GameDetailPage = lazy(() =>
+  import("./pages/GameDetailPage").then(m => ({ default: m.GameDetailPage })),
+);
 const DataSourcesPage = lazy(() => import("./pages/DataSourcesPage"));
 const ImportPage = lazy(() => import("./pages/ImportPage"));
 

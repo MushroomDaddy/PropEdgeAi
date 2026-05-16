@@ -10,11 +10,11 @@
 
 export interface ProviderMeta {
   provider: string;
-  sourceType: string;       // "api" | "manual" | "csv" | "screenshot" | "demo"
+  sourceType: string; // "api" | "manual" | "csv" | "screenshot" | "demo"
   externalId?: string;
-  lastUpdated: number;      // ms epoch
+  lastUpdated: number; // ms epoch
   staleAfterMinutes: number;
-  refreshStatus: string;    // "fresh" | "stale" | "error" | "refreshing"
+  refreshStatus: string; // "fresh" | "stale" | "error" | "refreshing"
   confidenceInSource: number; // 0-100
 }
 
@@ -26,7 +26,7 @@ export interface NormalizedGame extends ProviderMeta {
   homeTeam: string;
   awayTeam: string;
   gameTime: number;
-  status: string;           // "upcoming" | "live" | "final"
+  status: string; // "upcoming" | "live" | "final"
   homeScore?: number;
   awayScore?: number;
   quarter?: string;
@@ -90,7 +90,7 @@ export interface NormalizedProjection extends ProviderMeta {
   playerName: string;
   statType: string;
   projectedValue: number;
-  source: string;            // "numberfire" | "fantasypros" | "rotowire" | "manual"
+  source: string; // "numberfire" | "fantasypros" | "rotowire" | "manual"
   floor?: number;
   ceiling?: number;
 }
@@ -99,7 +99,7 @@ export interface NormalizedInjury extends ProviderMeta {
   playerId: string;
   playerName: string;
   team: string;
-  status: string;            // "out" | "doubtful" | "questionable" | "probable"
+  status: string; // "out" | "doubtful" | "questionable" | "probable"
   injuryType: string;
   returnDate?: string;
   reportDate: number;
@@ -112,7 +112,7 @@ export interface NormalizedResult extends ProviderMeta {
   statType: string;
   actualValue: number;
   minutesPlayed?: number;
-  gameStatus?: string;       // "final" | "overtime" | "shortened"
+  gameStatus?: string; // "final" | "overtime" | "shortened"
 }
 
 export interface NormalizedLineSnapshot extends ProviderMeta {
@@ -130,15 +130,15 @@ export interface NormalizedKalshiMarket extends ProviderMeta {
   title: string;
   category: string;
   sport?: string;
-  yesPrice: number;          // cents 0-100
-  noPrice: number;           // cents 0-100
+  yesPrice: number; // cents 0-100
+  noPrice: number; // cents 0-100
   yesBid: number;
   noBid: number;
   impliedYesProbability: number;
   impliedNoProbability: number;
   marketVolume: number;
   liquidityScore: number;
-  settlementStatus: string;  // "open" | "settled_yes" | "settled_no" | "voided"
+  settlementStatus: string; // "open" | "settled_yes" | "settled_no" | "voided"
   closeTime?: number;
   expirationTime?: number;
   expectedPayout?: number;
@@ -149,7 +149,7 @@ export interface NormalizedKalshiMarket extends ProviderMeta {
 export interface NormalizedProviderStatus {
   provider: string;
   displayName: string;
-  status: string;            // "active" | "inactive" | "error" | "demo"
+  status: string; // "active" | "inactive" | "error" | "demo"
   isLive: boolean;
   isDemoMode: boolean;
   lastSyncTime?: number;
@@ -157,7 +157,7 @@ export interface NormalizedProviderStatus {
   recordsUpdated: number;
   failedSyncs: number;
   staleRecords: number;
-  providerHealth: number;    // 0-100
+  providerHealth: number; // 0-100
   supportedSports: string[];
   supportedMarkets: string[];
   supportedPlatforms: string[];

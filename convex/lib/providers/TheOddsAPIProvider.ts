@@ -15,13 +15,30 @@ export const TheOddsAPIProvider: DataProvider = {
   name: "the_odds_api",
   displayName: "The Odds API",
   isLive: false,
-  supportedSports: ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "Soccer", "Tennis"],
+  supportedSports: [
+    "NBA",
+    "NFL",
+    "MLB",
+    "NHL",
+    "NCAAB",
+    "NCAAF",
+    "Soccer",
+    "Tennis",
+  ],
   supportedMarkets: ["h2h", "spreads", "totals", "player_props"],
-  supportedPlatforms: ["DraftKings", "FanDuel", "BetMGM", "Caesars", "PointsBet", "BetRivers"],
+  supportedPlatforms: [
+    "DraftKings",
+    "FanDuel",
+    "BetMGM",
+    "Caesars",
+    "PointsBet",
+    "BetRivers",
+  ],
   requiresApiKey: true,
   getStatus(): NormalizedProviderStatus {
     // In browser context process.env isn't available — safe check
-    const hasKey = typeof process !== "undefined" && !!process.env?.THE_ODDS_API_KEY;
+    const hasKey =
+      typeof process !== "undefined" && !!process.env?.THE_ODDS_API_KEY;
     return {
       provider: "the_odds_api",
       displayName: "The Odds API",

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Radio, Database, Wifi, WifiOff } from "lucide-react";
+import { Database, Radio, Wifi, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DataModeIndicatorProps {
@@ -10,7 +10,13 @@ interface DataModeIndicatorProps {
   className?: string;
 }
 
-export function DataModeIndicator({ mode, totalProps = 0, liveEvents = 0, lastSync, className }: DataModeIndicatorProps) {
+export function DataModeIndicator({
+  mode,
+  totalProps = 0,
+  liveEvents = 0,
+  lastSync,
+  className,
+}: DataModeIndicatorProps) {
   const configs = {
     demo: {
       label: "DEMO",
@@ -48,11 +54,14 @@ export function DataModeIndicator({ mode, totalProps = 0, liveEvents = 0, lastSy
   const Icon = config.icon;
 
   const syncAge = lastSync ? Math.round((Date.now() - lastSync) / 60000) : null;
-  const syncLabel = syncAge !== null
-    ? syncAge < 1 ? "Just now"
-    : syncAge < 60 ? `${syncAge}m ago`
-    : `${Math.round(syncAge / 60)}h ago`
-    : null;
+  const syncLabel =
+    syncAge !== null
+      ? syncAge < 1
+        ? "Just now"
+        : syncAge < 60
+          ? `${syncAge}m ago`
+          : `${Math.round(syncAge / 60)}h ago`
+      : null;
 
   return (
     <motion.div
@@ -60,7 +69,9 @@ export function DataModeIndicator({ mode, totalProps = 0, liveEvents = 0, lastSy
       animate={{ opacity: 1, scale: 1 }}
       className={cn(
         "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-lg",
-        config.bg, config.border, config.glow,
+        config.bg,
+        config.border,
+        config.glow,
         className,
       )}
     >
@@ -68,14 +79,22 @@ export function DataModeIndicator({ mode, totalProps = 0, liveEvents = 0, lastSy
         <Icon className={cn("size-3.5", config.color)} />
         {mode === "live" && (
           <motion.div
-            className={cn("absolute -top-0.5 -right-0.5 size-1.5 rounded-full", config.dot)}
+            className={cn(
+              "absolute -top-0.5 -right-0.5 size-1.5 rounded-full",
+              config.dot,
+            )}
             animate={{ opacity: [1, 0.3, 1] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
         )}
       </div>
       <div className="flex flex-col">
-        <span className={cn("text-[10px] font-bold tracking-wider leading-none", config.color)}>
+        <span
+          className={cn(
+            "text-[10px] font-bold tracking-wider leading-none",
+            config.color,
+          )}
+        >
           {config.label}
         </span>
         <span className="text-[8px] text-muted-foreground/60 leading-none mt-0.5">
@@ -94,7 +113,9 @@ export function DataModeIndicator({ mode, totalProps = 0, liveEvents = 0, lastSy
       )}
       {syncLabel && (
         <span className="text-[8px] text-muted-foreground/40 ml-1 flex items-center gap-0.5">
-          {syncAge !== null && syncAge > 60 ? <WifiOff className="size-2.5" /> : null}
+          {syncAge !== null && syncAge > 60 ? (
+            <WifiOff className="size-2.5" />
+          ) : null}
           {syncLabel}
         </span>
       )}

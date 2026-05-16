@@ -8,13 +8,16 @@
 
 import type { ApiSportsResult } from "../client";
 import type {
-  NormalizedApiTeam, NormalizedApiPlayer, NormalizedApiGame,
-  NormalizedApiStanding, NormalizedApiPlayerStats, NormalizedApiInjury,
+  NormalizedApiGame,
+  NormalizedApiInjury,
+  NormalizedApiPlayer,
+  NormalizedApiPlayerStats,
+  NormalizedApiStanding,
+  NormalizedApiTeam,
 } from "../types";
-
+import { baseballAdapter } from "./baseball";
 import { basketballAdapter } from "./basketball";
 import { footballAdapter } from "./football";
-import { baseballAdapter } from "./baseball";
 import { hockeyAdapter } from "./hockey";
 
 // ── Adapter Interface ──
@@ -22,12 +25,33 @@ import { hockeyAdapter } from "./hockey";
 export interface SportAdapter {
   sport: string;
   getTeams(league?: string): Promise<ApiSportsResult<NormalizedApiTeam>>;
-  getPlayers(sport: string, teamId?: string): Promise<ApiSportsResult<NormalizedApiPlayer>>;
-  getGames(sport: string, dateRange?: { from: string; to: string }): Promise<ApiSportsResult<NormalizedApiGame>>;
-  getStandings(sport: string, league?: string, season?: string): Promise<ApiSportsResult<NormalizedApiStanding>>;
-  getPlayerStats(sport: string, playerId: string, season?: string): Promise<ApiSportsResult<NormalizedApiPlayerStats>>;
-  getTeamStats(sport: string, teamId: string, season?: string): Promise<ApiSportsResult<any>>;
-  getInjuries(sport: string, teamId?: string): Promise<ApiSportsResult<NormalizedApiInjury>>;
+  getPlayers(
+    sport: string,
+    teamId?: string,
+  ): Promise<ApiSportsResult<NormalizedApiPlayer>>;
+  getGames(
+    sport: string,
+    dateRange?: { from: string; to: string },
+  ): Promise<ApiSportsResult<NormalizedApiGame>>;
+  getStandings(
+    sport: string,
+    league?: string,
+    season?: string,
+  ): Promise<ApiSportsResult<NormalizedApiStanding>>;
+  getPlayerStats(
+    sport: string,
+    playerId: string,
+    season?: string,
+  ): Promise<ApiSportsResult<NormalizedApiPlayerStats>>;
+  getTeamStats(
+    sport: string,
+    teamId: string,
+    season?: string,
+  ): Promise<ApiSportsResult<any>>;
+  getInjuries(
+    sport: string,
+    teamId?: string,
+  ): Promise<ApiSportsResult<NormalizedApiInjury>>;
   getLiveScores(): Promise<ApiSportsResult<NormalizedApiGame>>;
 }
 

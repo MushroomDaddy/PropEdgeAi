@@ -1,5 +1,5 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
 
 export const list = query({
   args: {},
@@ -11,9 +11,9 @@ export const list = query({
       slug: v.string(),
       icon: v.string(),
       active: v.boolean(),
-    })
+    }),
   ),
-  handler: async (ctx) => {
+  handler: async ctx => {
     return await ctx.db.query("sports").collect();
   },
 });

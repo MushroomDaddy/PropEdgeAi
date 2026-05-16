@@ -7,8 +7,10 @@
 import { apiSportsFetch } from "../client";
 import { getSportConfig } from "../config";
 import type {
-  RawBaseballTeam, RawBaseballGame,
-  NormalizedApiTeam, NormalizedApiGame,
+  NormalizedApiGame,
+  NormalizedApiTeam,
+  RawBaseballGame,
+  RawBaseballTeam,
 } from "../types";
 import type { SportAdapter } from "./index";
 
@@ -18,7 +20,10 @@ function normalizeTeam(raw: RawBaseballTeam): NormalizedApiTeam {
   return {
     apiSportsId: raw.id,
     name: raw.name,
-    abbreviation: raw.code || raw.name.split(" ").pop()?.substring(0, 3).toUpperCase() || "UNK",
+    abbreviation:
+      raw.code ||
+      raw.name.split(" ").pop()?.substring(0, 3).toUpperCase() ||
+      "UNK",
     city: raw.city,
     sport: SPORT,
     logoUrl: raw.logo,
@@ -27,7 +32,9 @@ function normalizeTeam(raw: RawBaseballTeam): NormalizedApiTeam {
   };
 }
 
-function normalizeGameStatus(status: RawBaseballGame["status"]): NormalizedApiGame["status"] {
+function normalizeGameStatus(
+  status: RawBaseballGame["status"],
+): NormalizedApiGame["status"] {
   const s = status.short?.toUpperCase() || "";
   if (s === "NS" || s === "TBD") return "upcoming";
   if (s === "FT" || s === "AOT" || s === "AP") return "final";
@@ -59,15 +66,26 @@ export const baseballAdapter: SportAdapter = {
 
   async getTeams(league?: string) {
     const config = getSportConfig(SPORT);
-    const params: Record<string, string | number> = { league: league || config.leagueId };
+    const params: Record<string, string | number> = {
+      league: league || config.leagueId,
+    };
     if (config.season) params.season = config.season;
-    const result = await apiSportsFetch<RawBaseballTeam>(config.baseUrl, config.endpoints.teams, params);
+    const result = await apiSportsFetch<RawBaseballTeam>(
+      config.baseUrl,
+      config.endpoints.teams,
+      params,
+    );
     if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeTeam) };
   },
 
   async getPlayers(_sport: string, _teamId?: string) {
-    return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    return {
+      ok: true as const,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+    };
   },
 
   async getGames(_sport: string, dateRange?: { from: string; to: string }) {
@@ -75,19 +93,33 @@ export const baseballAdapter: SportAdapter = {
     const params: Record<string, string | number> = { league: config.leagueId };
     if (config.season) params.season = config.season;
     if (dateRange?.from) params.date = dateRange.from;
-    const result = await apiSportsFetch<RawBaseballGame>(config.baseUrl, config.endpoints.games, params);
+    const result = await apiSportsFetch<RawBaseballGame>(
+      config.baseUrl,
+      config.endpoints.games,
+      params,
+    );
     if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeGame) };
   },
 
   async getStandings(_sport: string, league?: string, season?: string) {
     const config = getSportConfig(SPORT);
-    if (!config.endpoints.standings) return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    if (!config.endpoints.standings)
+      return {
+        ok: true as const,
+        data: [],
+        requestsUsed: 0,
+        requestsRemaining: 0,
+      };
     const params: Record<string, string | number> = {
       league: league || config.leagueId,
       season: season || config.season || "",
     };
-    const result = await apiSportsFetch<any>(config.baseUrl, config.endpoints.standings, params);
+    const result = await apiSportsFetch<any>(
+      config.baseUrl,
+      config.endpoints.standings,
+      params,
+    );
     if (!result.ok) return result as any;
     const normalized = result.data.map((raw: any) => ({
       apiSportsTeamId: raw.team?.id ?? 0,
@@ -106,23 +138,42 @@ export const baseballAdapter: SportAdapter = {
   },
 
   async getPlayerStats(_sport: string, _playerId: string, _season?: string) {
-    return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    return {
+      ok: true as const,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+    };
   },
 
   async getTeamStats(_sport: string, _teamId: string, _season?: string) {
-    return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    return {
+      ok: true as const,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+    };
   },
 
   async getInjuries(_sport: string, _teamId?: string) {
-    return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    return {
+      ok: true as const,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+    };
   },
 
   async getLiveScores() {
     const config = getSportConfig(SPORT);
-    const result = await apiSportsFetch<RawBaseballGame>(config.baseUrl, config.endpoints.liveScores || config.endpoints.games, {
-      league: config.leagueId,
-      live: "all",
-    });
+    const result = await apiSportsFetch<RawBaseballGame>(
+      config.baseUrl,
+      config.endpoints.liveScores || config.endpoints.games,
+      {
+        league: config.leagueId,
+        live: "all",
+      },
+    );
     if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeGame) };
   },

@@ -23,20 +23,28 @@ const SPORT_GRADIENTS: Record<string, string[]> = {
   default: ["#00D4FF", "#7C3AED", "#06B6D4"],
 };
 
-export function SportsHeroBackground({ sport, intensity = "medium", children, className = "" }: Props) {
-  const colors = SPORT_GRADIENTS[sport?.toUpperCase() || ""] || SPORT_GRADIENTS.default;
-  const particleCount = intensity === "high" ? 12 : intensity === "medium" ? 8 : 4;
+export function SportsHeroBackground({
+  sport,
+  intensity = "medium",
+  children,
+  className = "",
+}: Props) {
+  const colors =
+    SPORT_GRADIENTS[sport?.toUpperCase() || ""] || SPORT_GRADIENTS.default;
+  const particleCount =
+    intensity === "high" ? 12 : intensity === "medium" ? 8 : 4;
 
-  const particles = useMemo(() =>
-    Array.from({ length: particleCount }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: 2 + Math.random() * 4,
-      duration: 8 + Math.random() * 12,
-      delay: Math.random() * 5,
-    })),
-    [particleCount]
+  const particles = useMemo(
+    () =>
+      Array.from({ length: particleCount }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 2 + Math.random() * 4,
+        duration: 8 + Math.random() * 12,
+        delay: Math.random() * 5,
+      })),
+    [particleCount],
   );
 
   return (
@@ -98,7 +106,8 @@ export function SportsHeroBackground({ sport, intensity = "medium", children, cl
       <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
         }}
       />

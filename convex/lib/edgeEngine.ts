@@ -9,7 +9,11 @@
 /** American odds → Implied Probability (0-100) */
 export function impliedProbability(americanOdds: number): number {
   if (americanOdds < 0) {
-    return Math.round((Math.abs(americanOdds) / (Math.abs(americanOdds) + 100)) * 10000) / 100;
+    return (
+      Math.round(
+        (Math.abs(americanOdds) / (Math.abs(americanOdds) + 100)) * 10000,
+      ) / 100
+    );
   }
   return Math.round((100 / (americanOdds + 100)) * 10000) / 100;
 }
@@ -28,15 +32,18 @@ export function modelProbability(args: {
   last5HitRate?: number;
   varianceFactor?: number;
 }): number {
-  const { projection, line, seasonHitRate, last5HitRate, varianceFactor } = args;
+  const { projection, line, seasonHitRate, last5HitRate, varianceFactor } =
+    args;
   // Base from projection difference
   const diff = projection - line;
   const pctDiff = diff / Math.max(line, 0.1);
   let baseProb = 50 + pctDiff * 100;
 
   // Blend with historical hit rates
-  if (seasonHitRate !== undefined) baseProb = baseProb * 0.6 + seasonHitRate * 0.4;
-  if (last5HitRate !== undefined) baseProb = baseProb * 0.75 + last5HitRate * 0.25;
+  if (seasonHitRate !== undefined)
+    baseProb = baseProb * 0.6 + seasonHitRate * 0.4;
+  if (last5HitRate !== undefined)
+    baseProb = baseProb * 0.75 + last5HitRate * 0.25;
 
   // Reduce confidence if high variance
   if (varianceFactor && varianceFactor > 1.5) {
@@ -58,7 +65,10 @@ export function projectionDiff(projection: number, line: number): number {
 }
 
 /** True Edge % = Model Probability - Market Implied Probability */
-export function edgePercent(modelProb: number, marketImpliedProb: number): number {
+export function edgePercent(
+  modelProb: number,
+  marketImpliedProb: number,
+): number {
   return Math.round((modelProb - marketImpliedProb) * 100) / 100;
 }
 
@@ -70,10 +80,14 @@ export function expectedValue(args: {
   stake?: number;
 }): number {
   const stake = args.stake ?? 100;
-  const decimal = args.decimalOdds ?? (args.americanOdds !== undefined ? americanToDecimal(args.americanOdds) : 1.909);
+  const decimal =
+    args.decimalOdds ??
+    (args.americanOdds !== undefined
+      ? americanToDecimal(args.americanOdds)
+      : 1.909);
   const pWin = args.modelProb / 100;
   const profit = (decimal - 1) * stake;
-  const ev = (pWin * profit) - ((1 - pWin) * stake);
+  const ev = pWin * profit - (1 - pWin) * stake;
   return Math.round(ev * 100) / 100;
 }
 
@@ -88,7 +102,9 @@ export function valueScore(args: {
   const edgeComponent = Math.max(0, Math.min(100, edgePct * 5 + 50));
   const confComponent = confidence;
   const evComponent = Math.max(0, Math.min(100, evPercent * 3 + 50));
-  return Math.round(edgeComponent * 0.4 + confComponent * 0.3 + evComponent * 0.3);
+  return Math.round(
+    edgeComponent * 0.4 + confComponent * 0.3 + evComponent * 0.3,
+  );
 }
 
 /** Confidence Score (0-100) */
@@ -101,7 +117,9 @@ export function confidenceScore(args: {
   const probStrength = Math.abs(modelProb - 50) * 2;
   const sampleBonus = Math.min(25, sampleSize * 0.5);
   const projBonus = Math.min(15, projectionCount * 5);
-  return Math.round(Math.max(0, Math.min(100, probStrength + sampleBonus + projBonus)));
+  return Math.round(
+    Math.max(0, Math.min(100, probStrength + sampleBonus + projBonus)),
+  );
 }
 
 /** Risk Score (0-100) higher = riskier */
@@ -125,7 +143,7 @@ export function bustRisk(args: {
 }): number {
   const { variance, line, projection } = args;
   const diff = Math.abs(projection - line) / Math.max(line, 0.1);
-  const risk = Math.max(0, (variance * 30) - (diff * 50));
+  const risk = Math.max(0, variance * 30 - diff * 50);
   return Math.round(Math.max(0, Math.min(100, risk)));
 }
 
@@ -170,23 +188,49 @@ export function analyzeEdge(args: {
   injuryRisk?: boolean;
 }) {
   const {
-    line, projection, americanOdds, seasonHitRate, last5HitRate,
-    varianceFactor, sampleSize, projectionCount, closingLine, overUnder, injuryRisk,
+    line,
+    projection,
+    americanOdds,
+    seasonHitRate,
+    last5HitRate,
+    varianceFactor,
+    sampleSize,
+    projectionCount,
+    closingLine,
+    overUnder,
+    injuryRisk,
   } = args;
 
   const odds = americanOdds ?? -110;
   const ou = overUnder ?? "over";
-  const mp = modelProbability({ projection, line, seasonHitRate, last5HitRate, varianceFactor });
+  const mp = modelProbability({
+    projection,
+    line,
+    seasonHitRate,
+    last5HitRate,
+    varianceFactor,
+  });
   const ip = impliedProbability(odds);
   const edge = edgePercent(mp, ip);
   const ev = expectedValue({ modelProb: mp, americanOdds: odds });
   const fo = fairOdds(mp);
   const pd = projectionDiff(projection, line);
   const vs = valueScore({ edgePct: edge, confidence: mp, evPercent: ev / 100 });
-  const cs = confidenceScore({ modelProb: mp, sampleSize: sampleSize ?? 20, projectionCount: projectionCount ?? 3 });
-  const rs = riskScore({ variance: varianceFactor ?? 1, sampleSize: sampleSize ?? 20, injuryRisk: injuryRisk ?? false });
+  const cs = confidenceScore({
+    modelProb: mp,
+    sampleSize: sampleSize ?? 20,
+    projectionCount: projectionCount ?? 3,
+  });
+  const rs = riskScore({
+    variance: varianceFactor ?? 1,
+    sampleSize: sampleSize ?? 20,
+    injuryRisk: injuryRisk ?? false,
+  });
   const br = bustRisk({ variance: varianceFactor ?? 1, line, projection });
-  const clv = closingLine !== undefined ? closingLineValue({ pickLine: line, closingLine, overUnder: ou }) : undefined;
+  const clv =
+    closingLine !== undefined
+      ? closingLineValue({ pickLine: line, closingLine, overUnder: ou })
+      : undefined;
 
   return {
     modelProbability: mp,

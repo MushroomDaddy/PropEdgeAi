@@ -12,19 +12,18 @@
  *   7. Demo provider = fallback only
  */
 
+import type { DataProvider, NormalizedProviderStatus } from "../providerTypes";
+import { ApiSportsProvider } from "./ApiSportsProvider";
+import { BallDontLieProvider } from "./BallDontLieProvider";
 import { DemoProvider } from "./DemoProvider";
-import { SportsDataIOProvider } from "./SportsDataIOProvider";
-import { TheOddsAPIProvider } from "./TheOddsAPIProvider";
-import { SportradarProvider } from "./SportradarProvider";
 import { KalshiProvider } from "./KalshiProvider";
 import { ManualImportProvider } from "./ManualImportProvider";
 import { ScreenshotImportProvider } from "./ScreenshotImportProvider";
-import { ApiSportsProvider } from "./ApiSportsProvider";
-import { TheSportsDBProvider } from "./TheSportsDBProvider";
-import { BallDontLieProvider } from "./BallDontLieProvider";
 import { SerpApiProvider } from "./SerpApiProvider";
-
-import type { DataProvider, NormalizedProviderStatus } from "../providerTypes";
+import { SportradarProvider } from "./SportradarProvider";
+import { SportsDataIOProvider } from "./SportsDataIOProvider";
+import { TheOddsAPIProvider } from "./TheOddsAPIProvider";
+import { TheSportsDBProvider } from "./TheSportsDBProvider";
 
 export const ALL_PROVIDERS: DataProvider[] = [
   // Priority 1: Odds & lines
@@ -50,7 +49,7 @@ export const ALL_PROVIDERS: DataProvider[] = [
 
 /** Get all provider statuses */
 export function getAllProviderStatuses(): NormalizedProviderStatus[] {
-  return ALL_PROVIDERS.map((p) => p.getStatus());
+  return ALL_PROVIDERS.map(p => p.getStatus());
 }
 
 /** Get the currently active provider (demo for now) */
@@ -60,7 +59,7 @@ export function getActiveProvider(): DataProvider {
 
 /** Get a provider by name */
 export function getProvider(name: string): DataProvider | undefined {
-  return ALL_PROVIDERS.find((p) => p.name === name);
+  return ALL_PROVIDERS.find(p => p.name === name);
 }
 
 export {

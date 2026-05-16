@@ -4,13 +4,16 @@
  * Handles NFL data from v1.american-football.api-sports.io
  */
 
+import type { ApiSportsResult } from "../client";
 import { apiSportsFetch } from "../client";
 import { getSportConfig } from "../config";
 import type {
-  RawFootballTeam, RawFootballGame,
-  NormalizedApiTeam, NormalizedApiGame, NormalizedApiInjury,
+  NormalizedApiGame,
+  NormalizedApiInjury,
+  NormalizedApiTeam,
+  RawFootballGame,
+  RawFootballTeam,
 } from "../types";
-import type { ApiSportsResult } from "../client";
 import type { SportAdapter } from "./index";
 
 const SPORT = "NFL";
@@ -19,7 +22,10 @@ function normalizeTeam(raw: RawFootballTeam): NormalizedApiTeam {
   return {
     apiSportsId: raw.id,
     name: raw.name,
-    abbreviation: raw.code || raw.name.split(" ").pop()?.substring(0, 3).toUpperCase() || "UNK",
+    abbreviation:
+      raw.code ||
+      raw.name.split(" ").pop()?.substring(0, 3).toUpperCase() ||
+      "UNK",
     city: raw.city,
     sport: SPORT,
     logoUrl: raw.logo,
@@ -28,7 +34,9 @@ function normalizeTeam(raw: RawFootballTeam): NormalizedApiTeam {
   };
 }
 
-function normalizeGameStatus(status: RawFootballGame["game"]["status"]): NormalizedApiGame["status"] {
+function normalizeGameStatus(
+  status: RawFootballGame["game"]["status"],
+): NormalizedApiGame["status"] {
   const s = status.short?.toUpperCase() || "";
   if (s === "NS" || s === "TBD") return "upcoming";
   if (s === "FT" || s === "AOT" || s === "AP") return "final";
@@ -69,9 +77,14 @@ interface RawFootballInjury {
 
 function normalizeInjury(raw: RawFootballInjury): NormalizedApiInjury {
   const statusMap: Record<string, NormalizedApiInjury["status"]> = {
-    "out": "out", "doubtful": "doubtful", "questionable": "questionable",
-    "probable": "probable", "day-to-day": "day-to-day",
-    "injured reserve": "out", "ir": "out", "pup": "out",
+    out: "out",
+    doubtful: "doubtful",
+    questionable: "questionable",
+    probable: "probable",
+    "day-to-day": "day-to-day",
+    "injured reserve": "out",
+    ir: "out",
+    pup: "out",
   };
   return {
     apiSportsPlayerId: raw.player.id,
@@ -91,16 +104,27 @@ export const footballAdapter: SportAdapter = {
 
   async getTeams(league?: string) {
     const config = getSportConfig(SPORT);
-    const params: Record<string, string | number> = { league: league || config.leagueId };
+    const params: Record<string, string | number> = {
+      league: league || config.leagueId,
+    };
     if (config.season) params.season = config.season;
-    const result = await apiSportsFetch<RawFootballTeam>(config.baseUrl, config.endpoints.teams, params);
+    const result = await apiSportsFetch<RawFootballTeam>(
+      config.baseUrl,
+      config.endpoints.teams,
+      params,
+    );
     if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeTeam) };
   },
 
   async getPlayers(_sport: string, _teamId?: string) {
     // NFL player endpoints require team-specific queries; return empty for bulk
-    return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    return {
+      ok: true as const,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+    };
   },
 
   async getGames(_sport: string, dateRange?: { from: string; to: string }) {
@@ -108,19 +132,33 @@ export const footballAdapter: SportAdapter = {
     const params: Record<string, string | number> = { league: config.leagueId };
     if (config.season) params.season = config.season;
     if (dateRange?.from) params.date = dateRange.from;
-    const result = await apiSportsFetch<RawFootballGame>(config.baseUrl, config.endpoints.games, params);
+    const result = await apiSportsFetch<RawFootballGame>(
+      config.baseUrl,
+      config.endpoints.games,
+      params,
+    );
     if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeGame) };
   },
 
   async getStandings(_sport: string, league?: string, season?: string) {
     const config = getSportConfig(SPORT);
-    if (!config.endpoints.standings) return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    if (!config.endpoints.standings)
+      return {
+        ok: true as const,
+        data: [],
+        requestsUsed: 0,
+        requestsRemaining: 0,
+      };
     const params: Record<string, string | number> = {
       league: league || config.leagueId,
       season: season || config.season || "",
     };
-    const result = await apiSportsFetch<any>(config.baseUrl, config.endpoints.standings, params);
+    const result = await apiSportsFetch<any>(
+      config.baseUrl,
+      config.endpoints.standings,
+      params,
+    );
     if (!result.ok) return result as any;
     // NFL standings have a different shape — normalize generically
     const normalized = result.data.map((raw: any) => ({
@@ -141,13 +179,23 @@ export const footballAdapter: SportAdapter = {
 
   async getPlayerStats(_sport: string, playerId: string, season?: string) {
     const config = getSportConfig(SPORT);
-    if (!config.endpoints.playerStats) return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    if (!config.endpoints.playerStats)
+      return {
+        ok: true as const,
+        data: [],
+        requestsUsed: 0,
+        requestsRemaining: 0,
+      };
     const params: Record<string, string | number> = {
       id: playerId,
       league: config.leagueId,
       season: season || config.season || "",
     };
-    const result = await apiSportsFetch<any>(config.baseUrl, config.endpoints.playerStats, params);
+    const result = await apiSportsFetch<any>(
+      config.baseUrl,
+      config.endpoints.playerStats,
+      params,
+    );
     if (!result.ok) return result as any;
     const normalized = result.data.map((raw: any) => ({
       apiSportsPlayerId: raw.player?.id ?? parseInt(playerId),
@@ -162,26 +210,45 @@ export const footballAdapter: SportAdapter = {
   },
 
   async getTeamStats(_sport: string, _teamId: string, _season?: string) {
-    return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    return {
+      ok: true as const,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+    };
   },
 
   async getInjuries(_sport: string, teamId?: string) {
     const config = getSportConfig(SPORT);
-    if (!config.endpoints.injuries) return { ok: true as const, data: [], requestsUsed: 0, requestsRemaining: 0 };
+    if (!config.endpoints.injuries)
+      return {
+        ok: true as const,
+        data: [],
+        requestsUsed: 0,
+        requestsRemaining: 0,
+      };
     const params: Record<string, string | number> = { league: config.leagueId };
     if (config.season) params.season = config.season;
     if (teamId) params.team = teamId;
-    const result = await apiSportsFetch<RawFootballInjury>(config.baseUrl, config.endpoints.injuries, params);
+    const result = await apiSportsFetch<RawFootballInjury>(
+      config.baseUrl,
+      config.endpoints.injuries,
+      params,
+    );
     if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeInjury) };
   },
 
   async getLiveScores() {
     const config = getSportConfig(SPORT);
-    const result = await apiSportsFetch<RawFootballGame>(config.baseUrl, config.endpoints.liveScores || config.endpoints.games, {
-      league: config.leagueId,
-      live: "all",
-    });
+    const result = await apiSportsFetch<RawFootballGame>(
+      config.baseUrl,
+      config.endpoints.liveScores || config.endpoints.games,
+      {
+        league: config.leagueId,
+        live: "all",
+      },
+    );
     if (!result.ok) return result as any;
     return { ...result, data: result.data.map(normalizeGame) };
   },

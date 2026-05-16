@@ -5,7 +5,11 @@ export const KalshiProvider: DataProvider = {
   displayName: "Kalshi",
   isLive: false,
   supportedSports: ["NBA", "NFL", "MLB", "NHL"],
-  supportedMarkets: ["binary_contracts", "event_contracts", "player_performance"],
+  supportedMarkets: [
+    "binary_contracts",
+    "event_contracts",
+    "player_performance",
+  ],
   supportedPlatforms: ["Kalshi"],
   requiresApiKey: true,
   getStatus(): NormalizedProviderStatus {

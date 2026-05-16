@@ -1,20 +1,37 @@
-import type { ReactNode } from "react";
 import { useQuery } from "convex/react";
+import {
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  Database,
+  Radio,
+  RefreshCw,
+  Server,
+  Shield,
+  WifiOff,
+  XCircle,
+  Zap,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { api } from "../../convex/_generated/api";
 import { DemoBanner } from "../components/propedge";
 
-import {
-  Database, WifiOff, Activity, CheckCircle2,
-  XCircle, AlertTriangle, Server, RefreshCw, Clock,
-  Zap, Shield, BarChart3, Radio,
-} from "lucide-react";
-
 function HealthBar({ value }: { value: number }) {
-  const color = value >= 80 ? "bg-emerald-400" : value >= 50 ? "bg-amber-400" : "bg-red-400";
+  const color =
+    value >= 80
+      ? "bg-emerald-400"
+      : value >= 50
+        ? "bg-amber-400"
+        : "bg-red-400";
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${value}%` }} />
+        <div
+          className={`h-full ${color} rounded-full transition-all`}
+          style={{ width: `${value}%` }}
+        />
       </div>
       <span className="text-xs font-mono w-8 text-right">{value}%</span>
     </div>
@@ -37,24 +54,55 @@ function StatusBadge({ status }: { status: string }) {
     live: <Radio className="size-3" />,
   };
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${styles[status] || styles.inactive}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${styles[status] || styles.inactive}`}
+    >
       {icons[status] || icons.inactive} {status.toUpperCase()}
     </span>
   );
 }
 
 function RefreshStatusBadge({ status }: { status: string }) {
-  const config: Record<string, { color: string; icon: ReactNode; label: string }> = {
-    fresh: { color: "text-emerald-400", icon: <CheckCircle2 className="size-3" />, label: "Fresh" },
-    updating: { color: "text-amber-400", icon: <RefreshCw className="size-3 animate-spin" />, label: "Updating" },
-    stale: { color: "text-red-400", icon: <Clock className="size-3" />, label: "Stale" },
-    failed: { color: "text-red-500", icon: <XCircle className="size-3" />, label: "Failed" },
-    demo: { color: "text-amber-400", icon: <AlertTriangle className="size-3" />, label: "Demo" },
-    never: { color: "text-gray-400", icon: <Clock className="size-3" />, label: "Never Synced" },
+  const config: Record<
+    string,
+    { color: string; icon: ReactNode; label: string }
+  > = {
+    fresh: {
+      color: "text-emerald-400",
+      icon: <CheckCircle2 className="size-3" />,
+      label: "Fresh",
+    },
+    updating: {
+      color: "text-amber-400",
+      icon: <RefreshCw className="size-3 animate-spin" />,
+      label: "Updating",
+    },
+    stale: {
+      color: "text-red-400",
+      icon: <Clock className="size-3" />,
+      label: "Stale",
+    },
+    failed: {
+      color: "text-red-500",
+      icon: <XCircle className="size-3" />,
+      label: "Failed",
+    },
+    demo: {
+      color: "text-amber-400",
+      icon: <AlertTriangle className="size-3" />,
+      label: "Demo",
+    },
+    never: {
+      color: "text-gray-400",
+      icon: <Clock className="size-3" />,
+      label: "Never Synced",
+    },
   };
   const c = config[status] || config.never;
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-mono ${c.color}`}>
+    <span
+      className={`inline-flex items-center gap-1 text-[10px] font-mono ${c.color}`}
+    >
       {c.icon} {c.label}
     </span>
   );
@@ -82,20 +130,26 @@ export default function DataSourcesPage() {
         </div>
         <div className="flex items-center gap-3">
           {/* Mode indicator */}
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
-            isHybridMode
-              ? "bg-cyan-400/5 border-cyan-400/20"
-              : "bg-amber-400/5 border-amber-400/20"
-          }`}>
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+              isHybridMode
+                ? "bg-cyan-400/5 border-cyan-400/20"
+                : "bg-amber-400/5 border-amber-400/20"
+            }`}
+          >
             {isHybridMode ? (
               <>
                 <Zap className="size-4 text-cyan-400" />
-                <span className="text-xs font-bold text-cyan-400">HYBRID MODE</span>
+                <span className="text-xs font-bold text-cyan-400">
+                  HYBRID MODE
+                </span>
               </>
             ) : (
               <>
                 <Shield className="size-4 text-amber-400" />
-                <span className="text-xs font-bold text-amber-400">DEMO MODE</span>
+                <span className="text-xs font-bold text-amber-400">
+                  DEMO MODE
+                </span>
               </>
             )}
           </div>
@@ -111,11 +165,26 @@ export default function DataSourcesPage() {
             { label: "Games", value: data.dbStats.games, icon: "🏟️" },
             { label: "My Results", value: data.dbStats.myResults, icon: "✅" },
             { label: "Kalshi", value: data.dbStats.kalshiMarkets, icon: "📈" },
-            { label: "My Imports", value: data.dbStats.myImportJobs, icon: "📥" },
-            { label: "Live Events", value: data.dbStats.liveEvents || 0, icon: "🔴" },
-            { label: "Live Odds", value: data.dbStats.liveOdds || 0, icon: "💰" },
-          ].map((s) => (
-            <div key={s.label} className="bg-[#0D1117] rounded-xl border border-white/5 p-3 text-center">
+            {
+              label: "My Imports",
+              value: data.dbStats.myImportJobs,
+              icon: "📥",
+            },
+            {
+              label: "Live Events",
+              value: data.dbStats.liveEvents || 0,
+              icon: "🔴",
+            },
+            {
+              label: "Live Odds",
+              value: data.dbStats.liveOdds || 0,
+              icon: "💰",
+            },
+          ].map(s => (
+            <div
+              key={s.label}
+              className="bg-[#0D1117] rounded-xl border border-white/5 p-3 text-center"
+            >
               <div className="text-xs mb-1">{s.icon}</div>
               <div className="text-lg font-bold font-mono">{s.value}</div>
               <div className="text-[10px] text-muted-foreground">{s.label}</div>
@@ -132,15 +201,25 @@ export default function DataSourcesPage() {
               <Radio className="size-4 text-cyan-400" /> Live Data Health
             </span>
             <div className="flex gap-3 text-[10px] font-mono">
-              <span className="text-emerald-400">● {data.dbStats.freshEvents || 0} fresh</span>
-              <span className="text-red-400">● {data.dbStats.staleEvents || 0} stale</span>
+              <span className="text-emerald-400">
+                ● {data.dbStats.freshEvents || 0} fresh
+              </span>
+              <span className="text-red-400">
+                ● {data.dbStats.staleEvents || 0} stale
+              </span>
             </div>
           </div>
-          <HealthBar value={
-            data.dbStats.liveEvents > 0
-              ? Math.round(((data.dbStats.freshEvents || 0) / data.dbStats.liveEvents) * 100)
-              : 0
-          } />
+          <HealthBar
+            value={
+              data.dbStats.liveEvents > 0
+                ? Math.round(
+                    ((data.dbStats.freshEvents || 0) /
+                      data.dbStats.liveEvents) *
+                      100,
+                  )
+                : 0
+            }
+          />
         </div>
       )}
 
@@ -157,12 +236,24 @@ export default function DataSourcesPage() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`size-10 rounded-lg flex items-center justify-center ${
-                  p.isLive ? "bg-cyan-400/10" : p.status === "active" ? "bg-emerald-400/10" : "bg-white/5"
-                }`}>
-                  <Server className={`size-5 ${
-                    p.isLive ? "text-cyan-400" : p.status === "active" ? "text-emerald-400" : "text-muted-foreground"
-                  }`} />
+                <div
+                  className={`size-10 rounded-lg flex items-center justify-center ${
+                    p.isLive
+                      ? "bg-cyan-400/10"
+                      : p.status === "active"
+                        ? "bg-emerald-400/10"
+                        : "bg-white/5"
+                  }`}
+                >
+                  <Server
+                    className={`size-5 ${
+                      p.isLive
+                        ? "text-cyan-400"
+                        : p.status === "active"
+                          ? "text-emerald-400"
+                          : "text-muted-foreground"
+                    }`}
+                  />
                 </div>
                 <div>
                   <div className="font-bold text-sm flex items-center gap-2">
@@ -175,15 +266,26 @@ export default function DataSourcesPage() {
                   </div>
                   <div className="text-[10px] text-muted-foreground flex items-center gap-2">
                     {p.isDemoMode ? (
-                      <span className="flex items-center gap-1 text-amber-400"><AlertTriangle className="size-3" /> Active — Demo Mode</span>
+                      <span className="flex items-center gap-1 text-amber-400">
+                        <AlertTriangle className="size-3" /> Active — Demo Mode
+                      </span>
                     ) : p.provider === "manual_import" ? (
-                      <span className="flex items-center gap-1 text-emerald-400"><Activity className="size-3" /> Available — Manual Entry & CSV</span>
+                      <span className="flex items-center gap-1 text-emerald-400">
+                        <Activity className="size-3" /> Available — Manual Entry
+                        & CSV
+                      </span>
                     ) : p.provider === "screenshot_import" ? (
-                      <span className="flex items-center gap-1 text-gray-400"><WifiOff className="size-3" /> Placeholder — Coming Soon</span>
+                      <span className="flex items-center gap-1 text-gray-400">
+                        <WifiOff className="size-3" /> Placeholder — Coming Soon
+                      </span>
                     ) : p.isLive && p.apiKeyConfigured ? (
-                      <span className="flex items-center gap-1 text-cyan-400"><Zap className="size-3" /> Connected — Live Data</span>
+                      <span className="flex items-center gap-1 text-cyan-400">
+                        <Zap className="size-3" /> Connected — Live Data
+                      </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-gray-400"><WifiOff className="size-3" /> Not Connected</span>
+                      <span className="flex items-center gap-1 text-gray-400">
+                        <WifiOff className="size-3" /> Not Connected
+                      </span>
                     )}
                     {p.requiresApiKey && !p.apiKeyConfigured && (
                       <span className="text-red-400">• API Key Required</span>
@@ -192,8 +294,18 @@ export default function DataSourcesPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {p.refreshStatus && <RefreshStatusBadge status={p.refreshStatus} />}
-                <StatusBadge status={p.isLive && p.apiKeyConfigured ? "live" : p.isDemoMode ? "demo" : p.status} />
+                {p.refreshStatus && (
+                  <RefreshStatusBadge status={p.refreshStatus} />
+                )}
+                <StatusBadge
+                  status={
+                    p.isLive && p.apiKeyConfigured
+                      ? "live"
+                      : p.isDemoMode
+                        ? "demo"
+                        : p.status
+                  }
+                />
               </div>
             </div>
 
@@ -201,7 +313,12 @@ export default function DataSourcesPage() {
 
             <div className="flex flex-wrap gap-1.5">
               {p.supportedSports?.map((s: string) => (
-                <span key={s} className="px-2 py-0.5 bg-white/5 rounded text-[10px] font-mono">{s}</span>
+                <span
+                  key={s}
+                  className="px-2 py-0.5 bg-white/5 rounded text-[10px] font-mono"
+                >
+                  {s}
+                </span>
               ))}
             </div>
 
@@ -215,9 +332,13 @@ export default function DataSourcesPage() {
                 <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${
-                      (p.requestsUsed || 0) / p.rateLimit > 0.8 ? "bg-red-400" : "bg-emerald-400"
+                      (p.requestsUsed || 0) / p.rateLimit > 0.8
+                        ? "bg-red-400"
+                        : "bg-emerald-400"
                     }`}
-                    style={{ width: `${Math.min(100, ((p.requestsUsed || 0) / p.rateLimit) * 100)}%` }}
+                    style={{
+                      width: `${Math.min(100, ((p.requestsUsed || 0) / p.rateLimit) * 100)}%`,
+                    }}
                   />
                 </div>
               </div>
@@ -260,32 +381,91 @@ export default function DataSourcesPage() {
             )}
 
             {/* API key setup hints */}
-            {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "the_odds_api" && (
-              <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
-                <div className="font-bold text-white/80">🔑 Setup Instructions</div>
-                <div>1. Get a free API key at <span className="text-cyan-400">the-odds-api.com</span></div>
-                <div>2. Add <code className="bg-black/30 px-1 rounded">THE_ODDS_API_KEY</code> to your Convex environment variables</div>
-                <div>3. Run <code className="bg-black/30 px-1 rounded">npx convex run adminSync:adminFullSync</code></div>
-                <div className="text-amber-400 mt-1">Free tier: 500 requests/month • Covers NBA, NFL, MLB, NHL + more</div>
-              </div>
-            )}
-            {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "api_sports" && (
-              <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
-                <div className="font-bold text-white/80">🔑 Setup Instructions</div>
-                <div>1. Get an API key at <span className="text-cyan-400">api-sports.io</span></div>
-                <div>2. Add <code className="bg-black/30 px-1 rounded">API_SPORTS_KEY</code> to your Convex environment variables</div>
-                <div>3. Run <code className="bg-black/30 px-1 rounded">npx convex run adminSync:adminApiSportsFullSync '{"{"}\"sport\":\"NBA\"{"}"}'</code></div>
-                <div className="text-amber-400 mt-1">Free tier: 100 requests/day • Teams, players, games, standings, injuries, live scores</div>
-              </div>
-            )}
-            {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "thesportsdb" && (
-              <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
-                <div className="font-bold text-white/80">🔑 Setup Instructions</div>
-                <div>1. Get a key at <span className="text-cyan-400">thesportsdb.com</span> (free for dev: use "1")</div>
-                <div>2. Add <code className="bg-black/30 px-1 rounded">THESPORTSDB_KEY</code> to your Convex environment variables</div>
-                <div className="text-amber-400 mt-1">Team logos, player images, badges, fanart, jersey visuals</div>
-              </div>
-            )}
+            {p.requiresApiKey &&
+              !p.apiKeyConfigured &&
+              p.provider === "the_odds_api" && (
+                <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
+                  <div className="font-bold text-white/80">
+                    🔑 Setup Instructions
+                  </div>
+                  <div>
+                    1. Get a free API key at{" "}
+                    <span className="text-cyan-400">the-odds-api.com</span>
+                  </div>
+                  <div>
+                    2. Add{" "}
+                    <code className="bg-black/30 px-1 rounded">
+                      THE_ODDS_API_KEY
+                    </code>{" "}
+                    to your Convex environment variables
+                  </div>
+                  <div>
+                    3. Run{" "}
+                    <code className="bg-black/30 px-1 rounded">
+                      npx convex run adminSync:adminFullSync
+                    </code>
+                  </div>
+                  <div className="text-amber-400 mt-1">
+                    Free tier: 500 requests/month • Covers NBA, NFL, MLB, NHL +
+                    more
+                  </div>
+                </div>
+              )}
+            {p.requiresApiKey &&
+              !p.apiKeyConfigured &&
+              p.provider === "api_sports" && (
+                <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
+                  <div className="font-bold text-white/80">
+                    🔑 Setup Instructions
+                  </div>
+                  <div>
+                    1. Get an API key at{" "}
+                    <span className="text-cyan-400">api-sports.io</span>
+                  </div>
+                  <div>
+                    2. Add{" "}
+                    <code className="bg-black/30 px-1 rounded">
+                      API_SPORTS_KEY
+                    </code>{" "}
+                    to your Convex environment variables
+                  </div>
+                  <div>
+                    3. Run{" "}
+                    <code className="bg-black/30 px-1 rounded">
+                      npx convex run adminSync:adminApiSportsFullSync '{"{"}
+                      \"sport\":\"NBA\"{"}"}'
+                    </code>
+                  </div>
+                  <div className="text-amber-400 mt-1">
+                    Free tier: 100 requests/day • Teams, players, games,
+                    standings, injuries, live scores
+                  </div>
+                </div>
+              )}
+            {p.requiresApiKey &&
+              !p.apiKeyConfigured &&
+              p.provider === "thesportsdb" && (
+                <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
+                  <div className="font-bold text-white/80">
+                    🔑 Setup Instructions
+                  </div>
+                  <div>
+                    1. Get a key at{" "}
+                    <span className="text-cyan-400">thesportsdb.com</span> (free
+                    for dev: use "1")
+                  </div>
+                  <div>
+                    2. Add{" "}
+                    <code className="bg-black/30 px-1 rounded">
+                      THESPORTSDB_KEY
+                    </code>{" "}
+                    to your Convex environment variables
+                  </div>
+                  <div className="text-amber-400 mt-1">
+                    Team logos, player images, badges, fanart, jersey visuals
+                  </div>
+                </div>
+              )}
           </div>
         ))}
       </div>
@@ -297,8 +477,9 @@ export default function DataSourcesPage() {
           <div>
             <div className="font-bold">Demo Mode Active</div>
             <div className="text-amber-400/80 mt-1">
-              All data is simulated. Connect a provider API key to see real live odds, games, and player props.
-              Demo data will remain available alongside live data.
+              All data is simulated. Connect a provider API key to see real live
+              odds, games, and player props. Demo data will remain available
+              alongside live data.
             </div>
           </div>
         </div>
@@ -307,7 +488,10 @@ export default function DataSourcesPage() {
       {!data && (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-[#0D1117] rounded-xl border border-white/5 p-4 h-28 animate-pulse" />
+            <div
+              key={i}
+              className="bg-[#0D1117] rounded-xl border border-white/5 p-4 h-28 animate-pulse"
+            />
           ))}
         </div>
       )}

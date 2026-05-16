@@ -6,7 +6,13 @@ export const ManualImportProvider: DataProvider = {
   isLive: true,
   supportedSports: ["NBA", "NFL", "MLB", "NHL"],
   supportedMarkets: ["player_props"],
-  supportedPlatforms: ["PrizePicks", "Underdog", "DraftKings", "FanDuel", "Kalshi"],
+  supportedPlatforms: [
+    "PrizePicks",
+    "Underdog",
+    "DraftKings",
+    "FanDuel",
+    "Kalshi",
+  ],
   requiresApiKey: false,
   getStatus(): NormalizedProviderStatus {
     return {

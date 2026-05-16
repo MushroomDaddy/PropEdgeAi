@@ -1,5 +1,5 @@
+import { formatDirection, formatLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import { formatLabel, formatDirection } from "@/lib/labels";
 
 interface HitRateEntry {
   statType: string;
@@ -13,8 +13,10 @@ export function HitRateHeatmap({ data }: { data: HitRateEntry[] }) {
   if (!data || data.length === 0) return null;
 
   const getColor = (rate: number): string => {
-    if (rate >= 80) return "bg-emerald-500/40 text-emerald-300 border-emerald-500/30";
-    if (rate >= 65) return "bg-emerald-500/20 text-emerald-400 border-emerald-500/20";
+    if (rate >= 80)
+      return "bg-emerald-500/40 text-emerald-300 border-emerald-500/30";
+    if (rate >= 65)
+      return "bg-emerald-500/20 text-emerald-400 border-emerald-500/20";
     if (rate >= 50) return "bg-amber-500/15 text-amber-400 border-amber-500/20";
     if (rate >= 35) return "bg-red-500/15 text-red-400 border-red-500/20";
     return "bg-red-500/30 text-red-300 border-red-500/30";
@@ -30,7 +32,10 @@ export function HitRateHeatmap({ data }: { data: HitRateEntry[] }) {
         {data.map((d, i) => (
           <div
             key={i}
-            className={cn("rounded-lg border p-3 text-center transition-colors", getColor(d.hitRate))}
+            className={cn(
+              "rounded-lg border p-3 text-center transition-colors",
+              getColor(d.hitRate),
+            )}
           >
             <div className="text-[10px] opacity-70 mb-1 truncate">
               {formatLabel(d.statType)} {formatDirection(d.overUnder)} {d.line}
@@ -43,9 +48,15 @@ export function HitRateHeatmap({ data }: { data: HitRateEntry[] }) {
 
       {/* Legend */}
       <div className="flex items-center justify-center gap-4 mt-3 text-[10px] text-muted-foreground">
-        <span className="flex items-center gap-1"><div className="size-2 rounded bg-emerald-500/40" /> 65%+</span>
-        <span className="flex items-center gap-1"><div className="size-2 rounded bg-amber-500/20" /> 50-64%</span>
-        <span className="flex items-center gap-1"><div className="size-2 rounded bg-red-500/20" /> &lt;50%</span>
+        <span className="flex items-center gap-1">
+          <div className="size-2 rounded bg-emerald-500/40" /> 65%+
+        </span>
+        <span className="flex items-center gap-1">
+          <div className="size-2 rounded bg-amber-500/20" /> 50-64%
+        </span>
+        <span className="flex items-center gap-1">
+          <div className="size-2 rounded bg-red-500/20" /> &lt;50%
+        </span>
       </div>
     </div>
   );

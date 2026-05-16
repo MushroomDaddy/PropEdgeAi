@@ -17,11 +17,20 @@ export const ApiSportsProvider: DataProvider = {
   displayName: "API-SPORTS",
   isLive: false,
   supportedSports: ["NBA", "NFL", "MLB", "NHL"],
-  supportedMarkets: ["teams", "players", "games", "standings", "statistics", "injuries", "live_scores"],
+  supportedMarkets: [
+    "teams",
+    "players",
+    "games",
+    "standings",
+    "statistics",
+    "injuries",
+    "live_scores",
+  ],
   supportedPlatforms: [],
   requiresApiKey: true,
   getStatus(): NormalizedProviderStatus {
-    const hasKey = typeof process !== "undefined" && !!process.env?.API_SPORTS_KEY;
+    const hasKey =
+      typeof process !== "undefined" && !!process.env?.API_SPORTS_KEY;
     return {
       provider: "api_sports",
       displayName: "API-SPORTS",

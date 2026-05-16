@@ -1,7 +1,21 @@
-import { cn } from "@/lib/utils";
-import { getTeamColors, getPlayerInitials, getTeamAbbr, getSportIcon } from "@/lib/assets";
 import { motion } from "framer-motion";
-import { User, Flame, Snowflake, Heart, AlertTriangle, Zap, Shield, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  Flame,
+  Heart,
+  Shield,
+  Snowflake,
+  TrendingUp,
+  User,
+  Zap,
+} from "lucide-react";
+import {
+  getPlayerInitials,
+  getSportIcon,
+  getTeamAbbr,
+  getTeamColors,
+} from "@/lib/assets";
+import { cn } from "@/lib/utils";
 import { DataSourceBadge } from "./Badges";
 
 interface PlayerHeroCardProps {
@@ -19,11 +33,21 @@ interface PlayerHeroCardProps {
 }
 
 export function PlayerHeroCard({
-  name, team, position, sport, injuryStatus, recentForm,
-  imageUrl, teamLogoUrl, jerseyNumber, teamColor: teamColorProp, dataSource = "demo",
+  name,
+  team,
+  position,
+  sport,
+  injuryStatus,
+  recentForm,
+  imageUrl,
+  teamLogoUrl,
+  jerseyNumber,
+  teamColor: teamColorProp,
+  dataSource = "demo",
 }: PlayerHeroCardProps) {
   const colors = getTeamColors(team, teamColorProp);
-  const isHealthy = !injuryStatus || injuryStatus === "Active" || injuryStatus === "healthy";
+  const isHealthy =
+    !injuryStatus || injuryStatus === "Active" || injuryStatus === "healthy";
   const isHot = recentForm === "hot" || recentForm === "🔥";
   const isCold = recentForm === "cold" || recentForm === "🥶";
   const initials = getPlayerInitials(name);
@@ -55,10 +79,14 @@ export function PlayerHeroCard({
       />
 
       {/* Grid overlay */}
-      <div className="absolute inset-0 opacity-[0.015]" style={{
-        backgroundImage: "linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)",
-        backgroundSize: "60px 60px",
-      }} />
+      <div
+        className="absolute inset-0 opacity-[0.015]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
 
       {/* Large jersey number watermark */}
       {jerseyNumber !== undefined && (
@@ -81,7 +109,9 @@ export function PlayerHeroCard({
           {/* Outer glow ring */}
           <div
             className="absolute -inset-1 rounded-2xl opacity-40 blur-sm"
-            style={{ background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})` }}
+            style={{
+              background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+            }}
           />
 
           <div
@@ -92,7 +122,11 @@ export function PlayerHeroCard({
             }}
           >
             {imageUrl ? (
-              <img src={imageUrl} alt={name} className="size-full object-cover" />
+              <img
+                src={imageUrl}
+                alt={name}
+                className="size-full object-cover"
+              />
             ) : (
               /* Premium silhouette fallback */
               <div className="relative size-full flex flex-col items-center justify-center">
@@ -130,14 +164,20 @@ export function PlayerHeroCard({
             transition={{ delay: 0.15, duration: 0.3 }}
           >
             <div className="flex items-center gap-3 mb-1.5">
-              <h2 className="text-2xl md:text-3xl font-bold truncate text-white">{name}</h2>
+              <h2 className="text-2xl md:text-3xl font-bold truncate text-white">
+                {name}
+              </h2>
               <DataSourceBadge source={dataSource} />
             </div>
 
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               {/* Team badge */}
               {teamLogoUrl ? (
-                <img src={teamLogoUrl} alt={team} className="size-6 rounded object-contain" />
+                <img
+                  src={teamLogoUrl}
+                  alt={team}
+                  className="size-6 rounded object-contain"
+                />
               ) : (
                 <div
                   className="size-6 rounded-lg border flex items-center justify-center text-[9px] font-extrabold tracking-tight"
@@ -160,7 +200,9 @@ export function PlayerHeroCard({
               {jerseyNumber !== undefined && (
                 <>
                   <span className="text-white/20">·</span>
-                  <span className="font-mono text-white/50">#{jerseyNumber}</span>
+                  <span className="font-mono text-white/50">
+                    #{jerseyNumber}
+                  </span>
                 </>
               )}
             </div>
@@ -174,29 +216,43 @@ export function PlayerHeroCard({
             className="flex items-center gap-2.5 flex-wrap"
           >
             {/* Health */}
-            <span className={cn(
-              "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-semibold border backdrop-blur-sm",
-              isHealthy
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                : injuryStatus === "GTD"
-                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                  : "bg-red-500/10 text-red-400 border-red-500/20"
-            )}>
-              {isHealthy ? <Heart className="size-3" /> : <AlertTriangle className="size-3" />}
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-semibold border backdrop-blur-sm",
+                isHealthy
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  : injuryStatus === "GTD"
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    : "bg-red-500/10 text-red-400 border-red-500/20",
+              )}
+            >
+              {isHealthy ? (
+                <Heart className="size-3" />
+              ) : (
+                <AlertTriangle className="size-3" />
+              )}
               {isHealthy ? "Healthy" : injuryStatus}
             </span>
 
             {/* Form */}
             {recentForm && (
-              <span className={cn(
-                "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-semibold border backdrop-blur-sm",
-                isHot
-                  ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                  : isCold
-                    ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                    : "bg-white/5 text-white/60 border-white/10"
-              )}>
-                {isHot ? <Flame className="size-3" /> : isCold ? <Snowflake className="size-3" /> : <TrendingUp className="size-3" />}
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-semibold border backdrop-blur-sm",
+                  isHot
+                    ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
+                    : isCold
+                      ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                      : "bg-white/5 text-white/60 border-white/10",
+                )}
+              >
+                {isHot ? (
+                  <Flame className="size-3" />
+                ) : isCold ? (
+                  <Snowflake className="size-3" />
+                ) : (
+                  <TrendingUp className="size-3" />
+                )}
                 {isHot ? "Hot Streak" : isCold ? "Cold Stretch" : "Consistent"}
               </span>
             )}

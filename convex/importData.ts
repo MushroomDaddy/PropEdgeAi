@@ -10,20 +10,20 @@
  *   Full audit trail: originalImported* fields (14 total) for traceability
  */
 
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 /** Get recent import jobs for the logged-in user */
 export const myImports = query({
   args: {},
   returns: undefined as any,
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
     return ctx.db
       .query("importJobs")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .withIndex("by_userId", q => q.eq("userId", userId))
       .collect();
   },
 });
@@ -59,11 +59,11 @@ async function tryMatchProp(
 
     let score = 0.3; // Player name match = 30%
 
-    if (p.statType.toLowerCase() === statLower) score += 0.25;          // +25% stat type
-    if (Math.abs(p.line - line) < 0.5) score += 0.15;                   // +15% line within 0.5
-    if (p.overUnder.toLowerCase() === ouLower) score += 0.1;            // +10% over/under
-    if (p.platform.toLowerCase() === platLower) score += 0.1;           // +10% platform
-    if (p.sport.toLowerCase() === sportLower) score += 0.1;             // +10% sport
+    if (p.statType.toLowerCase() === statLower) score += 0.25; // +25% stat type
+    if (Math.abs(p.line - line) < 0.5) score += 0.15; // +15% line within 0.5
+    if (p.overUnder.toLowerCase() === ouLower) score += 0.1; // +10% over/under
+    if (p.platform.toLowerCase() === platLower) score += 0.1; // +10% platform
+    if (p.sport.toLowerCase() === sportLower) score += 0.1; // +10% sport
 
     if (score > bestScore) {
       bestScore = score;
@@ -142,11 +142,11 @@ export const manualSlipEntry = mutation({
 
       await ctx.db.insert("picks", {
         userId,
-        propId: match.propId,                     // undefined if unmatched
+        propId: match.propId, // undefined if unmatched
         playerName: pick.playerName,
         statType: pick.statType,
         line: pick.line,
-        projection: pick.line,                    // same as line for manual imports
+        projection: pick.line, // same as line for manual imports
         edge: 0,
         overUnder: pick.overUnder,
         platform: pick.platform,
@@ -169,7 +169,8 @@ export const manualSlipEntry = mutation({
         originalImportedOdds: pick.odds,
         originalImportedStake: pick.stake,
         // Review workflow
-        reviewStatus: match.matchStatus === "unmatched" ? "pending" : "accepted",
+        reviewStatus:
+          match.matchStatus === "unmatched" ? "pending" : "accepted",
       });
       created++;
     }
@@ -197,7 +198,10 @@ export const csvImport = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const lines = csvContent.trim().split("\n").filter((l) => l.trim());
+    const lines = csvContent
+      .trim()
+      .split("\n")
+      .filter(l => l.trim());
     const errors: string[] = [];
     const now = Date.now();
 
@@ -216,7 +220,7 @@ export const csvImport = mutation({
     let parsed = 0;
 
     for (let i = 0; i < lines.length; i++) {
-      const parts = lines[i].split(",").map((s) => s.trim());
+      const parts = lines[i].split(",").map(s => s.trim());
       if (parts.length < 4) {
         errors.push(`Line ${i + 1}: expected at least 4 columns`);
         continue;
@@ -249,7 +253,7 @@ export const csvImport = mutation({
 
       await ctx.db.insert("picks", {
         userId,
-        propId: match.propId,                     // undefined if unmatched
+        propId: match.propId, // undefined if unmatched
         playerName,
         statType,
         line,
@@ -276,7 +280,8 @@ export const csvImport = mutation({
         originalImportedOdds: isNaN(csvOdds ?? NaN) ? undefined : csvOdds,
         originalImportedStake: isNaN(csvStake ?? NaN) ? undefined : csvStake,
         // Review workflow
-        reviewStatus: match.matchStatus === "unmatched" ? "pending" : "accepted",
+        reviewStatus:
+          match.matchStatus === "unmatched" ? "pending" : "accepted",
       });
       parsed++;
     }

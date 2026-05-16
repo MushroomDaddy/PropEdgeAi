@@ -21,13 +21,14 @@ export function gradePick(args: {
 /** Grade a Kalshi binary contract */
 export function gradeKalshi(args: {
   settlementStatus: string; // "settled_yes" | "settled_no" | "voided" | "open"
-  side: string;             // "yes" | "no"
+  side: string; // "yes" | "no"
 }): "won" | "lost" | "void" | "pending" {
   const { settlementStatus, side } = args;
   if (settlementStatus === "voided") return "void";
   if (settlementStatus === "open") return "pending";
   const settledYes = settlementStatus === "settled_yes";
-  if ((side === "yes" && settledYes) || (side === "no" && !settledYes)) return "won";
+  if ((side === "yes" && settledYes) || (side === "no" && !settledYes))
+    return "won";
   return "lost";
 }
 
@@ -57,7 +58,10 @@ export function detectQualityFlags(args: {
 }): QualityFlag[] {
   const flags: QualityFlag[] = [];
 
-  if (args.playerDNP) { flags.push("dnp"); return flags; }
+  if (args.playerDNP) {
+    flags.push("dnp");
+    return flags;
+  }
   if (args.playerEjected) flags.push("ejected");
   if (args.gameShortenedOrSuspended) flags.push("shortened");
   if (args.overtime) flags.push("overtime");

@@ -46,8 +46,9 @@ export function LandingPage() {
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-[#7B8BA8] max-w-2xl mx-auto leading-relaxed">
-            The ultimate sports analyst for PrizePicks, Underdog, Sleeper & more.
-            AI-driven projections, demo edge estimates, and optimized entries — all in one platform.
+            The ultimate sports analyst for PrizePicks, Underdog, Sleeper &
+            more. AI-driven projections, demo edge estimates, and optimized
+            entries — all in one platform.
           </p>
 
           {/* CTA */}
@@ -120,7 +121,8 @@ export function LandingPage() {
               Every Tool You Need
             </h2>
             <p className="text-[#7B8BA8] text-lg max-w-xl mx-auto">
-              From projection aggregation to optimized entries — compare opportunities across platforms.
+              From projection aggregation to optimized entries — compare
+              opportunities across platforms.
             </p>
           </div>
 
@@ -162,7 +164,7 @@ export function LandingPage() {
                 desc: "NFL, NBA, MLB, NHL, CFB, Soccer, Tennis, Esports — all under one roof with full analysis.",
                 color: "#00FF88",
               },
-            ].map((f) => (
+            ].map(f => (
               <div
                 key={f.title}
                 className="group relative p-6 rounded-xl bg-[#111827]/80 border border-[#1E293B] hover:border-[#1E293B]/80 transition-all duration-300"
@@ -173,8 +175,12 @@ export function LandingPage() {
                 >
                   <f.icon className="size-5" style={{ color: f.color }} />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
-                <p className="text-sm text-[#7B8BA8] leading-relaxed">{f.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {f.title}
+                </h3>
+                <p className="text-sm text-[#7B8BA8] leading-relaxed">
+                  {f.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -188,16 +194,20 @@ export function LandingPage() {
             Supported Platforms
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
-            {["PrizePicks", "Underdog", "Sleeper", "DraftKings Pick6", "Kalshi"].map(
-              (p) => (
-                <div
-                  key={p}
-                  className="text-[#4B5A78] font-bold text-lg hover:text-[#7B8BA8] transition-colors"
-                >
-                  {p}
-                </div>
-              )
-            )}
+            {[
+              "PrizePicks",
+              "Underdog",
+              "Sleeper",
+              "DraftKings Pick6",
+              "Kalshi",
+            ].map(p => (
+              <div
+                key={p}
+                className="text-[#4B5A78] font-bold text-lg hover:text-[#7B8BA8] transition-colors"
+              >
+                {p}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -209,7 +219,8 @@ export function LandingPage() {
             Ready to Find Your Edge?
           </h2>
           <p className="text-[#7B8BA8] text-lg mb-8">
-            Join thousands of sports analytics users using AI to compare opportunities across platforms.
+            Join thousands of sports analytics users using AI to compare
+            opportunities across platforms.
           </p>
           {!isAuthenticated && !isLoading && (
             <Button

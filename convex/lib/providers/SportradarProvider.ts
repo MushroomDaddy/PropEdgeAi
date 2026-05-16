@@ -5,7 +5,13 @@ export const SportradarProvider: DataProvider = {
   displayName: "Sportradar",
   isLive: false,
   supportedSports: ["NBA", "NFL", "MLB", "NHL", "Soccer", "Tennis", "Golf"],
-  supportedMarkets: ["player_props", "live_odds", "game_results", "injuries", "lineups"],
+  supportedMarkets: [
+    "player_props",
+    "live_odds",
+    "game_results",
+    "injuries",
+    "lineups",
+  ],
   supportedPlatforms: [],
   requiresApiKey: true,
   getStatus(): NormalizedProviderStatus {

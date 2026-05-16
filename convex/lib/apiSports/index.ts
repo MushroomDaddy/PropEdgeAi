@@ -6,15 +6,23 @@
  * Never call from frontend — always through Convex actions.
  */
 
-import { isApiSportsConfigured } from "./client";
-import { SUPPORTED_SPORTS, ALL_ENDPOINTS, API_SPORTS_DAILY_LIMIT } from "./config";
 import { getAdapter, getSupportedSports } from "./adapters";
-import type {
-  NormalizedApiTeam, NormalizedApiPlayer, NormalizedApiGame,
-  NormalizedApiStanding, NormalizedApiPlayerStats, NormalizedApiInjury,
-  ApiSportsHealth,
-} from "./types";
 import type { ApiSportsResult } from "./client";
+import { isApiSportsConfigured } from "./client";
+import {
+  ALL_ENDPOINTS,
+  API_SPORTS_DAILY_LIMIT,
+  SUPPORTED_SPORTS,
+} from "./config";
+import type {
+  ApiSportsHealth,
+  NormalizedApiGame,
+  NormalizedApiInjury,
+  NormalizedApiPlayer,
+  NormalizedApiPlayerStats,
+  NormalizedApiStanding,
+  NormalizedApiTeam,
+} from "./types";
 
 // ── Helper: require adapter ──
 function requireAdapter(sport: string) {
@@ -39,65 +47,100 @@ function requireAdapter(sport: string) {
 // ══════════════════════════════════════════════════
 
 /** Get teams for a sport */
-export async function getTeams(sport: string, league?: string): Promise<ApiSportsResult<NormalizedApiTeam>> {
+export async function getTeams(
+  sport: string,
+  league?: string,
+): Promise<ApiSportsResult<NormalizedApiTeam>> {
   const a = requireAdapter(sport);
   if (!a.ok) return a;
   return a.adapter.getTeams(league);
 }
 
 /** Get players for a sport (optional team filter) */
-export async function getPlayers(sport: string, teamId?: string): Promise<ApiSportsResult<NormalizedApiPlayer>> {
+export async function getPlayers(
+  sport: string,
+  teamId?: string,
+): Promise<ApiSportsResult<NormalizedApiPlayer>> {
   const a = requireAdapter(sport);
   if (!a.ok) return a;
   return a.adapter.getPlayers(sport, teamId);
 }
 
 /** Get games/fixtures for a sport (optional date range) */
-export async function getGames(sport: string, dateRange?: { from: string; to: string }): Promise<ApiSportsResult<NormalizedApiGame>> {
+export async function getGames(
+  sport: string,
+  dateRange?: { from: string; to: string },
+): Promise<ApiSportsResult<NormalizedApiGame>> {
   const a = requireAdapter(sport);
   if (!a.ok) return a;
   return a.adapter.getGames(sport, dateRange);
 }
 
 /** Get standings for a sport */
-export async function getStandings(sport: string, league?: string, season?: string): Promise<ApiSportsResult<NormalizedApiStanding>> {
+export async function getStandings(
+  sport: string,
+  league?: string,
+  season?: string,
+): Promise<ApiSportsResult<NormalizedApiStanding>> {
   const a = requireAdapter(sport);
   if (!a.ok) return a;
   return a.adapter.getStandings(sport, league, season);
 }
 
 /** Get player game-level stats */
-export async function getPlayerStats(sport: string, playerId: string, season?: string): Promise<ApiSportsResult<NormalizedApiPlayerStats>> {
+export async function getPlayerStats(
+  sport: string,
+  playerId: string,
+  season?: string,
+): Promise<ApiSportsResult<NormalizedApiPlayerStats>> {
   const a = requireAdapter(sport);
   if (!a.ok) return a;
   return a.adapter.getPlayerStats(sport, playerId, season);
 }
 
 /** Get team-level aggregate stats */
-export async function getTeamStats(sport: string, teamId: string, season?: string): Promise<ApiSportsResult<any>> {
+export async function getTeamStats(
+  sport: string,
+  teamId: string,
+  season?: string,
+): Promise<ApiSportsResult<any>> {
   const a = requireAdapter(sport);
   if (!a.ok) return a;
   return a.adapter.getTeamStats(sport, teamId, season);
 }
 
 /** Get injuries for a sport (optional team filter) */
-export async function getInjuries(sport: string, teamId?: string): Promise<ApiSportsResult<NormalizedApiInjury>> {
+export async function getInjuries(
+  sport: string,
+  teamId?: string,
+): Promise<ApiSportsResult<NormalizedApiInjury>> {
   const a = requireAdapter(sport);
   if (!a.ok) return a;
   return a.adapter.getInjuries(sport, teamId);
 }
 
 /** Get live scores for a sport */
-export async function getLiveScores(sport: string): Promise<ApiSportsResult<NormalizedApiGame>> {
+export async function getLiveScores(
+  sport: string,
+): Promise<ApiSportsResult<NormalizedApiGame>> {
   const a = requireAdapter(sport);
   if (!a.ok) return a;
   return a.adapter.getLiveScores();
 }
 
 /** Search for a player by name (checks all supported sports or specific sport) */
-export async function searchPlayer(name: string, sport?: string): Promise<ApiSportsResult<NormalizedApiPlayer>> {
+export async function searchPlayer(
+  name: string,
+  sport?: string,
+): Promise<ApiSportsResult<NormalizedApiPlayer>> {
   if (!isApiSportsConfigured()) {
-    return { ok: false, data: [], requestsUsed: 0, requestsRemaining: 0, error: { code: "not_configured", message: "API_SPORTS_KEY not set" } };
+    return {
+      ok: false,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+      error: { code: "not_configured", message: "API_SPORTS_KEY not set" },
+    };
   }
 
   // If sport specified, search that sport only
@@ -120,7 +163,7 @@ export async function searchPlayer(name: string, sport?: string): Promise<ApiSpo
     const result = await adapter.getPlayers(s);
     if (result.ok) {
       const matches = result.data.filter(p =>
-        p.name.toLowerCase().includes(name.toLowerCase())
+        p.name.toLowerCase().includes(name.toLowerCase()),
       );
       allPlayers.push(...matches);
       totalUsed += result.requestsUsed;
@@ -128,13 +171,27 @@ export async function searchPlayer(name: string, sport?: string): Promise<ApiSpo
     }
   }
 
-  return { ok: true, data: allPlayers, requestsUsed: totalUsed, requestsRemaining: remaining };
+  return {
+    ok: true,
+    data: allPlayers,
+    requestsUsed: totalUsed,
+    requestsRemaining: remaining,
+  };
 }
 
 /** Search for a team by name */
-export async function searchTeam(name: string, sport?: string): Promise<ApiSportsResult<NormalizedApiTeam>> {
+export async function searchTeam(
+  name: string,
+  sport?: string,
+): Promise<ApiSportsResult<NormalizedApiTeam>> {
   if (!isApiSportsConfigured()) {
-    return { ok: false, data: [], requestsUsed: 0, requestsRemaining: 0, error: { code: "not_configured", message: "API_SPORTS_KEY not set" } };
+    return {
+      ok: false,
+      data: [],
+      requestsUsed: 0,
+      requestsRemaining: 0,
+      error: { code: "not_configured", message: "API_SPORTS_KEY not set" },
+    };
   }
 
   const sports = sport ? [sport] : getSupportedSports();
@@ -147,9 +204,10 @@ export async function searchTeam(name: string, sport?: string): Promise<ApiSport
     if (!adapter) continue;
     const result = await adapter.getTeams();
     if (result.ok) {
-      const matches = result.data.filter(t =>
-        t.name.toLowerCase().includes(name.toLowerCase()) ||
-        t.abbreviation.toLowerCase().includes(name.toLowerCase())
+      const matches = result.data.filter(
+        t =>
+          t.name.toLowerCase().includes(name.toLowerCase()) ||
+          t.abbreviation.toLowerCase().includes(name.toLowerCase()),
       );
       allTeams.push(...matches);
       totalUsed += result.requestsUsed;
@@ -157,7 +215,12 @@ export async function searchTeam(name: string, sport?: string): Promise<ApiSport
     }
   }
 
-  return { ok: true, data: allTeams, requestsUsed: totalUsed, requestsRemaining: remaining };
+  return {
+    ok: true,
+    data: allTeams,
+    requestsUsed: totalUsed,
+    requestsRemaining: remaining,
+  };
 }
 
 /** Health check — provider status without making API calls */
@@ -166,7 +229,7 @@ export function providerHealthCheck(): ApiSportsHealth {
   return {
     configured,
     enabled: configured,
-    requestsUsedToday: 0,  // Will be updated from DB in Convex action
+    requestsUsedToday: 0, // Will be updated from DB in Convex action
     dailyLimit: API_SPORTS_DAILY_LIMIT,
     supportedSports: SUPPORTED_SPORTS,
     supportedEndpoints: [...ALL_ENDPOINTS],
@@ -178,5 +241,5 @@ export function providerHealthCheck(): ApiSportsHealth {
 
 // Re-exports
 export { isApiSportsConfigured } from "./client";
-export { SUPPORTED_SPORTS, API_SPORTS_DAILY_LIMIT } from "./config";
+export { API_SPORTS_DAILY_LIMIT, SUPPORTED_SPORTS } from "./config";
 export type { ApiSportsHealth } from "./types";

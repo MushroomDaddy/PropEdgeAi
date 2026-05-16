@@ -24,7 +24,7 @@ export function isApiSportsConfigured(): boolean {
 export async function apiSportsFetch<T>(
   baseUrl: string,
   endpoint: string,
-  params: Record<string, string | number> = {}
+  params: Record<string, string | number> = {},
 ): Promise<ApiSportsResult<T>> {
   if (!isApiSportsConfigured()) {
     return {
@@ -41,10 +41,13 @@ export async function apiSportsFetch<T>(
 
   try {
     const queryString = new URLSearchParams(
-      Object.entries(params).reduce((acc, [key, value]) => {
-        acc[key] = String(value);
-        return acc;
-      }, {} as Record<string, string>)
+      Object.entries(params).reduce(
+        (acc, [key, value]) => {
+          acc[key] = String(value);
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
     ).toString();
 
     const url = `${baseUrl}${endpoint}${queryString ? `?${queryString}` : ""}`;
@@ -57,8 +60,12 @@ export async function apiSportsFetch<T>(
       },
     });
 
-    const requestsUsed = parseInt(response.headers.get("x-apisports-requests-current") || "0");
-    const requestsRemaining = parseInt(response.headers.get("x-apisports-requests-limit-remaining") || "0");
+    const requestsUsed = parseInt(
+      response.headers.get("x-apisports-requests-current") || "0",
+    );
+    const requestsRemaining = parseInt(
+      response.headers.get("x-apisports-requests-limit-remaining") || "0",
+    );
 
     if (!response.ok) {
       return {

@@ -6,8 +6,8 @@
  */
 
 import { motion } from "framer-motion";
-import { getTeamColors, getTeamAbbr, getSportIcon } from "../../lib/assets";
-import { Radio, ChevronRight } from "lucide-react";
+import { ChevronRight, Radio } from "lucide-react";
+import { getSportIcon, getTeamAbbr, getTeamColors } from "../../lib/assets";
 
 interface TickerGame {
   homeTeam: string;
@@ -25,7 +25,13 @@ interface Props {
   onGameClick?: (game: TickerGame) => void;
 }
 
-function TickerItem({ game, onClick }: { game: TickerGame; onClick?: () => void }) {
+function TickerItem({
+  game,
+  onClick,
+}: {
+  game: TickerGame;
+  onClick?: () => void;
+}) {
   const homeColors = getTeamColors(game.homeTeam);
   const awayColors = getTeamColors(game.awayTeam);
   const isLive = game.status === "live";
@@ -41,14 +47,26 @@ function TickerItem({ game, onClick }: { game: TickerGame; onClick?: () => void 
       }`}
     >
       {/* Status header */}
-      <div className={`flex items-center justify-center gap-1.5 py-1 text-[9px] font-bold ${
-        isLive ? "bg-red-500/10 text-red-400" :
-        isFinal ? "bg-white/5 text-muted-foreground" :
-        "bg-cyan-400/5 text-cyan-400"
-      }`}>
-        {isLive && <span className="size-1.5 rounded-full bg-red-400 animate-pulse" />}
-        {isLive ? (game.period || "LIVE") : isFinal ? "FINAL" : (game.gameTime || "TBD")}
-        <span className="ml-1 opacity-50">{getSportIcon(game.sport || "")}</span>
+      <div
+        className={`flex items-center justify-center gap-1.5 py-1 text-[9px] font-bold ${
+          isLive
+            ? "bg-red-500/10 text-red-400"
+            : isFinal
+              ? "bg-white/5 text-muted-foreground"
+              : "bg-cyan-400/5 text-cyan-400"
+        }`}
+      >
+        {isLive && (
+          <span className="size-1.5 rounded-full bg-red-400 animate-pulse" />
+        )}
+        {isLive
+          ? game.period || "LIVE"
+          : isFinal
+            ? "FINAL"
+            : game.gameTime || "TBD"}
+        <span className="ml-1 opacity-50">
+          {getSportIcon(game.sport || "")}
+        </span>
       </div>
 
       {/* Teams */}
@@ -58,11 +76,16 @@ function TickerItem({ game, onClick }: { game: TickerGame; onClick?: () => void 
           <div className="flex items-center gap-2">
             <div
               className="size-5 rounded flex items-center justify-center text-[8px] font-black"
-              style={{ background: `${awayColors.primary}30`, color: awayColors.primary }}
+              style={{
+                background: `${awayColors.primary}30`,
+                color: awayColors.primary,
+              }}
             >
               {getTeamAbbr(game.awayTeam).slice(0, 2)}
             </div>
-            <span className="text-[11px] font-medium truncate max-w-[80px]">{game.awayTeam}</span>
+            <span className="text-[11px] font-medium truncate max-w-[80px]">
+              {game.awayTeam}
+            </span>
           </div>
           {game.awayScore !== undefined && (
             <motion.span
@@ -81,11 +104,16 @@ function TickerItem({ game, onClick }: { game: TickerGame; onClick?: () => void 
           <div className="flex items-center gap-2">
             <div
               className="size-5 rounded flex items-center justify-center text-[8px] font-black"
-              style={{ background: `${homeColors.primary}30`, color: homeColors.primary }}
+              style={{
+                background: `${homeColors.primary}30`,
+                color: homeColors.primary,
+              }}
             >
               {getTeamAbbr(game.homeTeam).slice(0, 2)}
             </div>
-            <span className="text-[11px] font-medium truncate max-w-[80px]">{game.homeTeam}</span>
+            <span className="text-[11px] font-medium truncate max-w-[80px]">
+              {game.homeTeam}
+            </span>
           </div>
           {game.homeScore !== undefined && (
             <motion.span
@@ -129,11 +157,7 @@ export function LiveGameTickerPremium({ games, onGameClick }: Props) {
       {/* Scrolling ticker */}
       <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
         {games.map((game, i) => (
-          <TickerItem
-            key={i}
-            game={game}
-            onClick={() => onGameClick?.(game)}
-          />
+          <TickerItem key={i} game={game} onClick={() => onGameClick?.(game)} />
         ))}
       </div>
     </div>

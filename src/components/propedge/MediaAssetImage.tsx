@@ -9,10 +9,14 @@
  * Handles loading states, errors, and lazy loading.
  */
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { getTeamColors, getPlayerInitials, getTeamAbbr } from "../../lib/assets";
-import { Image, User, Shield } from "lucide-react";
+import { Image, Shield, User } from "lucide-react";
+import { useState } from "react";
+import {
+  getPlayerInitials,
+  getTeamAbbr,
+  getTeamColors,
+} from "../../lib/assets";
 
 interface Props {
   type: "headshot" | "logo" | "badge" | "fanart";
@@ -38,8 +42,18 @@ const TEXT_SIZES = {
   xl: "text-2xl",
 };
 
-export function MediaAssetImage({ type, entityName, team, sourceUrl, cachedUrl, size = "md", className = "" }: Props) {
-  const [imgState, setImgState] = useState<"loading" | "loaded" | "error">("loading");
+export function MediaAssetImage({
+  type,
+  entityName,
+  team,
+  sourceUrl,
+  cachedUrl,
+  size = "md",
+  className = "",
+}: Props) {
+  const [imgState, setImgState] = useState<"loading" | "loaded" | "error">(
+    "loading",
+  );
   const [useFallback, setUseFallback] = useState(!sourceUrl && !cachedUrl);
 
   const colors = getTeamColors(team || entityName);
@@ -50,13 +64,19 @@ export function MediaAssetImage({ type, entityName, team, sourceUrl, cachedUrl, 
 
   // If no URL at all, go straight to fallback
   if (!url || useFallback) {
-    const FallbackIcon = type === "headshot" ? User : type === "logo" ? Shield : Image;
-    const label = type === "headshot" ? getPlayerInitials(entityName) : getTeamAbbr(entityName);
+    const FallbackIcon =
+      type === "headshot" ? User : type === "logo" ? Shield : Image;
+    const label =
+      type === "headshot"
+        ? getPlayerInitials(entityName)
+        : getTeamAbbr(entityName);
 
     return (
       <div
         className={`${sizeClass} ${isRound ? "rounded-full" : "rounded-xl"} flex items-center justify-center border border-white/10 ${className}`}
-        style={{ background: `linear-gradient(145deg, ${colors.primary}BB, ${colors.secondary}88)` }}
+        style={{
+          background: `linear-gradient(145deg, ${colors.primary}BB, ${colors.secondary}88)`,
+        }}
       >
         <span className={`${textSize} font-black text-white/90`}>{label}</span>
       </div>
@@ -64,7 +84,9 @@ export function MediaAssetImage({ type, entityName, team, sourceUrl, cachedUrl, 
   }
 
   return (
-    <div className={`${sizeClass} ${isRound ? "rounded-full" : "rounded-xl"} overflow-hidden border border-white/10 relative ${className}`}>
+    <div
+      className={`${sizeClass} ${isRound ? "rounded-full" : "rounded-xl"} overflow-hidden border border-white/10 relative ${className}`}
+    >
       {/* Loading shimmer */}
       {imgState === "loading" && (
         <div className="absolute inset-0 bg-white/5 animate-pulse" />

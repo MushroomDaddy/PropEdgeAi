@@ -8,11 +8,22 @@ interface MatchupCardProps {
   oppLogoUrl?: string;
 }
 
-export function MatchupCard({ opponent, games, avgPoints, oppColor, oppLogoUrl }: MatchupCardProps) {
+export function MatchupCard({
+  opponent,
+  games,
+  avgPoints,
+  oppColor,
+  oppLogoUrl,
+}: MatchupCardProps) {
   return (
     <div className="bg-[#0D1117] rounded-lg border border-white/5 p-3 flex items-center justify-between hover:border-white/10 transition-colors">
       <div className="flex items-center gap-2">
-        <TeamBadge team={opponent} logoUrl={oppLogoUrl} color={oppColor} size="md" />
+        <TeamBadge
+          team={opponent}
+          logoUrl={oppLogoUrl}
+          color={oppColor}
+          size="md"
+        />
         <span className="text-sm font-medium">vs {opponent}</span>
       </div>
       <div className="flex items-center gap-4 text-xs">

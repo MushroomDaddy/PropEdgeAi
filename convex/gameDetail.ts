@@ -1,5 +1,5 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
 
 export const getGame = query({
   args: { gameId: v.id("games") },
@@ -15,7 +15,7 @@ export const getGameProps = query({
   handler: async (ctx, { gameId }) => {
     return await ctx.db
       .query("props")
-      .withIndex("by_gameId", (q) => q.eq("gameId", gameId))
+      .withIndex("by_gameId", q => q.eq("gameId", gameId))
       .collect();
   },
 });

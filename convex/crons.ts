@@ -24,47 +24,44 @@
  * the internal action returns early without making any API calls.
  */
 
-import { cronJobs } from "convex/server";
-import { makeFunctionReference } from "convex/server";
+import { cronJobs, makeFunctionReference } from "convex/server";
 
 const crons = cronJobs();
 
 // Internal action references
-const refreshGames = makeFunctionReference<"action">("liveProviders:refreshGames");
-const refreshOdds = makeFunctionReference<"action">("liveProviders:refreshOdds");
-const refreshProps = makeFunctionReference<"action">("liveProviders:refreshProps");
-const refreshLineMovement = makeFunctionReference<"action">("liveProviders:refreshLineMovement");
+const refreshGames = makeFunctionReference<"action">(
+  "liveProviders:refreshGames",
+);
+const refreshOdds = makeFunctionReference<"action">(
+  "liveProviders:refreshOdds",
+);
+const refreshProps = makeFunctionReference<"action">(
+  "liveProviders:refreshProps",
+);
+const refreshLineMovement = makeFunctionReference<"action">(
+  "liveProviders:refreshLineMovement",
+);
 
 // ─── FREE TIER SCHEDULE (~10 req/day, 300 req/month) ───
 // Runs every 4 hours — conservative, safe for 500 req/month limit
 
-crons.interval(
-  "sync:refreshGames",
-  { hours: 4 },
-  refreshGames,
-  { sport: undefined },
-);
+crons.interval("sync:refreshGames", { hours: 4 }, refreshGames, {
+  sport: undefined,
+});
 
-crons.interval(
-  "sync:refreshOdds",
-  { hours: 4 },
-  refreshOdds,
-  { sport: undefined, markets: "h2h,spreads,totals" },
-);
+crons.interval("sync:refreshOdds", { hours: 4 }, refreshOdds, {
+  sport: undefined,
+  markets: "h2h,spreads,totals",
+});
 
-crons.interval(
-  "sync:refreshProps",
-  { hours: 4 },
-  refreshProps,
-  { sport: undefined, maxEvents: 1 },
-);
+crons.interval("sync:refreshProps", { hours: 4 }, refreshProps, {
+  sport: undefined,
+  maxEvents: 1,
+});
 
-crons.interval(
-  "sync:refreshLineMovement",
-  { hours: 8 },
-  refreshLineMovement,
-  { sport: undefined },
-);
+crons.interval("sync:refreshLineMovement", { hours: 8 }, refreshLineMovement, {
+  sport: undefined,
+});
 
 // ─── PAID TIER SCHEDULE (uncomment when on a paid plan) ───
 // crons.interval("sync:refreshGames", { minutes: 30 }, refreshGames, { sport: undefined });

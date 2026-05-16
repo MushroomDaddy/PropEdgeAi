@@ -6,11 +6,18 @@
  */
 
 import { motion } from "framer-motion";
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis,
-  Tooltip, ReferenceLine, Area, CartesianGrid,
+  Area,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface DataPoint {
   time: string;
@@ -36,13 +43,23 @@ function getTrend(data: DataPoint[]): "up" | "down" | "flat" {
   return "flat";
 }
 
-export function OddsMovementChart({ title, data, openingLine, currentLine, lineLabel = "Line", height = 180 }: Props) {
+export function OddsMovementChart({
+  title,
+  data,
+  openingLine,
+  currentLine,
+  lineLabel = "Line",
+  height = 180,
+}: Props) {
   if (!data.length) return null;
 
   const trend = getTrend(data);
-  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
-  const trendColor = trend === "up" ? "#10B981" : trend === "down" ? "#EF4444" : "#6B7280";
-  const movement = data.length >= 2 ? data[data.length - 1].line - data[0].line : 0;
+  const TrendIcon =
+    trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendColor =
+    trend === "up" ? "#10B981" : trend === "down" ? "#EF4444" : "#6B7280";
+  const movement =
+    data.length >= 2 ? data[data.length - 1].line - data[0].line : 0;
 
   return (
     <motion.div
@@ -59,10 +76,14 @@ export function OddsMovementChart({ title, data, openingLine, currentLine, lineL
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1" style={{ color: trendColor }}>
+          <div
+            className="flex items-center gap-1"
+            style={{ color: trendColor }}
+          >
             <TrendIcon className="size-4" />
             <span className="text-sm font-bold font-mono">
-              {movement > 0 ? "+" : ""}{movement.toFixed(1)}
+              {movement > 0 ? "+" : ""}
+              {movement.toFixed(1)}
             </span>
           </div>
           {currentLine !== undefined && (
@@ -76,8 +97,14 @@ export function OddsMovementChart({ title, data, openingLine, currentLine, lineL
       {/* Chart */}
       <div className="px-2 py-2">
         <ResponsiveContainer width="100%" height={height}>
-          <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
+          <LineChart
+            data={data}
+            margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.03)"
+            />
             <XAxis
               dataKey="time"
               tick={{ fontSize: 9, fill: "rgba(255,255,255,0.3)" }}
@@ -119,7 +146,12 @@ export function OddsMovementChart({ title, data, openingLine, currentLine, lineL
               stroke="#00D4FF"
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: "#00D4FF", stroke: "#0A0E17", strokeWidth: 2 }}
+              activeDot={{
+                r: 4,
+                fill: "#00D4FF",
+                stroke: "#0A0E17",
+                strokeWidth: 2,
+              }}
             />
           </LineChart>
         </ResponsiveContainer>

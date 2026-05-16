@@ -1,18 +1,42 @@
 import { useQuery } from "convex/react";
-import {
-  Flame,
-  Medal,
-  Trophy,
-} from "lucide-react";
+import { Flame, Medal, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { api } from "../../convex/_generated/api";
 
-const TIER_STYLES: Record<string, { bg: string; text: string; border: string; icon: string }> = {
-  diamond: { bg: "bg-[#00D4FF]/10", text: "text-[#00D4FF]", border: "border-[#00D4FF]/20", icon: "💎" },
-  platinum: { bg: "bg-[#C8D0E0]/10", text: "text-[#C8D0E0]", border: "border-[#C8D0E0]/20", icon: "⭐" },
-  gold: { bg: "bg-[#FFB800]/10", text: "text-[#FFB800]", border: "border-[#FFB800]/20", icon: "🏅" },
-  silver: { bg: "bg-[#7B8BA8]/10", text: "text-[#7B8BA8]", border: "border-[#7B8BA8]/20", icon: "🥈" },
-  bronze: { bg: "bg-[#CD7F32]/10", text: "text-[#CD7F32]", border: "border-[#CD7F32]/20", icon: "🥉" },
+const TIER_STYLES: Record<
+  string,
+  { bg: string; text: string; border: string; icon: string }
+> = {
+  diamond: {
+    bg: "bg-[#00D4FF]/10",
+    text: "text-[#00D4FF]",
+    border: "border-[#00D4FF]/20",
+    icon: "💎",
+  },
+  platinum: {
+    bg: "bg-[#C8D0E0]/10",
+    text: "text-[#C8D0E0]",
+    border: "border-[#C8D0E0]/20",
+    icon: "⭐",
+  },
+  gold: {
+    bg: "bg-[#FFB800]/10",
+    text: "text-[#FFB800]",
+    border: "border-[#FFB800]/20",
+    icon: "🏅",
+  },
+  silver: {
+    bg: "bg-[#7B8BA8]/10",
+    text: "text-[#7B8BA8]",
+    border: "border-[#7B8BA8]/20",
+    icon: "🥈",
+  },
+  bronze: {
+    bg: "bg-[#CD7F32]/10",
+    text: "text-[#CD7F32]",
+    border: "border-[#CD7F32]/20",
+    icon: "🥉",
+  },
 };
 
 export function LeaderboardPage() {
@@ -77,7 +101,11 @@ export function LeaderboardPage() {
                     <td className="p-3 text-center">
                       {entry.rank <= 3 ? (
                         <span className="text-lg">
-                          {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : "🥉"}
+                          {entry.rank === 1
+                            ? "🥇"
+                            : entry.rank === 2
+                              ? "🥈"
+                              : "🥉"}
                         </span>
                       ) : (
                         <span className="text-muted-foreground font-mono">
@@ -88,7 +116,9 @@ export function LeaderboardPage() {
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{entry.avatar}</span>
-                        <span className="font-medium text-white">{entry.username}</span>
+                        <span className="font-medium text-white">
+                          {entry.username}
+                        </span>
                       </div>
                     </td>
                     <td className="p-3">
@@ -116,7 +146,9 @@ export function LeaderboardPage() {
                         {entry.streak >= 5 && (
                           <Flame className="size-3 text-[#FFB800]" />
                         )}
-                        <span className="font-mono text-white">{entry.streak}W</span>
+                        <span className="font-mono text-white">
+                          {entry.streak}W
+                        </span>
                       </div>
                     </td>
                   </tr>

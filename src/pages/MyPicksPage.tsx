@@ -9,17 +9,17 @@ import {
   Trophy,
   XCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { api } from "../../convex/_generated/api";
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { api } from "../../convex/_generated/api";
 
 // Mock performance data for chart
 const performanceData = [
@@ -162,7 +162,10 @@ export function MyPicksPage() {
           </div>
           <div className="divide-y divide-[#1E293B]/50">
             {entries.map((entry: any) => (
-              <div key={entry._id} className="flex items-center justify-between p-4">
+              <div
+                key={entry._id}
+                className="flex items-center justify-between p-4"
+              >
                 <div>
                   <div className="text-sm font-medium text-white">
                     {entry.platform} · {entry.entryType}
@@ -225,8 +228,12 @@ export function MyPicksPage() {
                     className="border-b border-[#1E293B]/50 hover:bg-[#1A2236]/30"
                   >
                     <td className="p-3">
-                      <div className="font-medium text-white">{pick.playerName}</div>
-                      <div className="text-xs text-muted-foreground">{pick.sport}</div>
+                      <div className="font-medium text-white">
+                        {pick.playerName}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {pick.sport}
+                      </div>
                     </td>
                     <td className="p-3 text-[#C8D0E0]">{pick.statType}</td>
                     <td className="p-3 text-right font-mono">{pick.line}</td>
@@ -244,7 +251,9 @@ export function MyPicksPage() {
                     <td className="p-3 text-right">
                       <span
                         className={`font-mono font-bold ${
-                          (pick.edge || 0) > 0 ? "text-[#00FF88]" : "text-[#FF4466]"
+                          (pick.edge || 0) > 0
+                            ? "text-[#00FF88]"
+                            : "text-[#FF4466]"
                         }`}
                       >
                         {(pick.edge || 0) > 0 ? "+" : ""}
@@ -305,7 +314,9 @@ function StatusBadge({ status }: { status: string }) {
     push: "bg-[#7B8BA8]/15 text-[#7B8BA8] border-[#7B8BA8]/20",
   };
   return (
-    <Badge className={`text-[10px] font-bold ${styles[status] || styles.pending}`}>
+    <Badge
+      className={`text-[10px] font-bold ${styles[status] || styles.pending}`}
+    >
       {status.toUpperCase()}
     </Badge>
   );

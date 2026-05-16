@@ -6,9 +6,9 @@
  * Handles real images with graceful error fallback.
  */
 
-import { useState } from "react";
-import { getTeamColors, getPlayerInitials } from "../../lib/assets";
 import { User } from "lucide-react";
+import { useState } from "react";
+import { getPlayerInitials, getTeamColors } from "../../lib/assets";
 
 interface Props {
   playerName: string;
@@ -25,7 +25,13 @@ const SIZES = {
   xl: { container: "size-24", text: "text-2xl", icon: "size-8" },
 };
 
-export function PlayerHeadshotFallback({ playerName, team, headshotUrl, size = "md", className = "" }: Props) {
+export function PlayerHeadshotFallback({
+  playerName,
+  team,
+  headshotUrl,
+  size = "md",
+  className = "",
+}: Props) {
   const [imgError, setImgError] = useState(false);
   const colors = getTeamColors(team || "");
   const initials = getPlayerInitials(playerName);
@@ -34,7 +40,9 @@ export function PlayerHeadshotFallback({ playerName, team, headshotUrl, size = "
   // Show real headshot if available and not errored
   if (headshotUrl && !imgError) {
     return (
-      <div className={`${s.container} rounded-full overflow-hidden border-2 border-white/10 ${className}`}>
+      <div
+        className={`${s.container} rounded-full overflow-hidden border-2 border-white/10 ${className}`}
+      >
         <img
           src={headshotUrl}
           alt={playerName}
@@ -55,10 +63,15 @@ export function PlayerHeadshotFallback({ playerName, team, headshotUrl, size = "
       }}
     >
       {/* Subtle silhouette */}
-      <User className={`${s.icon} absolute opacity-10 translate-y-1`} style={{ color: "#ffffff" }} />
+      <User
+        className={`${s.icon} absolute opacity-10 translate-y-1`}
+        style={{ color: "#ffffff" }}
+      />
 
       {/* Initials */}
-      <span className={`${s.text} font-black relative z-10 text-white/90`}>{initials}</span>
+      <span className={`${s.text} font-black relative z-10 text-white/90`}>
+        {initials}
+      </span>
     </div>
   );
 }

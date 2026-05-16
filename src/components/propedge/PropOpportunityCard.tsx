@@ -1,7 +1,13 @@
+import { ChevronRight, Star, TrendingDown, TrendingUp } from "lucide-react";
+import { formatDirection, formatLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown, ChevronRight, Star } from "lucide-react";
-import { EdgeBadge, ValueScoreBadge, ConfidenceBadge, RiskLabel, DataSourceBadge } from "./Badges";
-import { formatLabel, formatDirection } from "@/lib/labels";
+import {
+  ConfidenceBadge,
+  DataSourceBadge,
+  EdgeBadge,
+  RiskLabel,
+  ValueScoreBadge,
+} from "./Badges";
 
 interface PropOpportunityCardProps {
   statType: string;
@@ -21,9 +27,20 @@ interface PropOpportunityCardProps {
 }
 
 export function PropOpportunityCard({
-  statType, line, projection, edge, overUnder, platform,
-  confidence, modelProb, marketImpliedProb, bustRisk, valueScore,
-  dataSource = "demo", isTop, onClick,
+  statType,
+  line,
+  projection,
+  edge,
+  overUnder,
+  platform,
+  confidence,
+  modelProb,
+  marketImpliedProb,
+  bustRisk,
+  valueScore,
+  dataSource = "demo",
+  isTop,
+  onClick,
 }: PropOpportunityCardProps) {
   const isOver = overUnder === "over";
   const projDiff = projection - line;
@@ -50,27 +67,50 @@ export function PropOpportunityCard({
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-semibold">{formatLabel(statType)}</span>
-            {valueScore !== undefined && <ValueScoreBadge score={valueScore} size="xs" />}
+            <span className="text-sm font-semibold">
+              {formatLabel(statType)}
+            </span>
+            {valueScore !== undefined && (
+              <ValueScoreBadge score={valueScore} size="xs" />
+            )}
           </div>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{formatLabel(platform)}</span>
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+            {formatLabel(platform)}
+          </span>
         </div>
         <EdgeBadge edge={edge} />
       </div>
 
       {/* Direction + Line */}
       <div className="flex items-center gap-3 mb-3">
-        <span className={cn(
-          "inline-flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-lg",
-          isOver ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400",
-        )}>
-          {isOver ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-lg",
+            isOver
+              ? "bg-emerald-500/10 text-emerald-400"
+              : "bg-red-500/10 text-red-400",
+          )}
+        >
+          {isOver ? (
+            <TrendingUp className="size-3.5" />
+          ) : (
+            <TrendingDown className="size-3.5" />
+          )}
           {formatDirection(overUnder)} {line}
         </span>
         <div className="text-xs text-muted-foreground">
-          Proj: <span className="font-mono font-medium text-foreground">{projection}</span>
-          <span className={cn("ml-1 font-mono", projDiff > 0 ? "text-emerald-400" : "text-red-400")}>
-            ({projDiff > 0 ? "+" : ""}{projDiff.toFixed(1)})
+          Proj:{" "}
+          <span className="font-mono font-medium text-foreground">
+            {projection}
+          </span>
+          <span
+            className={cn(
+              "ml-1 font-mono",
+              projDiff > 0 ? "text-emerald-400" : "text-red-400",
+            )}
+          >
+            ({projDiff > 0 ? "+" : ""}
+            {projDiff.toFixed(1)})
           </span>
         </div>
       </div>
@@ -79,19 +119,25 @@ export function PropOpportunityCard({
       <div className="grid grid-cols-3 gap-2 text-center">
         {modelProb !== undefined && (
           <div className="rounded-lg bg-white/5 px-2 py-1.5">
-            <div className="text-[10px] text-muted-foreground/60 mb-0.5">Model</div>
+            <div className="text-[10px] text-muted-foreground/60 mb-0.5">
+              Model
+            </div>
             <div className="text-xs font-mono font-semibold">{modelProb}%</div>
           </div>
         )}
         {marketImpliedProb !== undefined && (
           <div className="rounded-lg bg-white/5 px-2 py-1.5">
-            <div className="text-[10px] text-muted-foreground/60 mb-0.5">Market</div>
+            <div className="text-[10px] text-muted-foreground/60 mb-0.5">
+              Market
+            </div>
             <div className="text-xs font-mono">{marketImpliedProb}%</div>
           </div>
         )}
         {confidence !== undefined && (
           <div className="rounded-lg bg-white/5 px-2 py-1.5">
-            <div className="text-[10px] text-muted-foreground/60 mb-0.5">Conf</div>
+            <div className="text-[10px] text-muted-foreground/60 mb-0.5">
+              Conf
+            </div>
             <ConfidenceBadge confidence={confidence} />
           </div>
         )}

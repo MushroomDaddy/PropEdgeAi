@@ -1,10 +1,10 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
 
 export const counts = query({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     const props = await ctx.db.query("props").collect();
     const players = await ctx.db.query("players").collect();
     const users = await ctx.db.query("users").collect();

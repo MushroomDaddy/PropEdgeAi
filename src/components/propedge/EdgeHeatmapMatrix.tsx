@@ -31,7 +31,12 @@ function getCellColor(value: number): string {
   return "bg-red-500/60 text-white";
 }
 
-export function EdgeHeatmapMatrix({ title, rows, columnHeaders, onCellClick }: Props) {
+export function EdgeHeatmapMatrix({
+  title,
+  rows,
+  columnHeaders,
+  onCellClick,
+}: Props) {
   if (!rows.length) return null;
 
   return (
@@ -50,7 +55,10 @@ export function EdgeHeatmapMatrix({ title, rows, columnHeaders, onCellClick }: P
               <tr>
                 <th className="px-3 py-2 text-left text-[10px] text-muted-foreground font-medium w-28" />
                 {columnHeaders.map((h, i) => (
-                  <th key={i} className="px-1 py-2 text-center text-[10px] text-muted-foreground font-medium">
+                  <th
+                    key={i}
+                    className="px-1 py-2 text-center text-[10px] text-muted-foreground font-medium"
+                  >
                     {h}
                   </th>
                 ))}
@@ -73,10 +81,13 @@ export function EdgeHeatmapMatrix({ title, rows, columnHeaders, onCellClick }: P
                       className={`w-full rounded-lg px-2 py-2 text-center transition-colors ${getCellColor(cell.value)}`}
                     >
                       <div className="text-xs font-mono font-bold">
-                        {cell.value > 0 ? "+" : ""}{cell.value.toFixed(1)}
+                        {cell.value > 0 ? "+" : ""}
+                        {cell.value.toFixed(1)}
                       </div>
                       {cell.subLabel && (
-                        <div className="text-[8px] opacity-60 mt-0.5">{cell.subLabel}</div>
+                        <div className="text-[8px] opacity-60 mt-0.5">
+                          {cell.subLabel}
+                        </div>
                       )}
                     </motion.button>
                   </td>

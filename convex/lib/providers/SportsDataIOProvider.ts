@@ -5,7 +5,14 @@ export const SportsDataIOProvider: DataProvider = {
   displayName: "SportsData.io",
   isLive: false,
   supportedSports: ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF"],
-  supportedMarkets: ["player_props", "game_totals", "spreads", "projections", "injuries", "game_results"],
+  supportedMarkets: [
+    "player_props",
+    "game_totals",
+    "spreads",
+    "projections",
+    "injuries",
+    "game_results",
+  ],
   supportedPlatforms: [],
   requiresApiKey: true,
   getStatus(): NormalizedProviderStatus {

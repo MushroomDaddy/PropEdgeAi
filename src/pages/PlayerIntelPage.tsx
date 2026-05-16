@@ -1,17 +1,30 @@
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { Activity, BarChart3, Bot, Search, Sparkles, User } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, User, Bot, Sparkles, BarChart3, Activity } from "lucide-react";
 import {
-  DemoBanner, PlayerHeroCard, StatTrendCard, PropOpportunityCard,
-  PropDetailDrawer, GameLogTable, HitRateHeatmap, LineMovementTimeline,
-  EmptyState, SkeletonCard, EdgeBadge, DataSourceBadge,
-  ValueScoreRing, EdgeMeter, ConfidenceMeter, GameStrip,
-  StatSparkline, TeamBadge,
+  ConfidenceMeter,
+  DataSourceBadge,
+  DemoBanner,
+  EdgeBadge,
+  EdgeMeter,
+  EmptyState,
+  GameLogTable,
+  GameStrip,
+  HitRateHeatmap,
+  LineMovementTimeline,
+  PlayerHeroCard,
+  PropDetailDrawer,
+  PropOpportunityCard,
+  SkeletonCard,
+  StatSparkline,
+  StatTrendCard,
+  TeamBadge,
+  ValueScoreRing,
 } from "@/components/propedge";
+import { formatDirection, formatLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import { formatLabel, formatDirection } from "@/lib/labels";
+import { api } from "../../convex/_generated/api";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -29,7 +42,9 @@ export function PlayerIntelPage() {
   const [searchParams] = useSearchParams();
   const qParam = searchParams.get("q") || "";
   const [searchTerm, setSearchTerm] = useState(qParam);
-  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(qParam || null);
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(
+    qParam || null,
+  );
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [drawerProp, setDrawerProp] = useState<any>(null);
 
@@ -42,8 +57,13 @@ export function PlayerIntelPage() {
     }
   }, [qParam]);
 
-  const searchResults = useQuery(api.playerIntel.searchPlayers, { searchTerm: searchTerm.length >= 2 ? searchTerm : "" });
-  const profile = useQuery(api.playerIntel.playerProfile, selectedPlayer ? { playerName: selectedPlayer } : "skip");
+  const searchResults = useQuery(api.playerIntel.searchPlayers, {
+    searchTerm: searchTerm.length >= 2 ? searchTerm : "",
+  });
+  const profile = useQuery(
+    api.playerIntel.playerProfile,
+    selectedPlayer ? { playerName: selectedPlayer } : "skip",
+  );
 
   return (
     <div className="space-y-5">
@@ -63,7 +83,10 @@ export function PlayerIntelPage() {
           type="text"
           placeholder="Search any player..."
           value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); if (selectedPlayer) setSelectedPlayer(null); }}
+          onChange={e => {
+            setSearchTerm(e.target.value);
+            if (selectedPlayer) setSelectedPlayer(null);
+          }}
           className="w-full rounded-xl border border-white/10 bg-card/50 pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/30 transition-all placeholder:text-muted-foreground/50"
         />
         {searchResults && searchResults.length > 0 && !selectedPlayer && (
@@ -71,7 +94,11 @@ export function PlayerIntelPage() {
             {searchResults.map((p: any) => (
               <button
                 key={p._id}
-                onClick={() => { setSelectedPlayer(p.name); setSearchTerm(p.name); setActiveTab("overview"); }}
+                onClick={() => {
+                  setSelectedPlayer(p.name);
+                  setSearchTerm(p.name);
+                  setActiveTab("overview");
+                }}
                 className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 border-b border-white/5 last:border-0 transition-colors"
               >
                 <div className="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
@@ -79,7 +106,9 @@ export function PlayerIntelPage() {
                 </div>
                 <div>
                   <div className="font-medium text-sm">{p.name}</div>
-                  <div className="text-xs text-muted-foreground">{p.team} · {p.position} · {p.sport}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {p.team} · {p.position} · {p.sport}
+                  </div>
                 </div>
               </button>
             ))}
@@ -97,7 +126,9 @@ export function PlayerIntelPage() {
         />
       ) : selectedPlayer ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       ) : (
         <EmptyState
@@ -108,7 +139,10 @@ export function PlayerIntelPage() {
       )}
 
       {/* Prop Detail Drawer */}
-      <PropDetailDrawerWithPicks prop={drawerProp} onClose={() => setDrawerProp(null)} />
+      <PropDetailDrawerWithPicks
+        prop={drawerProp}
+        onClose={() => setDrawerProp(null)}
+      />
     </div>
   );
 }
@@ -117,7 +151,13 @@ export function PlayerIntelPage() {
    PropDetailDrawer with Add to Picks wired
    ═══════════════════════════════════════════════════ */
 
-function PropDetailDrawerWithPicks({ prop, onClose }: { prop: any; onClose: () => void }) {
+function PropDetailDrawerWithPicks({
+  prop,
+  onClose,
+}: {
+  prop: any;
+  onClose: () => void;
+}) {
   const addPick = useMutation(api.picks.addPick);
 
   const handleAddToPicks = prop?.propId
@@ -131,7 +171,13 @@ function PropDetailDrawerWithPicks({ prop, onClose }: { prop: any; onClose: () =
       }
     : undefined;
 
-  return <PropDetailDrawer prop={prop} onClose={onClose} onAddToPicks={handleAddToPicks} />;
+  return (
+    <PropDetailDrawer
+      prop={prop}
+      onClose={onClose}
+      onAddToPicks={handleAddToPicks}
+    />
+  );
 }
 
 /* ═══════════════════════════════════════════════════
@@ -139,7 +185,10 @@ function PropDetailDrawerWithPicks({ prop, onClose }: { prop: any; onClose: () =
    ═══════════════════════════════════════════════════ */
 
 function PlayerProfileView({
-  profile, activeTab, setActiveTab, onOpenPropDrawer,
+  profile,
+  activeTab,
+  setActiveTab,
+  onOpenPropDrawer,
 }: {
   profile: any;
   activeTab: TabId;
@@ -149,7 +198,9 @@ function PlayerProfileView({
   const p = profile.player;
 
   // Best prop = highest edge
-  const sortedProps = [...(profile.currentProps || [])].sort((a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge));
+  const sortedProps = [...(profile.currentProps || [])].sort(
+    (a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge),
+  );
   const topProp = sortedProps[0];
   const top3Props = sortedProps.slice(0, 3);
 
@@ -185,10 +236,12 @@ function PlayerProfileView({
               confidence={cp.confidence}
               modelProb={cp.modelProb}
               isTop={i === 0}
-              onClick={() => onOpenPropDrawer({
-                ...cp,
-                playerName: p.name,
-              })}
+              onClick={() =>
+                onOpenPropDrawer({
+                  ...cp,
+                  playerName: p.name,
+                })
+              }
             />
           ))}
         </div>
@@ -200,7 +253,7 @@ function PlayerProfileView({
       {/* Tabs */}
       <div className="border-b border-white/10">
         <nav className="flex gap-1 -mb-px overflow-x-auto scrollbar-hide">
-          {TABS.map((tab) => (
+          {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -218,8 +271,12 @@ function PlayerProfileView({
       </div>
 
       {/* Tab Content */}
-      {activeTab === "overview" && <OverviewTab profile={profile} onOpenPropDrawer={onOpenPropDrawer} />}
-      {activeTab === "props" && <PropsTab profile={profile} onOpenPropDrawer={onOpenPropDrawer} />}
+      {activeTab === "overview" && (
+        <OverviewTab profile={profile} onOpenPropDrawer={onOpenPropDrawer} />
+      )}
+      {activeTab === "props" && (
+        <PropsTab profile={profile} onOpenPropDrawer={onOpenPropDrawer} />
+      )}
       {activeTab === "gamelogs" && <GameLogsTab profile={profile} />}
       {activeTab === "splits" && <SplitsTab profile={profile} />}
       {activeTab === "matchups" && <MatchupsTab profile={profile} />}
@@ -230,10 +287,23 @@ function PlayerProfileView({
 }
 
 /* ═══════ AI Summary Card ═══════ */
-function AISummaryCard({ player, topProp, profile }: { player: any; topProp: any; profile: any }) {
+function AISummaryCard({
+  player,
+  topProp,
+  profile,
+}: {
+  player: any;
+  topProp: any;
+  profile: any;
+}) {
   const seasonPts = profile.seasonAvg?.points;
   const l5Pts = profile.last5Avg?.points;
-  const form = player.recentForm === "hot" ? "on a hot streak" : player.recentForm === "cold" ? "in a cold stretch" : "performing consistently";
+  const form =
+    player.recentForm === "hot"
+      ? "on a hot streak"
+      : player.recentForm === "cold"
+        ? "in a cold stretch"
+        : "performing consistently";
 
   return (
     <div className="rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent p-5">
@@ -241,32 +311,69 @@ function AISummaryCard({ player, topProp, profile }: { player: any; topProp: any
         <div className="size-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
           <Bot className="size-4 text-purple-400" />
         </div>
-        <h3 className="text-sm font-semibold text-purple-400">What PropEdge Sees</h3>
+        <h3 className="text-sm font-semibold text-purple-400">
+          What PropEdge Sees
+        </h3>
         <Sparkles className="size-3 text-purple-400/50" />
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
-        <span className="text-foreground font-medium">{player.name}</span> is {form} for the {player.team}.
+        <span className="text-foreground font-medium">{player.name}</span> is{" "}
+        {form} for the {player.team}.
         {seasonPts && l5Pts && (
-          <> Season average of <span className="font-mono text-foreground">{seasonPts}</span> PTS with L5 at <span className="font-mono text-foreground">{l5Pts}</span>.</>
+          <>
+            {" "}
+            Season average of{" "}
+            <span className="font-mono text-foreground">{seasonPts}</span> PTS
+            with L5 at{" "}
+            <span className="font-mono text-foreground">{l5Pts}</span>.
+          </>
         )}
         {topProp && (
-          <> The highest-edge prop is <span className="text-foreground font-medium">{formatLabel(topProp.statType)} {formatDirection(topProp.overUnder)} {topProp.line}</span> on {formatLabel(topProp.platform)} with <span className={topProp.edge > 0 ? "text-emerald-400" : "text-red-400"}>{topProp.edge > 0 ? "+" : ""}{topProp.edge.toFixed(1)}%</span> edge.</>
+          <>
+            {" "}
+            The highest-edge prop is{" "}
+            <span className="text-foreground font-medium">
+              {formatLabel(topProp.statType)}{" "}
+              {formatDirection(topProp.overUnder)} {topProp.line}
+            </span>{" "}
+            on {formatLabel(topProp.platform)} with{" "}
+            <span
+              className={topProp.edge > 0 ? "text-emerald-400" : "text-red-400"}
+            >
+              {topProp.edge > 0 ? "+" : ""}
+              {topProp.edge.toFixed(1)}%
+            </span>{" "}
+            edge.
+          </>
         )}
-        {profile.propHitRates?.length > 0 && profile.propHitRates.some((pr: any) => pr.hitRate > 70) && (
-          <> Historical hit rates look strong — check the Heatmap for the best angles.</>
-        )}
+        {profile.propHitRates?.length > 0 &&
+          profile.propHitRates.some((pr: any) => pr.hitRate > 70) && (
+            <>
+              {" "}
+              Historical hit rates look strong — check the Heatmap for the best
+              angles.
+            </>
+          )}
       </p>
     </div>
   );
 }
 
 /* ═══════ Overview Tab ═══════ */
-function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile: any; onOpenPropDrawer: (p: any) => void }) {
+function OverviewTab({
+  profile,
+  onOpenPropDrawer: _onOpenPropDrawer,
+}: {
+  profile: any;
+  onOpenPropDrawer: (p: any) => void;
+}) {
   const p = profile.player;
   void _onOpenPropDrawer; // available for future prop-click in overview
 
   // Premium visual identity data
-  const bestProp = (profile.currentProps || []).sort((a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge))[0];
+  const bestProp = (profile.currentProps || []).sort(
+    (a: any, b: any) => Math.abs(b.edge) - Math.abs(a.edge),
+  )[0];
   const recentGames = (profile.gameLogs || []).slice(0, 10);
   const pointsTrend = recentGames.map((g: any) => g.points || 0);
 
@@ -277,18 +384,36 @@ function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             {p.imageUrl ? (
-              <img src={p.imageUrl} alt={p.name} className="size-16 rounded-full object-cover ring-2 ring-white/10" />
+              <img
+                src={p.imageUrl}
+                alt={p.name}
+                className="size-16 rounded-full object-cover ring-2 ring-white/10"
+              />
             ) : (
               <div className="size-16 rounded-full bg-gradient-to-br from-[#00FF88]/20 to-[#00D4FF]/20 flex items-center justify-center text-xl font-bold">
-                {p.name?.split(" ").map((n: string) => n[0]).join("") || "?"}
+                {p.name
+                  ?.split(" ")
+                  .map((n: string) => n[0])
+                  .join("") || "?"}
               </div>
             )}
             <div>
               <div className="flex items-center gap-2">
-                <TeamBadge team={p.team} logoUrl={p.teamLogoUrl} color={p.teamColor} size="md" />
-                {p.jerseyNumber && <span className="text-xs text-muted-foreground">#{p.jerseyNumber}</span>}
+                <TeamBadge
+                  team={p.team}
+                  logoUrl={p.teamLogoUrl}
+                  color={p.teamColor}
+                  size="md"
+                />
+                {p.jerseyNumber && (
+                  <span className="text-xs text-muted-foreground">
+                    #{p.jerseyNumber}
+                  </span>
+                )}
               </div>
-              <div className="text-[10px] text-muted-foreground mt-1">{p.position} • {p.sport}</div>
+              <div className="text-[10px] text-muted-foreground mt-1">
+                {p.position} • {p.sport}
+              </div>
             </div>
           </div>
 
@@ -297,7 +422,11 @@ function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile
             {bestProp && (
               <>
                 <div className="relative">
-                  <ValueScoreRing score={bestProp.confidence || 50} size={56} label="Confidence" />
+                  <ValueScoreRing
+                    score={bestProp.confidence || 50}
+                    size={56}
+                    label="Confidence"
+                  />
                 </div>
                 <ConfidenceMeter confidence={bestProp.confidence || 50} />
               </>
@@ -311,16 +440,22 @@ function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile
             <div>
               <div className="text-[10px] text-muted-foreground">Top Edge</div>
               <div className="flex items-center gap-1">
-                <span className="font-bold">{formatLabel(bestProp.statType)}</span>
+                <span className="font-bold">
+                  {formatLabel(bestProp.statType)}
+                </span>
                 <EdgeMeter edge={bestProp.edge} />
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-muted-foreground">Trend (L10)</div>
+              <div className="text-[10px] text-muted-foreground">
+                Trend (L10)
+              </div>
               <StatSparkline data={pointsTrend} line={bestProp?.line} />
             </div>
             <div>
-              <div className="text-[10px] text-muted-foreground">Recent Games</div>
+              <div className="text-[10px] text-muted-foreground">
+                Recent Games
+              </div>
               <GameStrip
                 results={recentGames.slice(0, 5).map((g: any) => ({
                   value: g.points || 0,
@@ -335,11 +470,36 @@ function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile
 
       {/* Stat Trend Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <StatTrendCard label="PTS" l5={profile.last5Avg?.points} l10={profile.last10Avg?.points} season={profile.seasonAvg?.points} />
-        <StatTrendCard label="REB" l5={profile.last5Avg?.rebounds} l10={profile.last10Avg?.rebounds} season={profile.seasonAvg?.rebounds} />
-        <StatTrendCard label="AST" l5={profile.last5Avg?.assists} l10={profile.last10Avg?.assists} season={profile.seasonAvg?.assists} />
-        <StatTrendCard label="MIN" l5={profile.last5Avg?.minutes} l10={profile.last10Avg?.minutes} season={profile.seasonAvg?.minutes} />
-        <StatTrendCard label="3PM" l5={profile.last5Avg?.threePointers} l10={profile.last10Avg?.threePointers} season={profile.seasonAvg?.threePointers} />
+        <StatTrendCard
+          label="PTS"
+          l5={profile.last5Avg?.points}
+          l10={profile.last10Avg?.points}
+          season={profile.seasonAvg?.points}
+        />
+        <StatTrendCard
+          label="REB"
+          l5={profile.last5Avg?.rebounds}
+          l10={profile.last10Avg?.rebounds}
+          season={profile.seasonAvg?.rebounds}
+        />
+        <StatTrendCard
+          label="AST"
+          l5={profile.last5Avg?.assists}
+          l10={profile.last10Avg?.assists}
+          season={profile.seasonAvg?.assists}
+        />
+        <StatTrendCard
+          label="MIN"
+          l5={profile.last5Avg?.minutes}
+          l10={profile.last10Avg?.minutes}
+          season={profile.seasonAvg?.minutes}
+        />
+        <StatTrendCard
+          label="3PM"
+          l5={profile.last5Avg?.threePointers}
+          l10={profile.last10Avg?.threePointers}
+          season={profile.seasonAvg?.threePointers}
+        />
       </div>
 
       <div className="grid md:grid-cols-2 gap-5">
@@ -350,18 +510,31 @@ function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile
         {profile.minutesTrend?.length > 0 && (
           <div className="rounded-xl border border-white/5 bg-card/50 p-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Activity className="size-4 text-amber-400" /> Minutes & Usage Trend
+              <Activity className="size-4 text-amber-400" /> Minutes & Usage
+              Trend
             </h3>
             <div className="space-y-1.5">
               {profile.minutesTrend.map((t: any, i: number) => {
-                const maxMin = Math.max(...profile.minutesTrend.map((m: any) => m.minutes || 1));
-                const maxPts = Math.max(...profile.minutesTrend.map((m: any) => m.points || 1));
+                const maxMin = Math.max(
+                  ...profile.minutesTrend.map((m: any) => m.minutes || 1),
+                );
+                const maxPts = Math.max(
+                  ...profile.minutesTrend.map((m: any) => m.points || 1),
+                );
                 return (
-                  <div key={i} className="flex items-center gap-2 text-xs group">
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 text-xs group"
+                  >
                     <span className="text-muted-foreground/50 w-10 text-[10px] font-mono">
-                      {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      {new Date(t.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </span>
-                    <span className="w-16 text-muted-foreground/60 truncate text-[10px]">vs {t.opponent}</span>
+                    <span className="w-16 text-muted-foreground/60 truncate text-[10px]">
+                      vs {t.opponent}
+                    </span>
                     <div className="flex-1 h-5 rounded bg-white/[0.03] overflow-hidden relative">
                       <div
                         className="absolute inset-y-0 left-0 bg-cyan-500/30 rounded transition-all group-hover:bg-cyan-500/50"
@@ -369,33 +542,61 @@ function OverviewTab({ profile, onOpenPropDrawer: _onOpenPropDrawer }: { profile
                       />
                       <div
                         className="absolute inset-y-0 left-0 bg-emerald-500/40 rounded transition-all group-hover:bg-emerald-500/60"
-                        style={{ width: `${(t.points / maxPts) * 70}%`, top: "25%", bottom: "25%" }}
+                        style={{
+                          width: `${(t.points / maxPts) * 70}%`,
+                          top: "25%",
+                          bottom: "25%",
+                        }}
                       />
                     </div>
-                    <span className="font-mono w-8 text-right text-muted-foreground">{t.minutes}m</span>
-                    <span className="font-mono w-10 text-right text-emerald-400">{t.points}pts</span>
+                    <span className="font-mono w-8 text-right text-muted-foreground">
+                      {t.minutes}m
+                    </span>
+                    <span className="font-mono w-10 text-right text-emerald-400">
+                      {t.points}pts
+                    </span>
                   </div>
                 );
               })}
             </div>
             <div className="flex gap-4 mt-2 text-[10px] text-muted-foreground/50">
-              <span className="flex items-center gap-1"><div className="size-2 rounded bg-cyan-500/30" /> Minutes</span>
-              <span className="flex items-center gap-1"><div className="size-2 rounded bg-emerald-500/40" /> Points</span>
+              <span className="flex items-center gap-1">
+                <div className="size-2 rounded bg-cyan-500/30" /> Minutes
+              </span>
+              <span className="flex items-center gap-1">
+                <div className="size-2 rounded bg-emerald-500/40" /> Points
+              </span>
             </div>
           </div>
         )}
       </div>
 
       {/* Quick Game Log preview */}
-      <GameLogTable logs={profile.gameLogs || []} sport={p.sport} initialShow={5} />
+      <GameLogTable
+        logs={profile.gameLogs || []}
+        sport={p.sport}
+        initialShow={5}
+      />
     </div>
   );
 }
 
 /* ═══════ Props Tab ═══════ */
-function PropsTab({ profile, onOpenPropDrawer }: { profile: any; onOpenPropDrawer: (p: any) => void }) {
+function PropsTab({
+  profile,
+  onOpenPropDrawer,
+}: {
+  profile: any;
+  onOpenPropDrawer: (p: any) => void;
+}) {
   if (!profile.currentProps?.length) {
-    return <EmptyState icon={Search} title="No current props" description="No props currently available for this player" />;
+    return (
+      <EmptyState
+        icon={Search}
+        title="No current props"
+        description="No props currently available for this player"
+      />
+    );
   }
 
   return (
@@ -412,7 +613,9 @@ function PropsTab({ profile, onOpenPropDrawer }: { profile: any; onOpenPropDrawe
           confidence={cp.confidence}
           modelProb={cp.modelProb}
           isTop={i === 0}
-          onClick={() => onOpenPropDrawer({ ...cp, playerName: profile.player.name })}
+          onClick={() =>
+            onOpenPropDrawer({ ...cp, playerName: profile.player.name })
+          }
         />
       ))}
     </div>
@@ -422,9 +625,21 @@ function PropsTab({ profile, onOpenPropDrawer }: { profile: any; onOpenPropDrawe
 /* ═══════ Game Logs Tab ═══════ */
 function GameLogsTab({ profile }: { profile: any }) {
   if (!profile.gameLogs?.length) {
-    return <EmptyState icon={BarChart3} title="No game logs" description="No game log data available for this player" />;
+    return (
+      <EmptyState
+        icon={BarChart3}
+        title="No game logs"
+        description="No game log data available for this player"
+      />
+    );
   }
-  return <GameLogTable logs={profile.gameLogs} sport={profile.player.sport} initialShow={20} />;
+  return (
+    <GameLogTable
+      logs={profile.gameLogs}
+      sport={profile.player.sport}
+      initialShow={20}
+    />
+  );
 }
 
 /* ═══════ Splits Tab ═══════ */
@@ -440,7 +655,7 @@ function SplitsTab({ profile }: { profile: any }) {
       <div className="rounded-xl border border-white/5 bg-card/50 p-5">
         <h3 className="text-sm font-semibold mb-4">Home vs Away Performance</h3>
         <div className="space-y-4">
-          {stats.map((stat) => {
+          {stats.map(stat => {
             const hVal = home?.[stat] ?? 0;
             const aVal = away?.[stat] ?? 0;
             const maxVal = Math.max(hVal, aVal, 1);
@@ -451,22 +666,32 @@ function SplitsTab({ profile }: { profile: any }) {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground/60 w-8">HOME</span>
+                    <span className="text-[10px] text-muted-foreground/60 w-8">
+                      HOME
+                    </span>
                     <div className="flex-1 h-6 rounded bg-white/5 overflow-hidden">
                       <div
                         className="h-full rounded bg-gradient-to-r from-emerald-500/20 to-emerald-500/40 flex items-center px-2 text-xs font-mono font-semibold"
-                        style={{ width: `${(hVal / maxVal) * 100}%`, minWidth: "40px" }}
+                        style={{
+                          width: `${(hVal / maxVal) * 100}%`,
+                          minWidth: "40px",
+                        }}
                       >
                         {hVal}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground/60 w-8">AWAY</span>
+                    <span className="text-[10px] text-muted-foreground/60 w-8">
+                      AWAY
+                    </span>
                     <div className="flex-1 h-6 rounded bg-white/5 overflow-hidden">
                       <div
                         className="h-full rounded bg-gradient-to-r from-purple-500/20 to-purple-500/40 flex items-center px-2 text-xs font-mono font-semibold"
-                        style={{ width: `${(aVal / maxVal) * 100}%`, minWidth: "40px" }}
+                        style={{
+                          width: `${(aVal / maxVal) * 100}%`,
+                          minWidth: "40px",
+                        }}
                       >
                         {aVal}
                       </div>
@@ -481,11 +706,36 @@ function SplitsTab({ profile }: { profile: any }) {
 
       {/* L5 / L10 / Season Comparison */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <StatTrendCard label="PTS" l5={profile.last5Avg?.points} l10={profile.last10Avg?.points} season={profile.seasonAvg?.points} />
-        <StatTrendCard label="REB" l5={profile.last5Avg?.rebounds} l10={profile.last10Avg?.rebounds} season={profile.seasonAvg?.rebounds} />
-        <StatTrendCard label="AST" l5={profile.last5Avg?.assists} l10={profile.last10Avg?.assists} season={profile.seasonAvg?.assists} />
-        <StatTrendCard label="MIN" l5={profile.last5Avg?.minutes} l10={profile.last10Avg?.minutes} season={profile.seasonAvg?.minutes} />
-        <StatTrendCard label="3PM" l5={profile.last5Avg?.threePointers} l10={profile.last10Avg?.threePointers} season={profile.seasonAvg?.threePointers} />
+        <StatTrendCard
+          label="PTS"
+          l5={profile.last5Avg?.points}
+          l10={profile.last10Avg?.points}
+          season={profile.seasonAvg?.points}
+        />
+        <StatTrendCard
+          label="REB"
+          l5={profile.last5Avg?.rebounds}
+          l10={profile.last10Avg?.rebounds}
+          season={profile.seasonAvg?.rebounds}
+        />
+        <StatTrendCard
+          label="AST"
+          l5={profile.last5Avg?.assists}
+          l10={profile.last10Avg?.assists}
+          season={profile.seasonAvg?.assists}
+        />
+        <StatTrendCard
+          label="MIN"
+          l5={profile.last5Avg?.minutes}
+          l10={profile.last10Avg?.minutes}
+          season={profile.seasonAvg?.minutes}
+        />
+        <StatTrendCard
+          label="3PM"
+          l5={profile.last5Avg?.threePointers}
+          l10={profile.last10Avg?.threePointers}
+          season={profile.seasonAvg?.threePointers}
+        />
       </div>
     </div>
   );
@@ -495,7 +745,13 @@ function SplitsTab({ profile }: { profile: any }) {
 function MatchupsTab({ profile }: { profile: any }) {
   const matchups = profile.matchups || [];
   if (!matchups.length) {
-    return <EmptyState icon={BarChart3} title="No matchup data" description="No opponent matchup data available" />;
+    return (
+      <EmptyState
+        icon={BarChart3}
+        title="No matchup data"
+        description="No opponent matchup data available"
+      />
+    );
   }
 
   const maxPts = Math.max(...matchups.map((m: any) => m.avgPoints || 1));
@@ -506,8 +762,12 @@ function MatchupsTab({ profile }: { profile: any }) {
       <div className="space-y-2">
         {matchups.map((m: any) => (
           <div key={m.opponent} className="flex items-center gap-3 group">
-            <span className="w-28 text-sm font-medium truncate">vs {m.opponent}</span>
-            <span className="text-[10px] text-muted-foreground/50 w-8">({m.games}G)</span>
+            <span className="w-28 text-sm font-medium truncate">
+              vs {m.opponent}
+            </span>
+            <span className="text-[10px] text-muted-foreground/50 w-8">
+              ({m.games}G)
+            </span>
             <div className="flex-1 h-7 rounded bg-white/[0.03] overflow-hidden relative">
               <div
                 className="h-full rounded bg-gradient-to-r from-cyan-500/20 to-cyan-500/40 transition-all group-hover:from-cyan-500/30 group-hover:to-cyan-500/50"
@@ -531,7 +791,13 @@ function LineMovementTab({ profile }: { profile: any }) {
   const snapMap: Record<string, any[]> = profile.propSnapshots || {};
 
   if (!props.length) {
-    return <EmptyState icon={Activity} title="No line movement data" description="No props available to show line movement" />;
+    return (
+      <EmptyState
+        icon={Activity}
+        title="No line movement data"
+        description="No props available to show line movement"
+      />
+    );
   }
 
   return (
@@ -539,22 +805,29 @@ function LineMovementTab({ profile }: { profile: any }) {
       {props.map((cp: any, i: number) => {
         // Look up real snapshots by propId
         const realSnaps = cp.propId ? snapMap[String(cp.propId)] : undefined;
-        const snapshots = realSnaps && realSnaps.length > 0
-          ? realSnaps.map((s: any) => ({
-              timestamp: s.timestamp,
-              line: s.line,
-              snapshotType: s.snapshotType,
-              edge: s.edge,
-            }))
-          : [
-              // Fallback: single current snapshot (no random data)
-              { timestamp: Date.now(), line: cp.line, snapshotType: "current", edge: cp.edge },
-            ];
+        const snapshots =
+          realSnaps && realSnaps.length > 0
+            ? realSnaps.map((s: any) => ({
+                timestamp: s.timestamp,
+                line: s.line,
+                snapshotType: s.snapshotType,
+                edge: s.edge,
+              }))
+            : [
+                // Fallback: single current snapshot (no random data)
+                {
+                  timestamp: Date.now(),
+                  line: cp.line,
+                  snapshotType: "current",
+                  edge: cp.edge,
+                },
+              ];
 
         return (
           <div key={i}>
             <div className="text-xs font-medium text-muted-foreground mb-2">
-              {formatLabel(cp.statType)} — {formatLabel(cp.platform)} ({formatDirection(cp.overUnder)} {cp.line})
+              {formatLabel(cp.statType)} — {formatLabel(cp.platform)} (
+              {formatDirection(cp.overUnder)} {cp.line})
             </div>
             <LineMovementTimeline snapshots={snapshots} />
           </div>
@@ -568,7 +841,13 @@ function LineMovementTab({ profile }: { profile: any }) {
 function ResultsHistoryTab({ profile }: { profile: any }) {
   const results = profile.resultHistory || [];
   if (!results.length) {
-    return <EmptyState icon={BarChart3} title="No result history" description="No graded pick results for this player" />;
+    return (
+      <EmptyState
+        icon={BarChart3}
+        title="No result history"
+        description="No graded pick results for this player"
+      />
+    );
   }
 
   return (
@@ -589,42 +868,83 @@ function ResultsHistoryTab({ profile }: { profile: any }) {
           </thead>
           <tbody>
             {results.map((r: any, i: number) => {
-              const actual = r.actualStat !== undefined ? Math.max(0, r.actualStat) : undefined;
+              const actual =
+                r.actualStat !== undefined
+                  ? Math.max(0, r.actualStat)
+                  : undefined;
               // Direction-aware margin: positive = pick beat the line
-              const margin = actual !== undefined
-                ? Math.round((r.overUnder === "over" ? actual - r.pickLine : r.pickLine - actual) * 10) / 10
-                : undefined;
+              const margin =
+                actual !== undefined
+                  ? Math.round(
+                      (r.overUnder === "over"
+                        ? actual - r.pickLine
+                        : r.pickLine - actual) * 10,
+                    ) / 10
+                  : undefined;
               return (
-                <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors">
+                <tr
+                  key={i}
+                  className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors"
+                >
                   <td className="px-4 py-2.5">
-                    <span className={cn(
-                      "text-[10px] px-2 py-0.5 rounded-full font-semibold",
-                      r.resultStatus === "won" ? "bg-emerald-500/10 text-emerald-400" :
-                      r.resultStatus === "lost" ? "bg-red-500/10 text-red-400" :
-                      "bg-zinc-500/10 text-zinc-400"
-                    )}>
+                    <span
+                      className={cn(
+                        "text-[10px] px-2 py-0.5 rounded-full font-semibold",
+                        r.resultStatus === "won"
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : r.resultStatus === "lost"
+                            ? "bg-red-500/10 text-red-400"
+                            : "bg-zinc-500/10 text-zinc-400",
+                      )}
+                    >
                       {r.resultStatus.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 font-medium">{formatLabel(r.statType)}</td>
+                  <td className="px-4 py-2.5 font-medium">
+                    {formatLabel(r.statType)}
+                  </td>
                   <td className="px-4 py-2.5">
-                    <span className={cn("text-[10px] font-semibold", r.overUnder === "over" ? "text-emerald-400" : "text-red-400")}>
+                    <span
+                      className={cn(
+                        "text-[10px] font-semibold",
+                        r.overUnder === "over"
+                          ? "text-emerald-400"
+                          : "text-red-400",
+                      )}
+                    >
                       {formatDirection(r.overUnder)}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-right font-mono">{r.pickLine}</td>
-                  <td className="px-4 py-2.5 text-right font-mono font-medium">{actual ?? "—"}</td>
+                  <td className="px-4 py-2.5 text-right font-mono">
+                    {r.pickLine}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono font-medium">
+                    {actual ?? "—"}
+                  </td>
                   <td className="px-4 py-2.5 text-right font-mono">
                     {margin !== undefined ? (
-                      <span className={margin > 0 ? "text-emerald-400" : margin < 0 ? "text-red-400" : "text-muted-foreground"}>
-                        {margin > 0 ? "+" : ""}{margin.toFixed(1)}
+                      <span
+                        className={
+                          margin > 0
+                            ? "text-emerald-400"
+                            : margin < 0
+                              ? "text-red-400"
+                              : "text-muted-foreground"
+                        }
+                      >
+                        {margin > 0 ? "+" : ""}
+                        {margin.toFixed(1)}
                       </span>
-                    ) : "—"}
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <EdgeBadge edge={r.pickEdge} size="xs" />
                   </td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{formatLabel(r.platform)}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">
+                    {formatLabel(r.platform)}
+                  </td>
                 </tr>
               );
             })}

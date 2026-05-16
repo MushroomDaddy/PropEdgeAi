@@ -21,22 +21,22 @@ export interface PropFeatures {
   usageTrend: number;
 
   // Matchup
-  dvpRank: number;          // 1-30
-  oppDefRating: number;     // opponent defensive efficiency
+  dvpRank: number; // 1-30
+  oppDefRating: number; // opponent defensive efficiency
   homeAway: "home" | "away";
   restDays: number;
   backToBack: boolean;
-  travelDistance: number;    // miles
+  travelDistance: number; // miles
 
   // Market
   line: number;
   projection: number;
-  projectionDiff: number;   // pct
+  projectionDiff: number; // pct
   consensusSpread: number;
   marketImpliedProb: number; // 0-100
   openingLine: number;
   lineDelta: number;
-  publicSidePct: number;    // 0-100
+  publicSidePct: number; // 0-100
 
   // Context
   sport: string;
@@ -46,7 +46,7 @@ export interface PropFeatures {
   gameTotal: number;
   spread: number;
   isPlayoffs: boolean;
-  injuryStatus: string;     // "healthy" | "questionable" | "probable" | "doubtful"
+  injuryStatus: string; // "healthy" | "questionable" | "probable" | "doubtful"
   teammateOut: boolean;
   oppStarOut: boolean;
 }
@@ -63,21 +63,21 @@ export interface ModelInput {
 }
 
 export interface ModelOutput {
-  modelProbability: number;       // 0-100 raw
-  calibratedProbability: number;  // 0-100 after Platt scaling
-  confidenceBucket: string;       // e.g. "70-80"
+  modelProbability: number; // 0-100 raw
+  calibratedProbability: number; // 0-100 after Platt scaling
+  confidenceBucket: string; // e.g. "70-80"
   expectedStatMean: number;
   expectedStatMedian: number;
   expectedStatP10: number;
   expectedStatP90: number;
   featureImportance: FeatureWeight[];
-  explanationFactors: string[];   // human-readable
+  explanationFactors: string[]; // human-readable
   modelVersion: string;
 }
 
 export interface FeatureWeight {
   feature: string;
-  weight: number;  // SHAP value
+  weight: number; // SHAP value
   direction: "positive" | "negative";
 }
 
@@ -85,11 +85,11 @@ export interface FeatureWeight {
 
 export interface TrainingRow {
   features: PropFeatures;
-  label: number;          // 1 = hit, 0 = miss
+  label: number; // 1 = hit, 0 = miss
   actualStat: number;
   pickLine: number;
   overUnder: string;
-  weight?: number;         // sample weight
+  weight?: number; // sample weight
 }
 
 // ── Prediction Record ──
@@ -110,11 +110,11 @@ export interface PredictionRecord {
 // ── Calibration ──
 
 export interface CalibrationBucket {
-  bucketLabel: string;      // e.g. "60-65"
-  bucketMidpoint: number;   // e.g. 62.5
+  bucketLabel: string; // e.g. "60-65"
+  bucketMidpoint: number; // e.g. 62.5
   totalPredictions: number;
   hits: number;
-  actualHitRate: number;    // hits/total * 100
+  actualHitRate: number; // hits/total * 100
   calibrationError: number; // |actualHitRate - bucketMidpoint|
 }
 
@@ -122,7 +122,7 @@ export interface CalibrationBucket {
 
 export interface ModelVersion {
   versionId: string;
-  modelType: string;       // "heuristic" | "lightgbm" | "xgboost" | "ensemble"
+  modelType: string; // "heuristic" | "lightgbm" | "xgboost" | "ensemble"
   trainedAt: number;
   trainingRows: number;
   validationAccuracy: number;
@@ -137,14 +137,17 @@ export interface ModelVersion {
 
 export interface LearningFeedback {
   feedbackId: string;
-  period: string;           // "2025-W01" | "2025-05"
+  period: string; // "2025-W01" | "2025-05"
   totalPicks: number;
   totalHits: number;
   hitRate: number;
   bySport: Record<string, { total: number; hits: number; hitRate: number }>;
   byStatType: Record<string, { total: number; hits: number; hitRate: number }>;
   byPlatform: Record<string, { total: number; hits: number; hitRate: number }>;
-  byConfidenceBucket: Record<string, { total: number; hits: number; hitRate: number }>;
+  byConfidenceBucket: Record<
+    string,
+    { total: number; hits: number; hitRate: number }
+  >;
   overVsUnder: {
     over: { total: number; hits: number; hitRate: number };
     under: { total: number; hits: number; hitRate: number };

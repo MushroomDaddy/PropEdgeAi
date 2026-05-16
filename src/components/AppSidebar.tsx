@@ -2,6 +2,9 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import {
   Bot,
+  ClipboardCheck,
+  Database,
+  FlaskConical,
   LayoutDashboard,
   LogOut,
   Search,
@@ -9,13 +12,10 @@ import {
   ShoppingCart,
   Target,
   Trophy,
+  Upload,
+  UserSearch,
   Wallet,
   Zap,
-  ClipboardCheck,
-  FlaskConical,
-  UserSearch,
-  Database,
-  Upload,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { APP_NAME } from "@/lib/constants";
@@ -102,7 +102,7 @@ function SidebarNav() {
         </SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {mainNav.map((item) => (
+            {mainNav.map(item => (
               <NavLink
                 key={item.href}
                 href={item.href}
@@ -121,7 +121,7 @@ function SidebarNav() {
         </SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {intelligenceNav.map((item) => (
+            {intelligenceNav.map(item => (
               <NavLink
                 key={item.href}
                 href={item.href}
@@ -140,7 +140,7 @@ function SidebarNav() {
         </SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {dataNav.map((item) => (
+            {dataNav.map(item => (
               <NavLink
                 key={item.href}
                 href={item.href}
@@ -159,7 +159,7 @@ function SidebarNav() {
         </SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {trackingNav.map((item) => (
+            {trackingNav.map(item => (
               <NavLink
                 key={item.href}
                 href={item.href}

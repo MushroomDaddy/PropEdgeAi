@@ -6,7 +6,14 @@
  */
 
 import { motion } from "framer-motion";
-import { Activity, CheckCircle2, AlertTriangle, XCircle, Clock, Database } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Database,
+  XCircle,
+} from "lucide-react";
 
 interface ProviderHealth {
   name: string;
@@ -30,10 +37,23 @@ const STATUS_ICONS = {
   offline: { icon: XCircle, color: "text-gray-500" },
 };
 
-function HealthBar({ value, className = "" }: { value: number; className?: string }) {
-  const color = value >= 80 ? "bg-emerald-400" : value >= 50 ? "bg-amber-400" : "bg-red-400";
+function HealthBar({
+  value,
+  className = "",
+}: {
+  value: number;
+  className?: string;
+}) {
+  const color =
+    value >= 80
+      ? "bg-emerald-400"
+      : value >= 50
+        ? "bg-amber-400"
+        : "bg-red-400";
   return (
-    <div className={`h-1.5 bg-white/5 rounded-full overflow-hidden ${className}`}>
+    <div
+      className={`h-1.5 bg-white/5 rounded-full overflow-hidden ${className}`}
+    >
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${value}%` }}
@@ -44,12 +64,20 @@ function HealthBar({ value, className = "" }: { value: number; className?: strin
   );
 }
 
-export function SyncHealthPanel({ providers, totalRecords, className = "" }: Props) {
+export function SyncHealthPanel({
+  providers,
+  totalRecords,
+  className = "",
+}: Props) {
   const healthyCount = providers.filter(p => p.status === "healthy").length;
   const errorCount = providers.filter(p => p.status === "error").length;
-  const overallHealth = providers.length > 0
-    ? Math.round(providers.reduce((sum, p) => sum + p.freshPercent, 0) / providers.length)
-    : 0;
+  const overallHealth =
+    providers.length > 0
+      ? Math.round(
+          providers.reduce((sum, p) => sum + p.freshPercent, 0) /
+            providers.length,
+        )
+      : 0;
 
   return (
     <motion.div
@@ -65,7 +93,9 @@ export function SyncHealthPanel({ providers, totalRecords, className = "" }: Pro
         </div>
         <div className="flex items-center gap-3 text-[10px]">
           <span className="text-emerald-400">{healthyCount} healthy</span>
-          {errorCount > 0 && <span className="text-red-400">{errorCount} error</span>}
+          {errorCount > 0 && (
+            <span className="text-red-400">{errorCount} error</span>
+          )}
           {totalRecords !== undefined && (
             <span className="text-muted-foreground flex items-center gap-1">
               <Database className="size-3" />
@@ -78,10 +108,18 @@ export function SyncHealthPanel({ providers, totalRecords, className = "" }: Pro
       {/* Overall health bar */}
       <div className="px-4 pt-3 pb-1">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] text-muted-foreground">Overall Data Freshness</span>
-          <span className={`text-xs font-bold font-mono ${
-            overallHealth >= 80 ? "text-emerald-400" : overallHealth >= 50 ? "text-amber-400" : "text-red-400"
-          }`}>
+          <span className="text-[10px] text-muted-foreground">
+            Overall Data Freshness
+          </span>
+          <span
+            className={`text-xs font-bold font-mono ${
+              overallHealth >= 80
+                ? "text-emerald-400"
+                : overallHealth >= 50
+                  ? "text-amber-400"
+                  : "text-red-400"
+            }`}
+          >
             {overallHealth}%
           </span>
         </div>
@@ -104,7 +142,9 @@ export function SyncHealthPanel({ providers, totalRecords, className = "" }: Pro
               <Icon className={`size-3.5 shrink-0 ${si.color}`} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-medium truncate">{p.displayName}</span>
+                  <span className="text-[11px] font-medium truncate">
+                    {p.displayName}
+                  </span>
                   <span className="text-[9px] text-muted-foreground font-mono">
                     {p.recordCount > 0 ? `${p.recordCount}` : "—"}
                   </span>
