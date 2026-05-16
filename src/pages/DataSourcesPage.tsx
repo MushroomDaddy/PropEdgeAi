@@ -1,4 +1,5 @@
-import { useQuery } from "convex/react";
+import { useState } from "react";
+import { useAction } from "convex/react";
 import {
   Activity,
   AlertTriangle,
@@ -23,8 +24,8 @@ function HealthBar({ value }: { value: number }) {
     value >= 80
       ? "bg-emerald-400"
       : value >= 50
-        ? "bg-amber-400"
-        : "bg-red-400";
+      ? "bg-amber-400"
+      : "bg-red-400";
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
@@ -100,19 +101,64 @@ function RefreshStatusBadge({ status }: { status: string }) {
   };
   const c = config[status] || config.never;
   return (
-    <span
-      className={`inline-flex items-center gap-1 text-[10px] font-mono ${c.color}`}
-    >
+    <span className={`inline-flex items-center gap-1 text-[10px] font-mono ${c.color}`}>
       {c.icon} {c.label}
     </span>
   );
 }
 
+function ResultPanel({ result, error }: { result: any; error: string | null }) {
+  if (!result && !error) return null;
+  return (
+    <div className="mt-2 bg-black/30 rounded-lg p-2 text-[10px] font-mono overflow-auto max-h-32">
+      {error ? (
+        <div className="text-red-400">{error}</div>
+      ) : (
+        <pre className="text-emerald-400">{JSON.stringify(result, null, 2)}</pre>
+      )}
+    </div>
+  );
+}
+
 export default function DataSourcesPage() {
   const data = useQuery(api.providerStatus.allProviders);
+  
+  // Action hooks for sync buttons
+  const adminFullSync = useAction(api.adminSync.adminFullSync);
+  const adminRefreshGames = useAction(api.adminSync.adminRefreshGames);
+  const adminRefreshOdds = useAction(api.adminSync.adminRefreshOdds);
+  const adminRefreshProps = useAction(api.adminSync.adminRefreshProps);
+  const adminApiSportsFullSync = useAction(api.adminSync.adminApiSportsFullSync);
+  const adminApiSportsSyncTeams = useAction(api.adminSync.adminApiSportsSyncTeams);
+  const adminApiSportsSyncGames = useAction(api.adminSync.adminApiSportsSyncGames);
+  const adminApiSportsSyncStandings = useAction(api.adminSync.adminApiSportsSyncStandings);
+  const adminApiSportsSyncLiveScores = useAction(api.adminSync.adminApiSportsSyncLiveScores);
+  const adminApiSportsSyncInjuries = useAction(api.adminSync.adminApiSportsSyncInjuries);
+
+  // State for loading/results/errors
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [results, setResults] = useState<Record<string, any>>({});
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
 
   const isHybridMode = data?.mode === "hybrid";
   const isDemo = data?.mode === "demo";
+
+  const runAction = async (
+    actionName: string,
+    action: any,
+    args: any = {}
+  ) => {
+    setLoading((prev) => ({ ...prev, [actionName]: true }));
+    setErrors((prev) => ({ ...prev, [actionName]: null }));
+    try {
+      const result = await action(args);
+      setResults((prev) => ({ ...prev, [actionName]: result }));
+    } catch (err: any) {
+      setErrors((prev) => ({ ...prev, [actionName]: err.message || "Unknown error" }));
+    } finally {
+      setLoading((prev) => ({ ...prev, [actionName]: false }));
+    }
+  };
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -129,7 +175,6 @@ export default function DataSourcesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Mode indicator */}
           <div
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
               isHybridMode
@@ -140,23 +185,19 @@ export default function DataSourcesPage() {
             {isHybridMode ? (
               <>
                 <Zap className="size-4 text-cyan-400" />
-                <span className="text-xs font-bold text-cyan-400">
-                  HYBRID MODE
-                </span>
+                <span className="text-xs font-bold text-cyan-400">HYBRID MODE</span>
               </>
             ) : (
               <>
                 <Shield className="size-4 text-amber-400" />
-                <span className="text-xs font-bold text-amber-400">
-                  DEMO MODE
-                </span>
+                <span className="text-xs font-bold text-amber-400">DEMO MODE</span>
               </>
             )}
           </div>
         </div>
       </div>
 
-      {/* DB Stats — expanded for R11 */}
+      {/* DB Stats */}
       {data && (
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {[
@@ -165,22 +206,10 @@ export default function DataSourcesPage() {
             { label: "Games", value: data.dbStats.games, icon: "🏟️" },
             { label: "My Results", value: data.dbStats.myResults, icon: "✅" },
             { label: "Kalshi", value: data.dbStats.kalshiMarkets, icon: "📈" },
-            {
-              label: "My Imports",
-              value: data.dbStats.myImportJobs,
-              icon: "📥",
-            },
-            {
-              label: "Live Events",
-              value: data.dbStats.liveEvents || 0,
-              icon: "🔴",
-            },
-            {
-              label: "Live Odds",
-              value: data.dbStats.liveOdds || 0,
-              icon: "💰",
-            },
-          ].map(s => (
+            { label: "My Imports", value: data.dbStats.myImportJobs, icon: "📥" },
+            { label: "Live Events", value: data.dbStats.liveEvents || 0, icon: "🔴" },
+            { label: "Live Odds", value: data.dbStats.liveOdds || 0, icon: "💰" },
+          ].map((s) => (
             <div
               key={s.label}
               className="bg-[#0D1117] rounded-xl border border-white/5 p-3 text-center"
@@ -193,7 +222,7 @@ export default function DataSourcesPage() {
         </div>
       )}
 
-      {/* Live data freshness bar (R11) */}
+      {/* Live data freshness bar */}
       {data && (data.dbStats.liveEvents > 0 || data.dbStats.liveOdds > 0) && (
         <div className="bg-[#0D1117] rounded-xl border border-cyan-400/10 p-4 space-y-2">
           <div className="flex items-center justify-between">
@@ -215,7 +244,7 @@ export default function DataSourcesPage() {
                 ? Math.round(
                     ((data.dbStats.freshEvents || 0) /
                       data.dbStats.liveEvents) *
-                      100,
+                      100
                   )
                 : 0
             }
@@ -241,8 +270,8 @@ export default function DataSourcesPage() {
                     p.isLive
                       ? "bg-cyan-400/10"
                       : p.status === "active"
-                        ? "bg-emerald-400/10"
-                        : "bg-white/5"
+                      ? "bg-emerald-400/10"
+                      : "bg-white/5"
                   }`}
                 >
                   <Server
@@ -250,8 +279,8 @@ export default function DataSourcesPage() {
                       p.isLive
                         ? "text-cyan-400"
                         : p.status === "active"
-                          ? "text-emerald-400"
-                          : "text-muted-foreground"
+                        ? "text-emerald-400"
+                        : "text-muted-foreground"
                     }`}
                   />
                 </div>
@@ -302,8 +331,8 @@ export default function DataSourcesPage() {
                     p.isLive && p.apiKeyConfigured
                       ? "live"
                       : p.isDemoMode
-                        ? "demo"
-                        : p.status
+                      ? "demo"
+                      : p.status
                   }
                 />
               </div>
@@ -322,7 +351,7 @@ export default function DataSourcesPage() {
               ))}
             </div>
 
-            {/* Rate limit info (R11) */}
+            {/* Rate limit info */}
             {p.rateLimit && (
               <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
                 <span className="flex items-center gap-1">
@@ -380,92 +409,138 @@ export default function DataSourcesPage() {
               </span>
             )}
 
-            {/* API key setup hints */}
-            {p.requiresApiKey &&
-              !p.apiKeyConfigured &&
-              p.provider === "the_odds_api" && (
+            {/* REAL SYNC BUTTONS - Step 2 Implementation */}
+            <div className="space-y-2 mt-3">
+              {/* The Odds API Buttons */}
+              {p.provider === "the_odds_api" && p.apiKeyConfigured && (
+                <div className="bg-white/5 rounded-lg p-3 space-y-2">
+                  <div className="font-bold text-white/80 text-[11px]">The Odds API Sync</div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => runAction("adminFullSync", adminFullSync, { sport: "NBA" })}
+                      disabled={loading["adminFullSync"]}
+                      className="px-3 py-1.5 bg-cyan-400/10 text-cyan-400 rounded text-[10px] font-bold border border-cyan-400/20 hover:bg-cyan-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminFullSync"] ? "Running..." : "Full Sync (NBA)"}
+                    </button>
+                    <button
+                      onClick={() => runAction("adminRefreshGames", adminRefreshGames, { sport: "NBA" })}
+                      disabled={loading["adminRefreshGames"]}
+                      className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminRefreshGames"] ? "Running..." : "Refresh Games"}
+                    </button>
+                    <button
+                      onClick={() => runAction("adminRefreshOdds", adminRefreshOdds, { sport: "NBA", markets: "h2h,spreads,totals" })}
+                      disabled={loading["adminRefreshOdds"]}
+                      className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminRefreshOdds"] ? "Running..." : "Refresh Odds"}
+                    </button>
+                    <button
+                      onClick={() => runAction("adminRefreshProps", adminRefreshProps, { sport: "NBA", maxEvents: 3 })}
+                      disabled={loading["adminRefreshProps"]}
+                      className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminRefreshProps"] ? "Running..." : "Refresh Props"}
+                    </button>
+                  </div>
+                  <ResultPanel result={results["adminFullSync"]} error={errors["adminFullSync"]} />
+                  <ResultPanel result={results["adminRefreshGames"]} error={errors["adminRefreshGames"]} />
+                  <ResultPanel result={results["adminRefreshOdds"]} error={errors["adminRefreshOdds"]} />
+                  <ResultPanel result={results["adminRefreshProps"]} error={errors["adminRefreshProps"]} />
+                </div>
+              )}
+
+              {/* API-SPORTS Buttons */}
+              {p.provider === "api_sports" && p.apiKeyConfigured && (
+                <div className="bg-white/5 rounded-lg p-3 space-y-2">
+                  <div className="font-bold text-white/80 text-[11px]">API-SPORTS Sync</div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => runAction("adminApiSportsFullSync", adminApiSportsFullSync, { sport: "NBA" })}
+                      disabled={loading["adminApiSportsFullSync"]}
+                      className="px-3 py-1.5 bg-cyan-400/10 text-cyan-400 rounded text-[10px] font-bold border border-cyan-400/20 hover:bg-cyan-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminApiSportsFullSync"] ? "Running..." : "Full Sync (NBA)"}
+                    </button>
+                    <button
+                      onClick={() => runAction("adminApiSportsSyncTeams", adminApiSportsSyncTeams, { sport: "NBA" })}
+                      disabled={loading["adminApiSportsSyncTeams"]}
+                      className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminApiSportsSyncTeams"] ? "Running..." : "Sync Teams"}
+                    </button>
+                    <button
+                      onClick={() => runAction("adminApiSportsSyncGames", adminApiSportsSyncGames, { sport: "NBA" })}
+                      disabled={loading["adminApiSportsSyncGames"]}
+                      className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminApiSportsSyncGames"] ? "Running..." : "Sync Games"}
+                    </button>
+                    <button
+                      onClick={() => runAction("adminApiSportsSyncStandings", adminApiSportsSyncStandings, { sport: "NBA" })}
+                      disabled={loading["adminApiSportsSyncStandings"]}
+                      className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminApiSportsSyncStandings"] ? "Running..." : "Sync Standings"}
+                    </button>
+                    <button
+                      onClick={() => runAction("adminApiSportsSyncLiveScores", adminApiSportsSyncLiveScores, { sport: "NBA" })}
+                      disabled={loading["adminApiSportsSyncLiveScores"]}
+                      className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminApiSportsSyncLiveScores"] ? "Running..." : "Sync Live Scores"}
+                    </button>
+                    <button
+                      onClick={() => runAction("adminApiSportsSyncInjuries", adminApiSportsSyncInjuries, { sport: "NFL" })}
+                      disabled={loading["adminApiSportsSyncInjuries"]}
+                      className="px-3 py-1.5 bg-emerald-400/10 text-emerald-400 rounded text-[10px] font-bold border border-emerald-400/20 hover:bg-emerald-400/20 disabled:opacity-50"
+                    >
+                      {loading["adminApiSportsSyncInjuries"] ? "Running..." : "Sync Injuries (NFL)"}
+                    </button>
+                  </div>
+                  <ResultPanel result={results["adminApiSportsFullSync"]} error={errors["adminApiSportsFullSync"]} />
+                  <ResultPanel result={results["adminApiSportsSyncTeams"]} error={errors["adminApiSportsSyncTeams"]} />
+                  <ResultPanel result={results["adminApiSportsSyncGames"]} error={errors["adminApiSportsSyncGames"]} />
+                  <ResultPanel result={results["adminApiSportsSyncStandings"]} error={errors["adminApiSportsSyncStandings"]} />
+                  <ResultPanel result={results["adminApiSportsSyncLiveScores"]} error={errors["adminApiSportsSyncLiveScores"]} />
+                  <ResultPanel result={results["adminApiSportsSyncInjuries"]} error={errors["adminApiSportsSyncInjuries"]} />
+                </div>
+              )}
+
+              {/* Setup Instructions for Missing Keys */}
+              {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "the_odds_api" && (
                 <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
-                  <div className="font-bold text-white/80">
-                    🔑 Setup Instructions
-                  </div>
-                  <div>
-                    1. Get a free API key at{" "}
-                    <span className="text-cyan-400">the-odds-api.com</span>
-                  </div>
-                  <div>
-                    2. Add{" "}
-                    <code className="bg-black/30 px-1 rounded">
-                      THE_ODDS_API_KEY
-                    </code>{" "}
-                    to your Convex environment variables
-                  </div>
-                  <div>
-                    3. Run{" "}
-                    <code className="bg-black/30 px-1 rounded">
-                      npx convex run adminSync:adminFullSync
-                    </code>
-                  </div>
+                  <div className="font-bold text-white/80">🔑 Setup Instructions</div>
+                  <div>1. Get a free API key at <span className="text-cyan-400">the-odds-api.com</span></div>
+                  <div>2. Add <code className="bg-black/30 px-1 rounded">THE_ODDS_API_KEY</code> to your Convex environment variables</div>
                   <div className="text-amber-400 mt-1">
                     Free tier: 500 requests/month • Covers NBA, NFL, MLB, NHL +
-                    more
                   </div>
                 </div>
               )}
-            {p.requiresApiKey &&
-              !p.apiKeyConfigured &&
-              p.provider === "api_sports" && (
+              {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "api_sports" && (
                 <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
-                  <div className="font-bold text-white/80">
-                    🔑 Setup Instructions
-                  </div>
-                  <div>
-                    1. Get an API key at{" "}
-                    <span className="text-cyan-400">api-sports.io</span>
-                  </div>
-                  <div>
-                    2. Add{" "}
-                    <code className="bg-black/30 px-1 rounded">
-                      API_SPORTS_KEY
-                    </code>{" "}
-                    to your Convex environment variables
-                  </div>
-                  <div>
-                    3. Run{" "}
-                    <code className="bg-black/30 px-1 rounded">
-                      npx convex run adminSync:adminApiSportsFullSync '{"{"}
-                      \"sport\":\"NBA\"{"}"}'
-                    </code>
-                  </div>
+                  <div className="font-bold text-white/80">🔑 Setup Instructions</div>
+                  <div>1. Get an API key at <span className="text-cyan-400">api-sports.io</span></div>
+                  <div>2. Add <code className="bg-black/30 px-1 rounded">API_SPORTS_KEY</code> to your Convex environment variables</div>
                   <div className="text-amber-400 mt-1">
-                    Free tier: 100 requests/day • Teams, players, games,
-                    standings, injuries, live scores
+                    Free tier: 100 requests/day • Teams, players, games, standings, injuries, live scores
                   </div>
                 </div>
               )}
-            {p.requiresApiKey &&
-              !p.apiKeyConfigured &&
-              p.provider === "thesportsdb" && (
+              {p.requiresApiKey && !p.apiKeyConfigured && p.provider === "thesportsdb" && (
                 <div className="bg-white/5 rounded-lg p-3 text-[11px] text-muted-foreground space-y-1">
-                  <div className="font-bold text-white/80">
-                    🔑 Setup Instructions
-                  </div>
-                  <div>
-                    1. Get a key at{" "}
-                    <span className="text-cyan-400">thesportsdb.com</span> (free
-                    for dev: use "1")
-                  </div>
-                  <div>
-                    2. Add{" "}
-                    <code className="bg-black/30 px-1 rounded">
-                      THESPORTSDB_API_KEY
-                    </code>{" "}
-                    to your Convex environment variables
-                  </div>
+                  <div className="font-bold text-white/80">🔑 Setup Instructions</div>
+                  <div>1. Get a key at <span className="text-cyan-400">thesportsdb.com</span> (free for dev: use "123")</div>
+                  <div>2. Add <code className="bg-black/30 px-1 rounded">THESPORTSDB_API_KEY</code> to your Convex environment variables</div>
                   <div className="text-amber-400 mt-1">
                     Team logos, player images, badges, fanart, jersey visuals
                   </div>
                 </div>
               )}
+            </div>
           </div>
         ))}
       </div>
