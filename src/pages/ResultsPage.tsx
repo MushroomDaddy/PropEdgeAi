@@ -47,8 +47,8 @@ export function ResultsPage() {
       return sortDir === "desc" ? (bVal > aVal ? 1 : -1) : aVal > bVal ? 1 : -1;
     });
 
-  const sports = [...new Set((results || []).map((r: any) => r.sport))];
-  const platforms = [...new Set((results || []).map((r: any) => r.platform))];
+  const sports = [...new Set((results || []).map((r: any) => r.sport))] as string[];
+  const platforms = [...new Set((results || []).map((r: any) => r.platform))] as string[];
 
   const toggleSort = (field: string) => {
     if (sortField === field) setSortDir(sortDir === "desc" ? "asc" : "desc");
@@ -542,7 +542,7 @@ function StatusDonut({
   return (
     <div className="flex items-center gap-4">
       <div className="relative size-24 shrink-0">
-        <svg viewBox="0 0 100 100" className="size-full -rotate-90">
+        <svg aria-hidden="true">
           {segments.map((seg, i) => {
             const pct = seg.count / total;
             const offset = acc;

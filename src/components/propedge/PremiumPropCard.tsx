@@ -48,8 +48,8 @@ export function PremiumPropCard(props: PremiumPropCardProps) {
   const dirColor = overUnder === "over" ? "text-emerald-400" : "text-red-400";
 
   return (
-    <div
-      className={`group relative bg-[#0D1117] rounded-xl border ${edgeColor} hover:border-[#00D4FF]/40 transition-all cursor-pointer overflow-hidden`}
+    <button
+      className={`group relative bg-[#0D1117] rounded-xl border ${edgeColor} hover:border-[#00D4FF]/40 transition-all cursor-pointer overflow-hidden w-full text-left`}
       onClick={onClick}
     >
       {/* Team color accent bar */}
@@ -124,6 +124,6 @@ export function PremiumPropCard(props: PremiumPropCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }

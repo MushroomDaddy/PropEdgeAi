@@ -46,10 +46,11 @@ export function PropOpportunityCard({
   const projDiff = projection - line;
 
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
       className={cn(
-        "group relative rounded-xl border p-4 transition-all cursor-pointer",
+        "group relative rounded-xl border p-4 transition-all cursor-pointer w-full text-left",
         "hover:border-white/20 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5",
         isTop
           ? "border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent"
@@ -151,6 +152,6 @@ export function PropOpportunityCard({
         </div>
         <ChevronRight className="size-3.5 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
       </div>
-    </div>
+    </button>
   );
 }

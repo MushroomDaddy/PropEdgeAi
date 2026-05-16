@@ -10,7 +10,6 @@
  */
 
 import { motion } from "framer-motion";
-import { Image, Shield, User } from "lucide-react";
 import { useState } from "react";
 import {
   getPlayerInitials,
@@ -64,8 +63,6 @@ export function MediaAssetImage({
 
   // If no URL at all, go straight to fallback
   if (!url || useFallback) {
-    const FallbackIcon =
-      type === "headshot" ? User : type === "logo" ? Shield : Image;
     const label =
       type === "headshot"
         ? getPlayerInitials(entityName)
