@@ -13,28 +13,49 @@
  *   6. Log to providerUsageLog
  */
 
-import { internalAction, internalMutation, query } from "./_generated/server";
-import { v } from "convex/values";
 import { makeFunctionReference } from "convex/server";
+import { v } from "convex/values";
+import { internalAction, internalMutation, query } from "./_generated/server";
 
 import {
-  getTeams, getPlayers, getGames, getStandings,
-  getPlayerStats, getInjuries, getLiveScores,
-  providerHealthCheck, isApiSportsConfigured,
+  getGames,
+  getInjuries,
+  getLiveScores,
+  getPlayers,
+  getStandings,
+  getTeams,
+  isApiSportsConfigured,
+  providerHealthCheck,
 } from "./lib/apiSports/index";
 
 declare const process: { env: Record<string, string | undefined> };
 
 // ── Internal mutation references ──
 const ref = {
-  storeTeams: makeFunctionReference<"mutation">("apiSportsSync:storeApiSportsTeams"),
-  storePlayers: makeFunctionReference<"mutation">("apiSportsSync:storeApiSportsPlayers"),
-  storeGames: makeFunctionReference<"mutation">("apiSportsSync:storeApiSportsGames"),
-  storeStandings: makeFunctionReference<"mutation">("apiSportsSync:storeApiSportsStandings"),
-  storePlayerStats: makeFunctionReference<"mutation">("apiSportsSync:storeApiSportsPlayerStats"),
-  storeInjuries: makeFunctionReference<"mutation">("apiSportsSync:storeApiSportsInjuries"),
-  logUsage: makeFunctionReference<"mutation">("apiSportsSync:logApiSportsUsage"),
-  updateProviderConfig: makeFunctionReference<"mutation">("apiSportsSync:updateApiSportsProviderConfig"),
+  storeTeams: makeFunctionReference<"mutation">(
+    "apiSportsSync:storeApiSportsTeams",
+  ),
+  storePlayers: makeFunctionReference<"mutation">(
+    "apiSportsSync:storeApiSportsPlayers",
+  ),
+  storeGames: makeFunctionReference<"mutation">(
+    "apiSportsSync:storeApiSportsGames",
+  ),
+  storeStandings: makeFunctionReference<"mutation">(
+    "apiSportsSync:storeApiSportsStandings",
+  ),
+  storePlayerStats: makeFunctionReference<"mutation">(
+    "apiSportsSync:storeApiSportsPlayerStats",
+  ),
+  storeInjuries: makeFunctionReference<"mutation">(
+    "apiSportsSync:storeApiSportsInjuries",
+  ),
+  logUsage: makeFunctionReference<"mutation">(
+    "apiSportsSync:logApiSportsUsage",
+  ),
+  updateProviderConfig: makeFunctionReference<"mutation">(
+    "apiSportsSync:updateApiSportsProviderConfig",
+  ),
 };
 
 // ══════════════════════════════════════════════════
@@ -45,13 +66,13 @@ const ref = {
 export const getApiSportsStatus = query({
   args: {},
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async ctx => {
     const health = providerHealthCheck();
 
     // Enrich with DB data
     const configs = await ctx.db
       .query("providerConfig")
-      .withIndex("by_provider", (q) => q.eq("provider", "api_sports"))
+      .withIndex("by_provider", q => q.eq("provider", "api_sports"))
       .collect();
     const config = configs[0];
 
@@ -63,11 +84,13 @@ export const getApiSportsStatus = query({
     }
 
     // Get cached data counts
-    const teamCache = await ctx.db.query("apiSportsCache")
-      .withIndex("by_type", (q) => q.eq("dataType", "teams"))
+    const teamCache = await ctx.db
+      .query("apiSportsCache")
+      .withIndex("by_type", q => q.eq("dataType", "teams"))
       .collect();
-    const gameCache = await ctx.db.query("apiSportsCache")
-      .withIndex("by_type", (q) => q.eq("dataType", "games"))
+    const gameCache = await ctx.db
+      .query("apiSportsCache")
+      .withIndex("by_type", q => q.eq("dataType", "games"))
       .collect();
 
     return {
@@ -86,13 +109,14 @@ export const getCachedData = query({
   },
   returns: v.any(),
   handler: async (ctx, { dataType, sport }) => {
-    let query = ctx.db.query("apiSportsCache")
-      .withIndex("by_type", (q) => q.eq("dataType", dataType));
+    const query = ctx.db
+      .query("apiSportsCache")
+      .withIndex("by_type", q => q.eq("dataType", dataType));
 
     const results = await query.collect();
 
     if (sport) {
-      return results.filter((r) => r.sport === sport);
+      return results.filter(r => r.sport === sport);
     }
     return results;
   },
@@ -110,8 +134,11 @@ export const storeApiSportsTeams = internalMutation({
   },
   handler: async (ctx, { sport, teams }) => {
     // Delete old cached teams for this sport
-    const old = await ctx.db.query("apiSportsCache")
-      .withIndex("by_type_sport", (q) => q.eq("dataType", "teams").eq("sport", sport))
+    const old = await ctx.db
+      .query("apiSportsCache")
+      .withIndex("by_type_sport", q =>
+        q.eq("dataType", "teams").eq("sport", sport),
+      )
       .collect();
     for (const o of old) await ctx.db.delete(o._id);
 
@@ -137,8 +164,11 @@ export const storeApiSportsPlayers = internalMutation({
     players: v.any(),
   },
   handler: async (ctx, { sport, players }) => {
-    const old = await ctx.db.query("apiSportsCache")
-      .withIndex("by_type_sport", (q) => q.eq("dataType", "players").eq("sport", sport))
+    const old = await ctx.db
+      .query("apiSportsCache")
+      .withIndex("by_type_sport", q =>
+        q.eq("dataType", "players").eq("sport", sport),
+      )
       .collect();
     for (const o of old) await ctx.db.delete(o._id);
 
@@ -163,8 +193,11 @@ export const storeApiSportsGames = internalMutation({
     games: v.any(),
   },
   handler: async (ctx, { sport, games }) => {
-    const old = await ctx.db.query("apiSportsCache")
-      .withIndex("by_type_sport", (q) => q.eq("dataType", "games").eq("sport", sport))
+    const old = await ctx.db
+      .query("apiSportsCache")
+      .withIndex("by_type_sport", q =>
+        q.eq("dataType", "games").eq("sport", sport),
+      )
       .collect();
     for (const o of old) await ctx.db.delete(o._id);
 
@@ -189,8 +222,11 @@ export const storeApiSportsStandings = internalMutation({
     standings: v.any(),
   },
   handler: async (ctx, { sport, standings }) => {
-    const old = await ctx.db.query("apiSportsCache")
-      .withIndex("by_type_sport", (q) => q.eq("dataType", "standings").eq("sport", sport))
+    const old = await ctx.db
+      .query("apiSportsCache")
+      .withIndex("by_type_sport", q =>
+        q.eq("dataType", "standings").eq("sport", sport),
+      )
       .collect();
     for (const o of old) await ctx.db.delete(o._id);
 
@@ -236,8 +272,11 @@ export const storeApiSportsInjuries = internalMutation({
     injuries: v.any(),
   },
   handler: async (ctx, { sport, injuries }) => {
-    const old = await ctx.db.query("apiSportsCache")
-      .withIndex("by_type_sport", (q) => q.eq("dataType", "injuries").eq("sport", sport))
+    const old = await ctx.db
+      .query("apiSportsCache")
+      .withIndex("by_type_sport", q =>
+        q.eq("dataType", "injuries").eq("sport", sport),
+      )
       .collect();
     for (const o of old) await ctx.db.delete(o._id);
 
@@ -290,7 +329,7 @@ export const updateApiSportsProviderConfig = internalMutation({
   handler: async (ctx, args) => {
     const configs = await ctx.db
       .query("providerConfig")
-      .withIndex("by_provider", (q) => q.eq("provider", "api_sports"))
+      .withIndex("by_provider", q => q.eq("provider", "api_sports"))
       .collect();
 
     const now = Date.now();
@@ -299,7 +338,8 @@ export const updateApiSportsProviderConfig = internalMutation({
       const existing = configs[0];
       await ctx.db.patch(existing._id, {
         apiKeyConfigured: isApiSportsConfigured(),
-        requestsUsedThisMonth: existing.requestsUsedThisMonth + args.requestsUsed,
+        requestsUsedThisMonth:
+          existing.requestsUsedThisMonth + args.requestsUsed,
         lastSyncTime: now,
         lastSyncStatus: args.success ? "success" : "error",
         lastSyncError: args.error,
@@ -312,7 +352,15 @@ export const updateApiSportsProviderConfig = internalMutation({
         enabled: true,
         apiKeyConfigured: isApiSportsConfigured(),
         supportedSports: ["NBA", "NFL", "MLB", "NHL"],
-        supportedMarkets: ["teams", "players", "games", "standings", "statistics", "injuries", "live_scores"],
+        supportedMarkets: [
+          "teams",
+          "players",
+          "games",
+          "standings",
+          "statistics",
+          "injuries",
+          "live_scores",
+        ],
         rateLimitPerMonth: 3000, // ~100/day * 30
         requestsUsedThisMonth: args.requestsUsed,
         rateLimitResetAt: undefined,
@@ -339,16 +387,42 @@ export const syncTeams = internalAction({
   handler: async (ctx, { sport }) => {
     const result = await getTeams(sport);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "teams", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
-      await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: 0, recordsUpdated: 0, success: false, error: result.error?.message ?? "Unknown error" });
+      await ctx.runMutation(ref.logUsage, {
+        endpoint: "teams",
+        sport,
+        requestsUsed: 0,
+        recordsFetched: 0,
+        success: false,
+        error: result.error?.message ?? "Unknown error",
+      });
+      await ctx.runMutation(ref.updateProviderConfig, {
+        requestsUsed: 0,
+        recordsUpdated: 0,
+        success: false,
+        error: result.error?.message ?? "Unknown error",
+      });
       return { success: false, error: result.error };
     }
 
     await ctx.runMutation(ref.storeTeams, { sport, teams: result.data });
-    await ctx.runMutation(ref.logUsage, { endpoint: "teams", sport, requestsUsed: result.requestsUsed, recordsFetched: result.data.length, success: true });
-    await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: result.requestsUsed, recordsUpdated: result.data.length, success: true });
+    await ctx.runMutation(ref.logUsage, {
+      endpoint: "teams",
+      sport,
+      requestsUsed: result.requestsUsed,
+      recordsFetched: result.data.length,
+      success: true,
+    });
+    await ctx.runMutation(ref.updateProviderConfig, {
+      requestsUsed: result.requestsUsed,
+      recordsUpdated: result.data.length,
+      success: true,
+    });
 
-    return { success: true, teams: result.data.length, requestsUsed: result.requestsUsed };
+    return {
+      success: true,
+      teams: result.data.length,
+      requestsUsed: result.requestsUsed,
+    };
   },
 });
 
@@ -359,15 +433,36 @@ export const syncPlayers = internalAction({
   handler: async (ctx, { sport, teamId }) => {
     const result = await getPlayers(sport, teamId || undefined);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "players", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
+      await ctx.runMutation(ref.logUsage, {
+        endpoint: "players",
+        sport,
+        requestsUsed: 0,
+        recordsFetched: 0,
+        success: false,
+        error: result.error?.message ?? "Unknown error",
+      });
       return { success: false, error: result.error };
     }
 
     await ctx.runMutation(ref.storePlayers, { sport, players: result.data });
-    await ctx.runMutation(ref.logUsage, { endpoint: "players", sport, requestsUsed: result.requestsUsed, recordsFetched: result.data.length, success: true });
-    await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: result.requestsUsed, recordsUpdated: result.data.length, success: true });
+    await ctx.runMutation(ref.logUsage, {
+      endpoint: "players",
+      sport,
+      requestsUsed: result.requestsUsed,
+      recordsFetched: result.data.length,
+      success: true,
+    });
+    await ctx.runMutation(ref.updateProviderConfig, {
+      requestsUsed: result.requestsUsed,
+      recordsUpdated: result.data.length,
+      success: true,
+    });
 
-    return { success: true, players: result.data.length, requestsUsed: result.requestsUsed };
+    return {
+      success: true,
+      players: result.data.length,
+      requestsUsed: result.requestsUsed,
+    };
   },
 });
 
@@ -379,15 +474,36 @@ export const syncGames = internalAction({
     const dateRange = date ? { from: date, to: date } : undefined;
     const result = await getGames(sport, dateRange);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "games", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
+      await ctx.runMutation(ref.logUsage, {
+        endpoint: "games",
+        sport,
+        requestsUsed: 0,
+        recordsFetched: 0,
+        success: false,
+        error: result.error?.message ?? "Unknown error",
+      });
       return { success: false, error: result.error };
     }
 
     await ctx.runMutation(ref.storeGames, { sport, games: result.data });
-    await ctx.runMutation(ref.logUsage, { endpoint: "games", sport, requestsUsed: result.requestsUsed, recordsFetched: result.data.length, success: true });
-    await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: result.requestsUsed, recordsUpdated: result.data.length, success: true });
+    await ctx.runMutation(ref.logUsage, {
+      endpoint: "games",
+      sport,
+      requestsUsed: result.requestsUsed,
+      recordsFetched: result.data.length,
+      success: true,
+    });
+    await ctx.runMutation(ref.updateProviderConfig, {
+      requestsUsed: result.requestsUsed,
+      recordsUpdated: result.data.length,
+      success: true,
+    });
 
-    return { success: true, games: result.data.length, requestsUsed: result.requestsUsed };
+    return {
+      success: true,
+      games: result.data.length,
+      requestsUsed: result.requestsUsed,
+    };
   },
 });
 
@@ -398,15 +514,39 @@ export const syncStandings = internalAction({
   handler: async (ctx, { sport, season }) => {
     const result = await getStandings(sport, undefined, season || undefined);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "standings", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
+      await ctx.runMutation(ref.logUsage, {
+        endpoint: "standings",
+        sport,
+        requestsUsed: 0,
+        recordsFetched: 0,
+        success: false,
+        error: result.error?.message ?? "Unknown error",
+      });
       return { success: false, error: result.error };
     }
 
-    await ctx.runMutation(ref.storeStandings, { sport, standings: result.data });
-    await ctx.runMutation(ref.logUsage, { endpoint: "standings", sport, requestsUsed: result.requestsUsed, recordsFetched: result.data.length, success: true });
-    await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: result.requestsUsed, recordsUpdated: result.data.length, success: true });
+    await ctx.runMutation(ref.storeStandings, {
+      sport,
+      standings: result.data,
+    });
+    await ctx.runMutation(ref.logUsage, {
+      endpoint: "standings",
+      sport,
+      requestsUsed: result.requestsUsed,
+      recordsFetched: result.data.length,
+      success: true,
+    });
+    await ctx.runMutation(ref.updateProviderConfig, {
+      requestsUsed: result.requestsUsed,
+      recordsUpdated: result.data.length,
+      success: true,
+    });
 
-    return { success: true, standings: result.data.length, requestsUsed: result.requestsUsed };
+    return {
+      success: true,
+      standings: result.data.length,
+      requestsUsed: result.requestsUsed,
+    };
   },
 });
 
@@ -417,15 +557,36 @@ export const syncInjuries = internalAction({
   handler: async (ctx, { sport }) => {
     const result = await getInjuries(sport);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "injuries", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
+      await ctx.runMutation(ref.logUsage, {
+        endpoint: "injuries",
+        sport,
+        requestsUsed: 0,
+        recordsFetched: 0,
+        success: false,
+        error: result.error?.message ?? "Unknown error",
+      });
       return { success: false, error: result.error };
     }
 
     await ctx.runMutation(ref.storeInjuries, { sport, injuries: result.data });
-    await ctx.runMutation(ref.logUsage, { endpoint: "injuries", sport, requestsUsed: result.requestsUsed, recordsFetched: result.data.length, success: true });
-    await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: result.requestsUsed, recordsUpdated: result.data.length, success: true });
+    await ctx.runMutation(ref.logUsage, {
+      endpoint: "injuries",
+      sport,
+      requestsUsed: result.requestsUsed,
+      recordsFetched: result.data.length,
+      success: true,
+    });
+    await ctx.runMutation(ref.updateProviderConfig, {
+      requestsUsed: result.requestsUsed,
+      recordsUpdated: result.data.length,
+      success: true,
+    });
 
-    return { success: true, injuries: result.data.length, requestsUsed: result.requestsUsed };
+    return {
+      success: true,
+      injuries: result.data.length,
+      requestsUsed: result.requestsUsed,
+    };
   },
 });
 
@@ -436,15 +597,36 @@ export const syncLiveScores = internalAction({
   handler: async (ctx, { sport }) => {
     const result = await getLiveScores(sport);
     if (!result.ok) {
-      await ctx.runMutation(ref.logUsage, { endpoint: "liveScores", sport, requestsUsed: 0, recordsFetched: 0, success: false, error: result.error?.message ?? "Unknown error" });
+      await ctx.runMutation(ref.logUsage, {
+        endpoint: "liveScores",
+        sport,
+        requestsUsed: 0,
+        recordsFetched: 0,
+        success: false,
+        error: result.error?.message ?? "Unknown error",
+      });
       return { success: false, error: result.error };
     }
 
     await ctx.runMutation(ref.storeGames, { sport, games: result.data });
-    await ctx.runMutation(ref.logUsage, { endpoint: "liveScores", sport, requestsUsed: result.requestsUsed, recordsFetched: result.data.length, success: true });
-    await ctx.runMutation(ref.updateProviderConfig, { requestsUsed: result.requestsUsed, recordsUpdated: result.data.length, success: true });
+    await ctx.runMutation(ref.logUsage, {
+      endpoint: "liveScores",
+      sport,
+      requestsUsed: result.requestsUsed,
+      recordsFetched: result.data.length,
+      success: true,
+    });
+    await ctx.runMutation(ref.updateProviderConfig, {
+      requestsUsed: result.requestsUsed,
+      recordsUpdated: result.data.length,
+      success: true,
+    });
 
-    return { success: true, liveGames: result.data.length, requestsUsed: result.requestsUsed };
+    return {
+      success: true,
+      liveGames: result.data.length,
+      requestsUsed: result.requestsUsed,
+    };
   },
 });
 
@@ -461,7 +643,10 @@ export const fullSync = internalAction({
 
     // Sync teams
     try {
-      results.teams = await ctx.runAction(makeFunctionReference<"action">("apiSportsSync:syncTeams"), { sport });
+      results.teams = await ctx.runAction(
+        makeFunctionReference<"action">("apiSportsSync:syncTeams"),
+        { sport },
+      );
     } catch (e: any) {
       results.teams = { success: false, error: e.message };
     }
@@ -469,14 +654,20 @@ export const fullSync = internalAction({
     // Sync games (today)
     try {
       const today = new Date().toISOString().split("T")[0];
-      results.games = await ctx.runAction(makeFunctionReference<"action">("apiSportsSync:syncGames"), { sport, date: today });
+      results.games = await ctx.runAction(
+        makeFunctionReference<"action">("apiSportsSync:syncGames"),
+        { sport, date: today },
+      );
     } catch (e: any) {
       results.games = { success: false, error: e.message };
     }
 
     // Sync standings
     try {
-      results.standings = await ctx.runAction(makeFunctionReference<"action">("apiSportsSync:syncStandings"), { sport });
+      results.standings = await ctx.runAction(
+        makeFunctionReference<"action">("apiSportsSync:syncStandings"),
+        { sport },
+      );
     } catch (e: any) {
       results.standings = { success: false, error: e.message };
     }
