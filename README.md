@@ -20,27 +20,77 @@ A smart sports analyst and pick optimizer for daily fantasy pick'em platforms (P
 
 ## Getting Started
 
+### Prerequisites
+- Node.js 18+ (npm replaces bun in R15.6)
+- Convex account (free tier OK) → https://convex.dev
+
+### Install & Build
 ```bash
-# Install dependencies
-bun install
+# Install dependencies (npm ci requires package-lock.json)
+npm ci
 
-# Set up environment
-cp .env.example .env.local
-# Fill in your Convex deployment URL and project secret
+# Type-check frontend
+npx tsc -p tsconfig.app.json --noEmit
 
-# Deploy Convex functions
-bunx convex deploy
+# Type-check Convex functions (requires generated types, see below)
+npx tsc -p convex/tsconfig.json --noEmit
 
-# Seed demo data
-bunx convex run seed:clearAndReseed
-bunx convex run seedR5:seedGameDetails
-
-# Run validation tests
-bunx convex run tests:runAll
-
-# Start dev server
-bun run dev
+# Build frontend
+npm run build
 ```
+
+### Go-Live: Convex Setup
+```bash
+# 1. Login to Convex (first time only)
+npx convex login
+
+# 2. Initialize / link project (first time only)
+npx convex init
+
+# 3. Start Convex dev server (generates types, watches functions)
+npx convex dev
+
+# 4. In another terminal, generate Convex types
+npx convex codegen
+
+# 5. After codegen, rerun type checks / build
+npx tsc -p tsconfig.app.json --noEmit
+npx tsc -p convex/tsconfig.json --noEmit
+npm run build
+```
+
+### Environment Variables
+```bash
+# Copy example env (frontend only needs VITE_CONVEX_URL)
+cp .env.example .env.local
+# Edit .env.local and set VITE_CONVEX_URL from Convex dashboard
+
+# Server-side keys (THE_ODDS_API_KEY, API_SPORTS_KEY, etc.)
+# Set these in: Convex Dashboard → Settings → Environment Variables
+# NEVER prefix server keys with VITE_ (they'd leak to the browser)
+```
+
+### Seed Demo Data
+```bash
+npx convex run seed:clearAndReseed
+npx convex run seedR5:seedGameDetails
+```
+
+### Run Validation Tests
+```bash
+npx convex run tests:runAll
+```
+
+### Start Dev Server
+```bash
+npm run dev
+```
+
+> **Note on Generated Types:**  
+> Convex generates `convex/_generated/api.d.ts` after running `npx convex codegen`.  
+> Currently, the generated API includes `api.adminSync.*` and `api.apiSportsSync.*`.  
+> `api.goLiveSmokeTest.*` and `api.theSportsDbSync.*` will be added in upcoming steps (R15.6 Step 5).  
+> Do not claim types are complete until these are present.
 
 ## Data
 
