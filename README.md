@@ -59,6 +59,8 @@ npx tsc -p convex/tsconfig.json --noEmit
 npm run build
 ```
 
+See [CONVEX_TYPES.md](./CONVEX_TYPES.md) for details on generated types status.
+
 ### Environment Variables
 ```bash
 # Copy example env (frontend only needs VITE_CONVEX_URL)
