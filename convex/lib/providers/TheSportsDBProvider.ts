@@ -3,7 +3,7 @@
  *
  * Free tier for personal/education use.
  * Covers: team logos, player images, badges, fanart, league artwork, jersey images.
- * API key: THESPORTSDB_KEY (server-side only) — free key = "123" for dev
+ * API key: THESPORTSDB_API_KEY (server-side only) — free key = "123" for dev
  *
  * Base URL: https://www.thesportsdb.com/api/v1/json/{key}/
  * Endpoints:
@@ -45,7 +45,7 @@ export const TheSportsDBProvider: DataProvider = {
   requiresApiKey: true,
   getStatus(): NormalizedProviderStatus {
     const hasKey =
-      typeof process !== "undefined" && !!process.env?.THESPORTSDB_KEY;
+      typeof process !== "undefined" && !!process.env?.THESPORTSDB_API_KEY;
     return {
       provider: "thesportsdb",
       displayName: "TheSportsDB",

@@ -457,7 +457,7 @@ export default function DataSourcesPage() {
                   <div>
                     2. Add{" "}
                     <code className="bg-black/30 px-1 rounded">
-                      THESPORTSDB_KEY
+                      THESPORTSDB_API_KEY
                     </code>{" "}
                     to your Convex environment variables
                   </div>
