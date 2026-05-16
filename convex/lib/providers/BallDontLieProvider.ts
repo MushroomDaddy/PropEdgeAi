@@ -17,38 +17,38 @@ import type { DataProvider, NormalizedProviderStatus } from "../providerTypes";
 declare const process: { env: Record<string, string | undefined> };
 
 export const BallDontLieProvider: DataProvider = {
-  name: "balldontlie",
-  displayName: "BALLDONTLIE",
-  isLive: false,
-  supportedSports: ["NBA"],
-  supportedMarkets: [
-    "players",
-    "teams",
-    "games",
-    "statistics",
-    "season_averages",
-  ],
-  supportedPlatforms: [],
-  requiresApiKey: false, // Basic tier works without key
-  getStatus(): NormalizedProviderStatus {
-    // BALLDONTLIE works without a key (basic tier) but key gives higher limits
-    const hasKey =
-      typeof process !== "undefined" && !!process.env?.BALLDONTLIE_API_KEY;
-    return {
-      provider: "balldontlie",
-      displayName: "BALLDONTLIE",
-      status: "inactive", // Will be "active" once we implement the adapter
-      isLive: false,
-      isDemoMode: false,
-      recordsUpdated: 0,
-      failedSyncs: 0,
-      staleRecords: 0,
-      providerHealth: 0,
-      supportedSports: this.supportedSports,
-      supportedMarkets: this.supportedMarkets,
-      supportedPlatforms: this.supportedPlatforms,
-      requiresApiKey: false,
-      apiKeyConfigured: hasKey,
-    };
-  },
+	name: "balldontlie",
+	displayName: "BALLDONTLIE",
+	isLive: false,
+	supportedSports: ["NBA"],
+	supportedMarkets: [
+		"players",
+		"teams",
+		"games",
+		"statistics",
+		"season_averages",
+	],
+	supportedPlatforms: [],
+	requiresApiKey: false, // Basic tier works without key
+	getStatus(): NormalizedProviderStatus {
+		// BALLDONTLIE works without a key (basic tier) but key gives higher limits
+		const hasKey =
+			typeof process !== "undefined" && !!process.env?.BALLDONTLIE_API_KEY;
+		return {
+			provider: "balldontlie",
+			displayName: "BALLDONTLIE",
+			status: "inactive", // Will be "active" once we implement the adapter
+			isLive: false,
+			isDemoMode: false,
+			recordsUpdated: 0,
+			failedSyncs: 0,
+			staleRecords: 0,
+			providerHealth: 0,
+			supportedSports: this.supportedSports,
+			supportedMarkets: this.supportedMarkets,
+			supportedPlatforms: this.supportedPlatforms,
+			requiresApiKey: false,
+			apiKeyConfigured: hasKey,
+		};
+	},
 };

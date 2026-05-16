@@ -5,7 +5,9 @@
      5|     5| */
      6|     6|
      7|     7|import { apiSportsFetch } from "../client";
+
      8|     8|import { getSportConfig } from "../config";
+
      9|     9|import type {
     10|    10|  NormalizedApiGame,
     11|    11|  NormalizedApiInjury,
@@ -14,6 +16,7 @@
     14|    14|  RawFootballTeam,
     15|    15|} from "../types";
     16|    16|import type { SportAdapter } from "./index";
+
     17|    17|
     18|    18|const SPORT = "NFL";
     19|    19|
@@ -66,8 +69,8 @@
     66|    66|
     67|    67|// Raw injury type for NFL
     68|    68|interface RawFootballInjury {
-    69|    69|  player: { id: number; name: string };
-    70|    70|  team: { id: number; name: string; logo: string };
+    69|    69|  player: id: number; name: string ;
+    70|    70|  team: id: number; name: string; logo: string ;
     71|    71|  type: string;
     72|    72|  status: string;
     73|    73|  date: string;

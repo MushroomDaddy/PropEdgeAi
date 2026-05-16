@@ -30,16 +30,16 @@ const crons = cronJobs();
 
 // Internal action references
 const _refreshGames = makeFunctionReference<"action">(
-  "liveProviders:refreshGames",
+	"liveProviders:refreshGames",
 );
 const _refreshOdds = makeFunctionReference<"action">(
-  "liveProviders:refreshOdds",
+	"liveProviders:refreshOdds",
 );
 const _refreshProps = makeFunctionReference<"action">(
-  "liveProviders:refreshProps",
+	"liveProviders:refreshProps",
 );
 const _refreshLineMovement = makeFunctionReference<"action">(
-  "liveProviders:refreshLineMovement",
+	"liveProviders:refreshLineMovement",
 );
 
 // ─── CRON PRESETS (ALL COMMENTED OUT — Manual sync only until request usage confirmed) ───

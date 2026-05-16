@@ -5,7 +5,9 @@
      5| */
      6|
      7|import { apiSportsFetch } from "../client";
+
      8|import { getSportConfig } from "../config";
+
      9|import type {
     10|  NormalizedApiGame,
     11|  NormalizedApiTeam,
@@ -13,6 +15,7 @@
     13|  RawBaseballTeam,
     14|} from "../types";
     15|import type { SportAdapter } from "./index";
+
     16|
     17|const SPORT = "MLB";
     18|

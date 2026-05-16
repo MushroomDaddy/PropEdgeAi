@@ -40,66 +40,66 @@ declare const process: { env: Record<string, string | undefined> };
 
 // Internal action references (same pattern as liveProviders.ts)
 const internal = {
-  initProviderConfig: makeFunctionReference<"action">(
-    "liveProviders:initProviderConfig",
-  ),
-  refreshGames: makeFunctionReference<"action">("liveProviders:refreshGames"),
-  refreshOdds: makeFunctionReference<"action">("liveProviders:refreshOdds"),
-  refreshProps: makeFunctionReference<"action">("liveProviders:refreshProps"),
-  refreshLineMovement: makeFunctionReference<"action">(
-    "liveProviders:refreshLineMovement",
-  ),
-  // R13: API-SPORTS sync actions
-  apiSportsFullSync: makeFunctionReference<"action">("apiSportsSync:fullSync"),
-  apiSportsSyncTeams: makeFunctionReference<"action">(
-    "apiSportsSync:syncTeams",
-  ),
-  apiSportsSyncGames: makeFunctionReference<"action">(
-    "apiSportsSync:syncGames",
-  ),
-  apiSportsSyncStandings: makeFunctionReference<"action">(
-    "apiSportsSync:syncStandings",
-  ),
-  apiSportsSyncInjuries: makeFunctionReference<"action">(
-    "apiSportsSync:syncInjuries",
-  ),
-  apiSportsSyncLiveScores: makeFunctionReference<"action">(
-    "apiSportsSync:syncLiveScores",
-  ),
+	initProviderConfig: makeFunctionReference<"action">(
+		"liveProviders:initProviderConfig",
+	),
+	refreshGames: makeFunctionReference<"action">("liveProviders:refreshGames"),
+	refreshOdds: makeFunctionReference<"action">("liveProviders:refreshOdds"),
+	refreshProps: makeFunctionReference<"action">("liveProviders:refreshProps"),
+	refreshLineMovement: makeFunctionReference<"action">(
+		"liveProviders:refreshLineMovement",
+	),
+	// R13: API-SPORTS sync actions
+	apiSportsFullSync: makeFunctionReference<"action">("apiSportsSync:fullSync"),
+	apiSportsSyncTeams: makeFunctionReference<"action">(
+		"apiSportsSync:syncTeams",
+	),
+	apiSportsSyncGames: makeFunctionReference<"action">(
+		"apiSportsSync:syncGames",
+	),
+	apiSportsSyncStandings: makeFunctionReference<"action">(
+		"apiSportsSync:syncStandings",
+	),
+	apiSportsSyncInjuries: makeFunctionReference<"action">(
+		"apiSportsSync:syncInjuries",
+	),
+	apiSportsSyncLiveScores: makeFunctionReference<"action">(
+		"apiSportsSync:syncLiveScores",
+	),
 };
 
 // ─── Admin check helper ───
 async function requireAdmin(ctx: any): Promise<string> {
-  const userId = await getAuthUserId(ctx);
-  if (!userId) {
-    throw new Error(
-      "Authentication required. Sign in before calling sync actions.",
-    );
-  }
+	const userId = await getAuthUserId(ctx);
+	if (!userId) {
+		throw new Error(
+			"Authentication required. Sign in before calling sync actions.",
+		);
+	}
 
-  // Look up user's email from the auth tables
-  const user = await ctx.runQuery(
-    makeFunctionReference<"query">("auth:currentUser"),
-  );
+	// Look up user's email from the auth tables
+	const user = await ctx.runQuery(
+		makeFunctionReference<"query">("auth:currentUser"),
+	);
 
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e: string) => e.trim().toLowerCase())
-    .filter(Boolean);
+	const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+		.split(",")
+		.map((e: string) => e.trim().toLowerCase())
+		.filter(Boolean);
 
-  // If ADMIN_EMAILS is not set, allow any authenticated user (dev mode / dashboard)
-  if (adminEmails.length === 0) {
-    return userId;
-  }
+	// If ADMIN_EMAILS is not set, allow any authenticated user (dev mode / dashboard)
+	if (adminEmails.length === 0) {
+		return userId;
+	}
 
-  const userEmail = (user?.email ?? "").toLowerCase();
-  if (!userEmail || !adminEmails.includes(userEmail)) {
-    throw new Error(
-      `Admin access required. ${userEmail || "No email"} is not in ADMIN_EMAILS.`,
-    );
-  }
+	const userEmail = (user?.email ?? "").toLowerCase();
+	if (!userEmail || !adminEmails.includes(userEmail)) {
+		throw new Error(
+			`Admin access required. ${userEmail || "No email"} is not in ADMIN_EMAILS.`,
+		);
+	}
 
-  return userId;
+	return userId;
 }
 
 // ══════════════════════════════════════════════════
@@ -108,66 +108,66 @@ async function requireAdmin(ctx: any): Promise<string> {
 
 /** Admin: Initialize all provider configs */
 export const adminInitProviderConfig = action({
-  args: {},
-  returns: v.any(),
-  handler: async ctx => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.initProviderConfig, {});
-  },
+	args: {},
+	returns: v.any(),
+	handler: async (ctx) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.initProviderConfig, {});
+	},
 });
 
 /** Admin: Refresh games/events from The Odds API */
 export const adminRefreshGames = action({
-  args: { sport: v.optional(v.string()) },
-  returns: v.any(),
-  handler: async (ctx, args) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.refreshGames, { sport: args.sport });
-  },
+	args: { sport: v.optional(v.string()) },
+	returns: v.any(),
+	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.refreshGames, { sport: args.sport });
+	},
 });
 
 /** Admin: Refresh game-level odds (h2h, spreads, totals) */
 export const adminRefreshOdds = action({
-  args: {
-    sport: v.optional(v.string()),
-    markets: v.optional(v.string()),
-  },
-  returns: v.any(),
-  handler: async (ctx, args) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.refreshOdds, {
-      sport: args.sport,
-      markets: args.markets,
-    });
-  },
+	args: {
+		sport: v.optional(v.string()),
+		markets: v.optional(v.string()),
+	},
+	returns: v.any(),
+	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.refreshOdds, {
+			sport: args.sport,
+			markets: args.markets,
+		});
+	},
 });
 
 /** Admin: Refresh player props */
 export const adminRefreshProps = action({
-  args: {
-    sport: v.optional(v.string()),
-    maxEvents: v.optional(v.number()),
-  },
-  returns: v.any(),
-  handler: async (ctx, args) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.refreshProps, {
-      sport: args.sport,
-      maxEvents: args.maxEvents,
-    });
-  },
+	args: {
+		sport: v.optional(v.string()),
+		maxEvents: v.optional(v.number()),
+	},
+	returns: v.any(),
+	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.refreshProps, {
+			sport: args.sport,
+			maxEvents: args.maxEvents,
+		});
+	},
 });
 
 /** Admin: Refresh line movement snapshots */
 export const adminRefreshLineMovement = action({
-  args: { sport: v.optional(v.string()) },
-  returns: v.any(),
-  handler: async (ctx, args) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.refreshLineMovement, {
-      sport: args.sport,
-    });
-  },
+	args: { sport: v.optional(v.string()) },
+	returns: v.any(),
+	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.refreshLineMovement, {
+			sport: args.sport,
+		});
+	},
 });
 
 // ══════════════════════════════════════════════════
@@ -176,96 +176,96 @@ export const adminRefreshLineMovement = action({
 
 /** Admin: Full API-SPORTS sync for a sport (teams + games + standings) */
 export const adminApiSportsFullSync = action({
-  args: { sport: v.string() },
-  returns: v.any(),
-  handler: async (ctx, { sport }) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.apiSportsFullSync, { sport });
-  },
+	args: { sport: v.string() },
+	returns: v.any(),
+	handler: async (ctx, { sport }) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.apiSportsFullSync, { sport });
+	},
 });
 
 /** Admin: Sync teams from API-SPORTS */
 export const adminApiSportsSyncTeams = action({
-  args: { sport: v.string() },
-  returns: v.any(),
-  handler: async (ctx, { sport }) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.apiSportsSyncTeams, { sport });
-  },
+	args: { sport: v.string() },
+	returns: v.any(),
+	handler: async (ctx, { sport }) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.apiSportsSyncTeams, { sport });
+	},
 });
 
 /** Admin: Sync games from API-SPORTS */
 export const adminApiSportsSyncGames = action({
-  args: { sport: v.string(), date: v.optional(v.string()) },
-  returns: v.any(),
-  handler: async (ctx, args) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.apiSportsSyncGames, {
-      sport: args.sport,
-      date: args.date,
-    });
-  },
+	args: { sport: v.string(), date: v.optional(v.string()) },
+	returns: v.any(),
+	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.apiSportsSyncGames, {
+			sport: args.sport,
+			date: args.date,
+		});
+	},
 });
 
 /** Admin: Sync standings from API-SPORTS */
 export const adminApiSportsSyncStandings = action({
-  args: { sport: v.string() },
-  returns: v.any(),
-  handler: async (ctx, { sport }) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.apiSportsSyncStandings, { sport });
-  },
+	args: { sport: v.string() },
+	returns: v.any(),
+	handler: async (ctx, { sport }) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.apiSportsSyncStandings, { sport });
+	},
 });
 
 /** Admin: Sync injuries from API-SPORTS (NFL) */
 export const adminApiSportsSyncInjuries = action({
-  args: { sport: v.string() },
-  returns: v.any(),
-  handler: async (ctx, { sport }) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.apiSportsSyncInjuries, { sport });
-  },
+	args: { sport: v.string() },
+	returns: v.any(),
+	handler: async (ctx, { sport }) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.apiSportsSyncInjuries, { sport });
+	},
 });
 
 /** Admin: Sync live scores from API-SPORTS */
 export const adminApiSportsSyncLiveScores = action({
-  args: { sport: v.string() },
-  returns: v.any(),
-  handler: async (ctx, { sport }) => {
-    await requireAdmin(ctx);
-    return await ctx.runAction(internal.apiSportsSyncLiveScores, { sport });
-  },
+	args: { sport: v.string() },
+	returns: v.any(),
+	handler: async (ctx, { sport }) => {
+		await requireAdmin(ctx);
+		return await ctx.runAction(internal.apiSportsSyncLiveScores, { sport });
+	},
 });
 
 /** Admin: Full sync — runs init, games, odds, props in sequence */
 export const adminFullSync = action({
-  args: { sport: v.optional(v.string()) },
-  returns: v.any(),
-  handler: async (ctx, args) => {
-    await requireAdmin(ctx);
+	args: { sport: v.optional(v.string()) },
+	returns: v.any(),
+	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
 
-    const initResult = await ctx.runAction(internal.initProviderConfig, {});
-    const gamesResult = await ctx.runAction(internal.refreshGames, {
-      sport: args.sport,
-    });
-    const oddsResult = await ctx.runAction(internal.refreshOdds, {
-      sport: args.sport,
-      markets: "h2h,spreads,totals",
-    });
-    const propsResult = await ctx.runAction(internal.refreshProps, {
-      sport: args.sport,
-      maxEvents: 3,
-    });
+		const initResult = await ctx.runAction(internal.initProviderConfig, {});
+		const gamesResult = await ctx.runAction(internal.refreshGames, {
+			sport: args.sport,
+		});
+		const oddsResult = await ctx.runAction(internal.refreshOdds, {
+			sport: args.sport,
+			markets: "h2h,spreads,totals",
+		});
+		const propsResult = await ctx.runAction(internal.refreshProps, {
+			sport: args.sport,
+			maxEvents: 3,
+		});
 
-    return {
-      init: initResult,
-      games: gamesResult,
-      odds: oddsResult,
-      props: propsResult,
-      totalRequests:
-        (gamesResult.requests ?? 0) +
-        (oddsResult.requests ?? 0) +
-        (propsResult.requests ?? 0),
-    };
-  },
+		return {
+			init: initResult,
+			games: gamesResult,
+			odds: oddsResult,
+			props: propsResult,
+			totalRequests:
+				(gamesResult.requests ?? 0) +
+				(oddsResult.requests ?? 0) +
+				(propsResult.requests ?? 0),
+		};
+	},
 });

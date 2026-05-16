@@ -20,47 +20,47 @@ import type { DataProvider, NormalizedProviderStatus } from "../providerTypes";
 declare const process: { env: Record<string, string | undefined> };
 
 export const TheSportsDBProvider: DataProvider = {
-  name: "thesportsdb",
-  displayName: "TheSportsDB",
-  isLive: false,
-  supportedSports: [
-    "NBA",
-    "NFL",
-    "MLB",
-    "NHL",
-    "MLS",
-    "EPL",
-    "LaLiga",
-    "Bundesliga",
-  ],
-  supportedMarkets: [
-    "team_logos",
-    "player_images",
-    "badges",
-    "fanart",
-    "jersey_images",
-    "league_artwork",
-  ],
-  supportedPlatforms: [],
-  requiresApiKey: true,
-  getStatus(): NormalizedProviderStatus {
-    const hasKey =
-      typeof process !== "undefined" && !!process.env?.THESPORTSDB_API_KEY;
-    return {
-      provider: "thesportsdb",
-      displayName: "TheSportsDB",
-      status: hasKey ? "active" : "inactive",
-      isLive: hasKey,
-      isDemoMode: false,
-      recordsUpdated: 0,
-      failedSyncs: 0,
-      staleRecords: 0,
-      providerHealth: hasKey ? 75 : 0,
-      supportedSports: this.supportedSports,
-      supportedMarkets: this.supportedMarkets,
-      supportedPlatforms: this.supportedPlatforms,
-      requiresApiKey: true,
-      apiKeyConfigured: hasKey,
-    };
-  },
+	name: "thesportsdb",
+	displayName: "TheSportsDB",
+	isLive: false,
+	supportedSports: [
+		"NBA",
+		"NFL",
+		"MLB",
+		"NHL",
+		"MLS",
+		"EPL",
+		"LaLiga",
+		"Bundesliga",
+	],
+	supportedMarkets: [
+		"team_logos",
+		"player_images",
+		"badges",
+		"fanart",
+		"jersey_images",
+		"league_artwork",
+	],
+	supportedPlatforms: [],
+	requiresApiKey: true,
+	getStatus(): NormalizedProviderStatus {
+		const hasKey =
+			typeof process !== "undefined" && !!process.env?.THESPORTSDB_API_KEY;
+		return {
+			provider: "thesportsdb",
+			displayName: "TheSportsDB",
+			status: hasKey ? "active" : "inactive",
+			isLive: hasKey,
+			isDemoMode: false,
+			recordsUpdated: 0,
+			failedSyncs: 0,
+			staleRecords: 0,
+			providerHealth: hasKey ? 75 : 0,
+			supportedSports: this.supportedSports,
+			supportedMarkets: this.supportedMarkets,
+			supportedPlatforms: this.supportedPlatforms,
+			requiresApiKey: true,
+			apiKeyConfigured: hasKey,
+		};
+	},
 };

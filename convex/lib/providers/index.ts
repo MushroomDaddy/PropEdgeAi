@@ -26,52 +26,52 @@ import { TheOddsAPIProvider } from "./TheOddsAPIProvider";
 import { TheSportsDBProvider } from "./TheSportsDBProvider";
 
 export const ALL_PROVIDERS: DataProvider[] = [
-  // Priority 1: Odds & lines
-  TheOddsAPIProvider,
-  // Priority 2: Structured sports data
-  ApiSportsProvider,
-  // Priority 3: NBA backup
-  BallDontLieProvider,
-  // Priority 4: Media/visuals
-  TheSportsDBProvider,
-  // Priority 5: Search/context
-  SerpApiProvider,
-  // Priority 6: Manual
-  ManualImportProvider,
-  ScreenshotImportProvider,
-  // Premium stubs (not yet active)
-  SportsDataIOProvider,
-  SportradarProvider,
-  KalshiProvider,
-  // Priority 7: Fallback
-  DemoProvider,
+	// Priority 1: Odds & lines
+	TheOddsAPIProvider,
+	// Priority 2: Structured sports data
+	ApiSportsProvider,
+	// Priority 3: NBA backup
+	BallDontLieProvider,
+	// Priority 4: Media/visuals
+	TheSportsDBProvider,
+	// Priority 5: Search/context
+	SerpApiProvider,
+	// Priority 6: Manual
+	ManualImportProvider,
+	ScreenshotImportProvider,
+	// Premium stubs (not yet active)
+	SportsDataIOProvider,
+	SportradarProvider,
+	KalshiProvider,
+	// Priority 7: Fallback
+	DemoProvider,
 ];
 
 /** Get all provider statuses */
 export function getAllProviderStatuses(): NormalizedProviderStatus[] {
-  return ALL_PROVIDERS.map(p => p.getStatus());
+	return ALL_PROVIDERS.map((p) => p.getStatus());
 }
 
 /** Get the currently active provider (demo for now) */
 export function getActiveProvider(): DataProvider {
-  return DemoProvider;
+	return DemoProvider;
 }
 
 /** Get a provider by name */
 export function getProvider(name: string): DataProvider | undefined {
-  return ALL_PROVIDERS.find(p => p.name === name);
+	return ALL_PROVIDERS.find((p) => p.name === name);
 }
 
 export {
-  DemoProvider,
-  SportsDataIOProvider,
-  TheOddsAPIProvider,
-  SportradarProvider,
-  KalshiProvider,
-  ManualImportProvider,
-  ScreenshotImportProvider,
-  ApiSportsProvider,
-  TheSportsDBProvider,
-  BallDontLieProvider,
-  SerpApiProvider,
+	DemoProvider,
+	SportsDataIOProvider,
+	TheOddsAPIProvider,
+	SportradarProvider,
+	KalshiProvider,
+	ManualImportProvider,
+	ScreenshotImportProvider,
+	ApiSportsProvider,
+	TheSportsDBProvider,
+	BallDontLieProvider,
+	SerpApiProvider,
 };
