@@ -1,7 +1,13 @@
 /**
- * PropEdge AI — API-SPORTS Sport Configuration (R13)
+ * PropEdge AI — API-SPORTS Sport Configuration (R15.7)
  *
- * Configuration for each supported sport including endpoints and league IDs
+ * API-SPORTS v1 base URL pattern: https://v1.{sport}.api-sports.io
+ * - Basketball (NBA): https://v1.basketball.api-sports.io
+ * - American Football (NFL): https://v1.american-football.api-sports.io
+ * - Baseball (MLB): https://v1.baseball.api-sports.io
+ * - Hockey (NHL): https://v1.hockey.api-sports.io
+ *
+ * Endpoints are relative to the base URL (no sport prefix needed).
  */
 
 export interface SportConfig {
@@ -20,27 +26,28 @@ export interface SportConfig {
 
 const SPORT_CONFIGS: Record<string, SportConfig> = {
   NBA: {
-    baseUrl: "https://api-sports.io/v1",
+    baseUrl: "https://v1.basketball.api-sports.io",
     leagueId: 12, // NBA league ID
     season: String(new Date().getFullYear()),
     endpoints: {
-      teams: "/basketball/teams",
-      games: "/basketball/games",
-      standings: "/basketball/standings",
-      liveScores: "/basketball/games",
-      injuries: "/basketball/injuries",
+      teams: "/teams",
+      games: "/games",
+      standings: "/standings",
+      liveScores: "/games",
+      injuries: "/injuries",
+      playerStats: "/players/statistics",
     },
   },
   NFL: {
-    baseUrl: "https://api-sports.io/v1",
+    baseUrl: "https://v1.american-football.api-sports.io",
     leagueId: 1, // NFL league ID
     season: String(new Date().getFullYear()),
     endpoints: {
-      teams: "/american-football/teams",
-      games: "/american-football/games",
-      standings: "/american-football/standings",
-      liveScores: "/american-football/games",
-      injuries: "/american-football/injuries",
+      teams: "/teams",
+      games: "/games",
+      standings: "/standings",
+      liveScores: "/games",
+      injuries: "/injuries",
     },
   },
   MLB: {
@@ -54,15 +61,15 @@ const SPORT_CONFIGS: Record<string, SportConfig> = {
     },
   },
   NHL: {
-    baseUrl: "https://api-sports.io/v1",
+    baseUrl: "https://v1.hockey.api-sports.io",
     leagueId: 3, // NHL league ID
     season: String(new Date().getFullYear()),
     endpoints: {
-      teams: "/hockey/teams",
-      games: "/hockey/games",
-      standings: "/hockey/standings",
-      liveScores: "/hockey/games",
-      injuries: "/hockey/injuries",
+      teams: "/teams",
+      games: "/games",
+      standings: "/standings",
+      liveScores: "/games",
+      injuries: "/injuries",
     },
   },
 };
