@@ -80,10 +80,11 @@ export const hockeyAdapter: SportAdapter = {
 
   async getPlayers(_sport: string, _teamId?: string) {
     return {
-      ok: true as const,
+      ok: false,
       data: [],
       requestsUsed: 0,
       requestsRemaining: 0,
+      error: { code: "not_implemented", message: "getPlayers not implemented for hockey" }
     };
   },
 
@@ -105,10 +106,11 @@ export const hockeyAdapter: SportAdapter = {
     const config = getSportConfig(SPORT);
     if (!config.endpoints.standings)
       return {
-        ok: true as const,
+        ok: false,
         data: [],
         requestsUsed: 0,
         requestsRemaining: 0,
+        error: { code: "not_implemented", message: "getStandings endpoint not configured for hockey" }
       };
     const params: Record<string, string | number> = {
       league: league || config.leagueId,
@@ -138,28 +140,31 @@ export const hockeyAdapter: SportAdapter = {
 
   async getPlayerStats(_sport: string, _playerId: string, _season?: string) {
     return {
-      ok: true as const,
+      ok: false,
       data: [],
       requestsUsed: 0,
       requestsRemaining: 0,
+      error: { code: "not_implemented", message: "getPlayerStats not implemented for hockey" }
     };
   },
 
   async getTeamStats(_sport: string, _teamId: string, _season?: string) {
     return {
-      ok: true as const,
+      ok: false,
       data: [],
       requestsUsed: 0,
       requestsRemaining: 0,
+      error: { code: "not_implemented", message: "getTeamStats not implemented for hockey" }
     };
   },
 
   async getInjuries(_sport: string, _teamId?: string) {
     return {
-      ok: true as const,
+      ok: false,
       data: [],
       requestsUsed: 0,
       requestsRemaining: 0,
+      error: { code: "not_implemented", message: "getInjuries not implemented for hockey" }
     };
   },
 
