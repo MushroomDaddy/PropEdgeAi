@@ -1,20 +1,14 @@
-import { Hono } from 'hono'
+import { Hono } from 'hono';
+import { db } from '../db/client.js';
+import { providerConfig } from '../db/schema.js';
+import { requireAuth } from '../middleware/auth.js';
 
-const providers = new Hono()
+const app = new Hono();
 
-// GET /status — get status of all providers
-providers.get('/status', (c) => {
-  return c.json({ error: 'Not Implemented' }, 501)
-})
+// GET /api/providers/status
+app.get('/status', requireAuth, async (c) => {
+  const rows = await db.select().from(providerConfig);
+  return c.json(rows);
+});
 
-// GET /:name/status — get status of a specific provider
-providers.get('/:name/status', (c) => {
-  return c.json({ error: 'Not Implemented' }, 501)
-})
-
-// PATCH /:name/status — update status of a specific provider
-providers.patch('/:name/status', (c) => {
-  return c.json({ error: 'Not Implemented' }, 501)
-})
-
-export default providers
+export default app;

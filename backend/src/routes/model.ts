@@ -1,25 +1,32 @@
-import { Hono } from 'hono'
+import { Hono } from 'hono';
+import { db } from '../db/client.js';
+import { modelPredictions, modelVersions } from '../db/schema.js';
+import { requireAuth } from '../middleware/auth.js';
+import { eq, desc, sql } from 'drizzle-orm';
 
-const model = new Hono()
+const app = new Hono();
 
-// POST /predictions — create a model prediction
-model.post('/predictions', (c) => {
-  return c.json({ error: 'Not Implemented' }, 501)
-})
+// GET /api/model/learning-insights
+app.get('/learning-insights', requireAuth, async (c) => {
+  const [activeVersion] = await db
+    .select()
+    .from(modelVersions)
+    .where(eq(modelVersions.isActive, true))
+    .limit(1);
 
-// PATCH /predictions/:id — update a model prediction (e.g. resolve)
-model.patch('/predictions/:id', (c) => {
-  return c.json({ error: 'Not Implemented' }, 501)
-})
+  const buckets = await db
+    .select({
+      edgeBucket: modelPredictions.edgeBucket,
+      confidenceBucket: modelPredictions.confidenceBucket,
+      total: sql<number>`count(*)::int`,
+      hits: sql<number>`count(*) filter (where hit = true)::int`,
+      accuracy: sql<number>`avg(case when hit then 1.0 else 0.0 end)`,
+    })
+    .from(modelPredictions)
+    .groupBy(modelPredictions.edgeBucket, modelPredictions.confidenceBucket)
+    .orderBy(desc(sql`count(*)`));
 
-// GET /stats — get model performance stats
-model.get('/stats', (c) => {
-  return c.json({ error: 'Not Implemented' }, 501)
-})
+  return c.json({ activeVersion: activeVersion ?? null, buckets });
+});
 
-// GET /predictions — list model predictions
-model.get('/predictions', (c) => {
-  return c.json({ error: 'Not Implemented' }, 501)
-})
-
-export default model
+export default app;

@@ -1,5 +1,10 @@
 {
   "name": "@propedge/db",
   "version": "1.0.0",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9"
+  }
 }

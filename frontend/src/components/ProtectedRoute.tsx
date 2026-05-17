@@ -1,5 +1,6 @@
-import { useConvexAuth } from "convex/react";
+import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { supabase } from "../lib/api";
 import {
 	Sidebar,
 	SidebarContent,
@@ -64,9 +65,19 @@ function AppSkeleton() {
 }
 
 export function ProtectedRoute() {
-	const { isAuthenticated, isLoading } = useConvexAuth();
+	const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-	if (isLoading) {
+	useEffect(() => {
+		supabase.auth.getSession().then(({ data }) => {
+			setIsAuthenticated(!!data.session);
+		});
+		const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+			setIsAuthenticated(!!session);
+		});
+		return () => subscription.unsubscribe();
+	}, []);
+
+	if (isAuthenticated === null) {
 		return <AppSkeleton />;
 	}
 
