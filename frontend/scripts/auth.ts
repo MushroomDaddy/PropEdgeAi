@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
@@ -317,54 +316,6 @@ export async function createPageHelper(): Promise<PageHelper> {
 	return helper;
 }
 
-async function fetchConvexLogs(maxLines = 30): Promise<string> {
-	return new Promise((resolve) => {
-		const logs: string[] = [];
-		const proc = spawn(
-			"bunx",
-			["convex", "logs", "--history", String(maxLines), "--success"],
-			{
-				stdio: ["ignore", "pipe", "pipe"],
-				cwd: `${dirname(fileURLToPath(import.meta.url))}/..`,
-			},
-		);
-
-		proc.stdout.on("data", (data: Buffer) => {
-			const text = data.toString();
-			for (const line of text.split("\n")) {
-				if (line.trim() && !line.startsWith("Watching logs")) {
-					logs.push(line);
-				}
-			}
-		});
-
-		proc.stderr.on("data", (data: Buffer) => {
-			const text = data.toString();
-			if (
-				!text.includes("WebSocket") &&
-				!text.includes("Attempting reconnect")
-			) {
-				logs.push(`[stderr] ${text.trim()}`);
-			}
-		});
-
-		const timeout = setTimeout(() => {
-			proc.kill("SIGTERM");
-			resolve(logs.length > 0 ? logs.join("\n") : "(No recent log entries)");
-		}, 5000);
-
-		proc.on("close", () => {
-			clearTimeout(timeout);
-			resolve(logs.length > 0 ? logs.join("\n") : "(No recent log entries)");
-		});
-
-		proc.on("error", () => {
-			clearTimeout(timeout);
-			resolve("(Failed to fetch Convex logs)");
-		});
-	});
-}
-
 export async function runTest(
 	testName: string,
 	testFn: (helper: PageHelper) => Promise<void>,
@@ -383,12 +334,6 @@ export async function runTest(
 		try {
 			await helper.screenshot(`error-${Date.now()}.png`);
 			await helper.printDebugInfo();
-
-			console.log("\n🔧 Convex Backend Logs:");
-			console.log("─".repeat(60));
-			const convexLogs = await fetchConvexLogs();
-			console.log(convexLogs);
-			console.log("─".repeat(60));
 		} catch (debugError) {
 			console.error("Failed to capture debug info:", debugError);
 		}

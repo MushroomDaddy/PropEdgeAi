@@ -11,6 +11,28 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
+// ─── Users (app-level profiles tied to Supabase auth.users) ───────────────────
+export const users = pgTable(
+  "users",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    authId: text("auth_id").notNull().unique(),
+    email: text("email").notNull(),
+    username: text("username"),
+    avatarUrl: text("avatar_url"),
+    displayName: text("display_name"),
+    role: text("role").notNull().default("user"), // "user" | "admin"
+    subscriptionTier: text("subscription_tier").notNull().default("free"),
+    subscriptionStatus: text("subscription_status").notNull().default("active"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex("users_auth_id_idx").on(t.authId),
+    uniqueIndex("users_email_idx").on(t.email),
+  ],
+);
+
 // ─── Sports ───────────────────────────────────────────────────────────────────
 export const sports = pgTable(
   "sports",

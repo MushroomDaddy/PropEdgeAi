@@ -1,6 +1,6 @@
 # PropEdge AI — Monorepo
 
-This repo is organized as an npm workspace monorepo after migrating from Convex to a self-hosted Postgres/Hono backend.
+This repo is organized as an npm workspace monorepo, migrated from Convex to a self-hosted Postgres/Hono backend.
 
 ## Structure
 
@@ -9,16 +9,15 @@ PropEdgeAi/
   frontend/     # Vite + React app (previously the repo root)
   backend/      # Hono API server with Drizzle ORM (new)
   db/           # Drizzle schema and migrations (new)
-  convex/       # LEGACY — Convex functions kept for reference only, not active
 ```
 
 ## Packages
 
 ### frontend/
-The original React + Vite frontend. Was previously the repo root. All Convex client calls will be replaced with fetch calls to the backend API.
+The original React + Vite frontend. Communicates with the backend API via fetch calls.
 
 - Framework: React + Vite
-- Auth: Clerk (frontend SDK)
+- Auth: Supabase
 - Styling: Tailwind + shadcn/ui
 
 ### backend/
@@ -28,7 +27,7 @@ New Hono-based REST API server running on Node.js.
 - Framework: Hono + @hono/node-server
 - ORM: Drizzle ORM
 - Database: Postgres (via Supabase)
-- Auth: Clerk JWT verification
+- Auth: Supabase JWT verification
 
 Start dev server:
 ```
@@ -54,9 +53,6 @@ Run migrations:
 cd db && npx drizzle-kit generate
 npx drizzle-kit migrate
 ```
-
-### convex/ (legacy reference)
-The original Convex backend functions. Kept in place as reference during migration. Do not add new features here.
 
 ## Getting Started
 

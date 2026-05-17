@@ -1,15 +1,11 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-	readonly VITE_CONVEX_URL: string;
-	readonly VITE_IS_PREVIEW: string;
+	readonly VITE_SUPABASE_URL: string;
+	readonly VITE_SUPABASE_ANON_KEY: string;
+	readonly VITE_API_URL: string;
 }
 
 interface ImportMeta {
 	readonly env: ImportMetaEnv;
 }
-
-// Declare process.env for Convex server modules imported transitively via API types
-declare const process: {
-	env: Record<string, string | undefined>;
-};
