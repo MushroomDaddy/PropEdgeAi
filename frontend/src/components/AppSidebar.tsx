@@ -1,5 +1,5 @@
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useQuery } from "convex/react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/api";
 import {
 	Bot,
 	ClipboardCheck,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { APP_NAME } from "@/lib/constants";
-import { api } from "../../convex/_generated/api";
+
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
 	DropdownMenu,
@@ -176,9 +176,17 @@ function SidebarNav() {
 }
 
 function SidebarUserMenu() {
-	const user = useQuery(api.auth.currentUser);
-	const { signOut } = useAuthActions();
+	const [user, setUser] = useState<{ email?: string; user_metadata?: { name?: string } } | null>(null);
 	const { setOpenMobile } = useSidebar();
+
+	useEffect(() => {
+		supabase.auth.getUser().then(({ data }) => setUser(data.user));
+	}, []);
+
+	const signOut = async () => {
+		await supabase.auth.signOut();
+		window.location.href = "/login";
+	};
 
 	return (
 		<SidebarFooter className="border-t border-sidebar-border">
@@ -189,12 +197,12 @@ function SidebarUserMenu() {
 							<SidebarMenuButton size="lg">
 								<Avatar className="size-8">
 									<AvatarFallback className="bg-[#00FF88]/20 text-[#00FF88] text-sm font-bold">
-										{user?.name?.charAt(0).toUpperCase() || "U"}
+										{user?.user_metadata?.name?.charAt(0).toUpperCase() || "U"}
 									</AvatarFallback>
 								</Avatar>
 								<div className="flex flex-col items-start text-left">
 									<span className="text-sm font-medium truncate">
-										{user?.name || "User"}
+										{user?.user_metadata?.name || "User"}
 									</span>
 									<span className="text-xs text-muted-foreground truncate">
 										{user?.email}

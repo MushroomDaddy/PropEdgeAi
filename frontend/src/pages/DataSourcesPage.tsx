@@ -1,4 +1,4 @@
-import { useAction, useQuery } from "convex/react";
+
 import {
 	Activity,
 	AlertTriangle,
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { api } from "../../convex/_generated/api";
+
 import { DemoBanner } from "../components/propedge";
 
 function HealthBar({ value }: { value: number }) {
@@ -125,31 +125,19 @@ function ResultPanel({ result, error }: { result: any; error: string | null }) {
 }
 
 export default function DataSourcesPage() {
-	const data = useQuery(api.providerStatus.allProviders);
+	const data: any = null;
 
-	// Action hooks for sync buttons
-	const adminFullSync = useAction(api.adminSync.adminFullSync);
-	const adminRefreshGames = useAction(api.adminSync.adminRefreshGames);
-	const adminRefreshOdds = useAction(api.adminSync.adminRefreshOdds);
-	const adminRefreshProps = useAction(api.adminSync.adminRefreshProps);
-	const adminApiSportsFullSync = useAction(
-		api.adminSync.adminApiSportsFullSync,
-	);
-	const adminApiSportsSyncTeams = useAction(
-		api.adminSync.adminApiSportsSyncTeams,
-	);
-	const adminApiSportsSyncGames = useAction(
-		api.adminSync.adminApiSportsSyncGames,
-	);
-	const adminApiSportsSyncStandings = useAction(
-		api.adminSync.adminApiSportsSyncStandings,
-	);
-	const adminApiSportsSyncLiveScores = useAction(
-		api.adminSync.adminApiSportsSyncLiveScores,
-	);
-	const adminApiSportsSyncInjuries = useAction(
-		api.adminSync.adminApiSportsSyncInjuries,
-	);
+	// Action stubs for sync buttons
+	const adminFullSync = async (args: any) => { console.log('stub', args); return null; };
+	const adminRefreshGames = async (args: any) => { console.log('stub', args); return null; };
+	const adminRefreshOdds = async (args: any) => { console.log('stub', args); return null; };
+	const adminRefreshProps = async (args: any) => { console.log('stub', args); return null; };
+	const adminApiSportsFullSync = async (args: any) => { console.log('stub', args); return null; };
+	const adminApiSportsSyncTeams = async (args: any) => { console.log('stub', args); return null; };
+	const adminApiSportsSyncGames = async (args: any) => { console.log('stub', args); return null; };
+	const adminApiSportsSyncStandings = async (args: any) => { console.log('stub', args); return null; };
+	const adminApiSportsSyncLiveScores = async (args: any) => { console.log('stub', args); return null; };
+	const adminApiSportsSyncInjuries = async (args: any) => { console.log('stub', args); return null; };
 
 	// State for loading/results/errors
 	const [loading, setLoading] = useState<Record<string, boolean>>({});

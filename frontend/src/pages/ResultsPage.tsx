@@ -1,4 +1,3 @@
-import { useQuery } from "convex/react";
 import {
 	ArrowUpDown,
 	BarChart3,
@@ -20,11 +19,11 @@ import {
 } from "@/components/propedge";
 import { formatDirection, formatLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import { api } from "../../convex/_generated/api";
+import { useResults, useResultsSummary } from "../hooks/api/useResults";
 
 export function ResultsPage() {
-	const results = useQuery(api.results.myResults, {});
-	const summary = useQuery(api.results.resultsSummary);
+	const { data: results } = useResults();
+	const { data: summary } = useResultsSummary();
 	const [filterSport, setFilterSport] = useState("");
 	const [filterPlatform, setFilterPlatform] = useState("");
 	const [filterStatus, setFilterStatus] = useState("");

@@ -1,4 +1,3 @@
-import { useQuery } from "convex/react";
 import {
 	BarChart3,
 	Bot,
@@ -14,11 +13,12 @@ import {
 import { DemoBanner, EmptyState, SkeletonCard } from "@/components/propedge";
 import { formatLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import { api } from "../../convex/_generated/api";
+import { useModelPerformance } from "../hooks/api/useResults";
+import { useLearningInsights } from "../hooks/api/useModel";
 
 export function ModelLabPage() {
-	const perf = useQuery(api.results.modelPerformance);
-	const learningInsights = useQuery(api.modelLearning.learningInsights);
+	const { data: perf } = useModelPerformance();
+	const { data: learningInsights } = useLearningInsights();
 
 	const loading = perf === undefined;
 

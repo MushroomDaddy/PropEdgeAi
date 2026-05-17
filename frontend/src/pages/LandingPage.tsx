@@ -1,4 +1,5 @@
-import { useConvexAuth } from "convex/react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/api";
 import {
 	ArrowRight,
 	Bot,
@@ -14,7 +15,18 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 export function LandingPage() {
-	const { isAuthenticated, isLoading } = useConvexAuth();
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+	useEffect(() => {
+		supabase.auth.getSession().then(({ data }) => {
+			setIsAuthenticated(!!data.session);
+			setIsLoading(false);
+		});
+		const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+			setIsAuthenticated(!!session);
+		});
+		return () => subscription.unsubscribe();
+	}, []);
 
 	return (
 		<div className="flex-1 flex flex-col overflow-hidden bg-[#0A0E17]">

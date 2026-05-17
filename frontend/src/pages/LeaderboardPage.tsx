@@ -1,7 +1,6 @@
-import { useQuery } from "convex/react";
 import { Flame, Medal, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { api } from "../../convex/_generated/api";
+import { useLeaderboard } from "../hooks/api/useLeaderboard";
 
 const TIER_STYLES: Record<
 	string,
@@ -40,7 +39,7 @@ const TIER_STYLES: Record<
 };
 
 export function LeaderboardPage() {
-	const leaderboard = useQuery(api.leaderboard.list);
+	const { data: leaderboard } = useLeaderboard();
 
 	return (
 		<div className="space-y-6 max-w-4xl">

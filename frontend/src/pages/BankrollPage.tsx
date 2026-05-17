@@ -1,4 +1,3 @@
-import { useQuery } from "convex/react";
 import {
 	ArrowDownRight,
 	ArrowUpRight,
@@ -24,7 +23,7 @@ import {
 	YAxis,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
-import { api } from "../../convex/_generated/api";
+import { useBankroll, useBankrollSummary, useBankrollTransactions } from "../hooks/api/useBankroll";
 
 const CHART_COLORS = ["#00FF88", "#00D4FF", "#A855F7", "#FF4466", "#FFB800"];
 
@@ -32,9 +31,9 @@ export function BankrollPage() {
 	const [view, setView] = useState<"overview" | "platforms" | "transactions">(
 		"overview",
 	);
-	const summary = useQuery(api.bankroll.bankrollSummary);
-	const bankroll = useQuery(api.bankroll.myBankroll);
-	const transactions = useQuery(api.bankroll.myTransactions);
+	const { data: summary } = useBankrollSummary();
+	const { data: bankroll } = useBankroll();
+	const { data: transactions } = useBankrollTransactions();
 
 	if (!summary) {
 		return (

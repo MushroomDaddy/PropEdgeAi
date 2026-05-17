@@ -20,7 +20,7 @@ export function useResultsSummary() {
 export function useModelPerformance() {
   return useQuery({
     queryKey: ['results', 'model-performance'],
-    queryFn: () => api.get<any[]>('/api/results/model-performance'),
+    queryFn: () => api.get<any>('/api/results/model-performance'),
     staleTime: 120_000,
   });
 }

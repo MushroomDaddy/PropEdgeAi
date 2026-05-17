@@ -1,11 +1,17 @@
-import { useConvexAuth } from "convex/react";
+import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { APP_NAME } from "@/lib/constants";
 import { Button } from "./ui/button";
 
 export function Header() {
-	const { isAuthenticated, isLoading } = useConvexAuth();
+	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+	useEffect(() => {
+		import("../lib/api").then(({ supabase }) => {
+			supabase.auth.getSession().then(({ data }) => setIsAuthenticated(!!data.session));
+		});
+	}, []);
+	const isLoading = false;
 	const location = useLocation();
 
 	const isAuthPage =

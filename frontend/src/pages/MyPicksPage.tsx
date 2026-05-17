@@ -1,4 +1,4 @@
-import { useQuery } from "convex/react";
+import { usePicks, usePickStats, useEntries } from '../hooks/api/usePicks';
 import {
 	BarChart3,
 	Calendar,
@@ -19,7 +19,6 @@ import {
 	YAxis,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
-import { api } from "../../convex/_generated/api";
 
 // Mock performance data for chart
 const performanceData = [
@@ -33,9 +32,9 @@ const performanceData = [
 ];
 
 export function MyPicksPage() {
-	const allPicks = useQuery(api.picks.myPicks, {});
-	const pickStats = useQuery(api.picks.pickStats);
-	const entries = useQuery(api.picks.myEntries);
+	const allPicks = usePicks().data;
+	const pickStats = usePickStats().data;
+	const entries = useEntries().data;
 
 	return (
 		<div className="space-y-6 max-w-[1200px]">

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { api, buildQS } from '../../lib/api';
 
 export function useProps(sport?: string, platform?: string) {
@@ -20,7 +20,7 @@ export function useTopEdges(limit = 20) {
 export function useTopValue(limit = 20) {
   return useQuery({
     queryKey: ['props', 'top-value', limit],
-    queryFn: () => api.get<any[]>(`/api/props/top-value?limit=${limit}`),
+    queryFn: () => api.get<any>(`/api/props/top-value?limit=${limit}`),
     staleTime: 60_000,
   });
 }

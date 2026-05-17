@@ -1,14 +1,10 @@
-import { useAuthActions } from "@convex-dev/auth/react";
 import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "../lib/api";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-
-function isTestEmail(email: string): boolean {
-	return email.endsWith("@test.local");
-}
 
 type Step =
 	| "signIn"
@@ -17,10 +13,24 @@ type Step =
 	| { type: "new-password"; email: string; code: string };
 
 export function SignIn() {
-	const { signIn } = useAuthActions();
 	const [step, setStep] = useState<Step>("signIn");
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
+
+	const signIn = async (email: string, password: string) => {
+		const { error } = await supabase.auth.signInWithPassword({ email, password });
+		if (error) throw error;
+	};
+
+	const sendResetEmail = async (email: string) => {
+		const { error } = await supabase.auth.resetPasswordForEmail(email);
+		if (error) throw error;
+	};
+
+	const updatePassword = async (newPassword: string) => {
+		const { error } = await supabase.auth.updateUser({ password: newPassword });
+		if (error) throw error;
+	};
 
 	if (step === "signIn") {
 		return (
@@ -34,9 +44,9 @@ export function SignIn() {
 
 							const formData = new FormData(e.currentTarget);
 							const email = formData.get("email") as string;
-							const provider = isTestEmail(email) ? "test" : "password";
+							const password = formData.get("password") as string;
 							try {
-								await signIn(provider, formData);
+								await signIn(email, password);
 							} catch {
 								setError("Invalid email or password");
 							} finally {
@@ -79,7 +89,6 @@ export function SignIn() {
 								required
 							/>
 						</div>
-						<input name="flow" value="signIn" type="hidden" />
 						{error && (
 							<p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
 								{error}
@@ -114,7 +123,7 @@ export function SignIn() {
 							const formData = new FormData(e.currentTarget);
 							const email = formData.get("email") as string;
 							try {
-								await signIn("password", formData);
+								await sendResetEmail(email);
 								setStep({ type: "reset-code", email });
 							} catch {
 								setError("Could not send reset code. Please try again.");
@@ -137,7 +146,6 @@ export function SignIn() {
 								required
 							/>
 						</div>
-						<input name="flow" value="reset" type="hidden" />
 						{error && (
 							<p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
 								{error}
@@ -235,8 +243,9 @@ export function SignIn() {
 						setLoading(true);
 
 						const formData = new FormData(e.currentTarget);
+						const newPassword = formData.get("newPassword") as string;
 						try {
-							await signIn("password", formData);
+							await updatePassword(newPassword);
 						} catch {
 							setError("Could not reset password. Code may be expired.");
 							setStep({ type: "forgot", email: step.email });
@@ -259,9 +268,6 @@ export function SignIn() {
 							required
 						/>
 					</div>
-					<input name="flow" value="reset-verification" type="hidden" />
-					<input name="email" value={step.email} type="hidden" />
-					<input name="code" value={step.code} type="hidden" />
 					{error && (
 						<p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
 							{error}

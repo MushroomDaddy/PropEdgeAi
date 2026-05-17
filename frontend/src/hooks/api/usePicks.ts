@@ -58,7 +58,7 @@ export function useCreateEntry() {
 export function usePickCorrelations() {
   return useQuery({
     queryKey: ['picks', 'correlations'],
-    queryFn: () => api.get<any[]>('/api/picks/correlations'),
+    queryFn: () => api.get<any>('/api/picks/correlations'),
     staleTime: 60_000,
   });
 }

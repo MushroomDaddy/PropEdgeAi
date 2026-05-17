@@ -1,4 +1,4 @@
-import { useAuthActions } from "@convex-dev/auth/react";
+import { supabase } from "../lib/api";
 import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
@@ -6,14 +6,9 @@ import { Card, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-function isTestEmail(email: string): boolean {
-	return email.endsWith("@test.local");
-}
-
 type Step = "signUp" | { email: string };
 
 export function SignUp() {
-	const { signIn } = useAuthActions();
 	const [step, setStep] = useState<Step>("signUp");
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -30,12 +25,11 @@ export function SignUp() {
 
 							const formData = new FormData(e.currentTarget);
 							const email = formData.get("email") as string;
-							const provider = isTestEmail(email) ? "test" : "password";
+							const password = formData.get("password") as string;
 							try {
-								await signIn(provider, formData);
-								if (!isTestEmail(email)) {
-									setStep({ email });
-								}
+								const { error: authError } = await supabase.auth.signUp({ email, password });
+								if (authError) throw authError;
+								setStep({ email });
 							} catch {
 								setError("Could not create account. Please try again.");
 							} finally {
@@ -119,8 +113,11 @@ export function SignUp() {
 						setLoading(true);
 
 						const formData = new FormData(e.currentTarget);
+						const token = formData.get("code") as string;
+						const email = formData.get("email") as string;
 						try {
-							await signIn("password", formData);
+							const { error: authError } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+							if (authError) throw authError;
 						} catch {
 							setError("Invalid or expired code. Please try again.");
 						} finally {

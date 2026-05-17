@@ -1,4 +1,5 @@
-import { useMutation, useQuery } from "convex/react";
+import { useProps } from '../hooks/api/useProps';
+import { useAddPick } from '../hooks/api/usePicks';
 import {
 	Activity,
 	ArrowDown,
@@ -19,8 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDirection, formatLabel } from "@/lib/labels";
-import { api } from "../../convex/_generated/api";
-import type { Id } from "../../convex/_generated/dataModel";
+
 
 const SPORTS = ["All", "NBA", "NFL", "MLB", "NHL"];
 const PLATFORMS = [
@@ -65,11 +65,11 @@ export function PropsAnalyzerPage() {
 	const [sortDir, setSortDir] = useState<SortDir>("desc");
 	const [selectedProp, setSelectedProp] = useState<any>(null);
 
-	const allProps = useQuery(api.props.list, {
-		sport: sport === "All" ? undefined : sport,
-		platform: platform === "All" ? undefined : platform,
-	});
-	const addPick = useMutation(api.picks.addPick);
+	const { data: allProps } = useProps(
+		sport === "All" ? undefined : sport,
+		platform === "All" ? undefined : platform,
+	);
+	const addPickMutation = useAddPick();
 
 	const filteredProps = useMemo(() => {
 		if (!allProps) return [];
@@ -108,7 +108,7 @@ export function PropsAnalyzerPage() {
 
 	const handleAddPick = async (propId: any) => {
 		try {
-			await addPick({ propId });
+			await addPickMutation.mutateAsync({ propId });
 			toast.success("Pick added to builder!");
 		} catch {
 			toast.error("Failed to add pick");
@@ -1063,13 +1063,13 @@ function MiniStat({
 }
 
 function LineMovementSection({
-	propId,
+	propId: _propId,
 	playerName,
 }: {
-	propId: Id<"props">;
+	propId: string;
 	playerName: string;
 }) {
-	const snapshots = useQuery(api.playerIntel.lineMovement, { propId });
+	const snapshots: any[] = [];
 	if (!snapshots || snapshots.length === 0) return null;
 
 	const opening = snapshots.find((s: any) => s.snapshotType === "opening");

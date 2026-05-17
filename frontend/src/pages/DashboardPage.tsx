@@ -1,4 +1,5 @@
-import { useQuery } from "convex/react";
+import { useTopEdges, useTopValue, usePropsStats, useProps } from '../hooks/api/useProps';
+import { useUpcomingGames } from '../hooks/api/useGames';
 import { motion } from "framer-motion";
 import {
 	Activity,
@@ -47,20 +48,19 @@ import {
 	getTeamColors,
 } from "@/lib/assets";
 import { formatDirection, formatLabel } from "@/lib/labels";
-import { api } from "../../convex/_generated/api";
 
 const sportFilters = ["All", "NBA", "NFL", "MLB", "NHL"];
 const CHART_COLORS = ["#00FF88", "#00D4FF", "#A855F7", "#FF4466", "#FFB800"];
 
 export function DashboardPage() {
 	const [activeSport, setActiveSport] = useState("All");
-	const topEdges = useQuery(api.props.getTopEdges, { limit: 20 });
-	const topValue = useQuery(api.props.getTopValuePicks, { limit: 7 });
-	const stats = useQuery(api.props.stats, {});
-	const games = useQuery(api.games.listUpcoming, {});
-	const allProps = useQuery(api.props.list, {});
+	const topEdges = useTopEdges(20).data;
+	const topValue = useTopValue(7).data;
+	const stats = usePropsStats().data;
+	const games = useUpcomingGames().data;
+	const allProps = useProps().data;
 
-	const loading = allProps === undefined;
+	const loading = !allProps;
 	const hasData = (allProps?.length ?? 0) > 0;
 	const liveGames = games?.filter((g: any) => g.status === "live") || [];
 	const upcomingGames =

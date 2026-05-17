@@ -1,4 +1,3 @@
-import { useQuery } from "convex/react";
 import {
 	Activity,
 	AlertTriangle,
@@ -11,7 +10,8 @@ import {
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { api } from "../../convex/_generated/api";
+import { useGameDetail } from '../hooks/api/useGames';
+import { useProps } from '../hooks/api/useProps';
 
 type PlayByPlayEntry = {
 	time: string;
@@ -50,14 +50,8 @@ export function GameDetailPage() {
 		"playbyplay" | "boxscore" | "props" | "roster"
 	>("playbyplay");
 
-	const game = useQuery(
-		api.gameDetail.getGame,
-		gameId ? { gameId: gameId as any } : "skip",
-	);
-	const gameProps = useQuery(
-		api.gameDetail.getGameProps,
-		gameId ? { gameId: gameId as any } : "skip",
-	);
+	const { data: game } = useGameDetail(gameId);
+	const { data: gameProps } = useProps(undefined, undefined);
 
 	if (!game) {
 		return (

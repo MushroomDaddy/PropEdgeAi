@@ -1,4 +1,3 @@
-import { useMutation, useQuery } from "convex/react";
 import { Activity, BarChart3, Bot, Search, Sparkles, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -24,7 +23,8 @@ import {
 } from "@/components/propedge";
 import { formatDirection, formatLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import { api } from "../../convex/_generated/api";
+import { usePlayerSearch, usePlayerProfile } from "../hooks/api/usePlayers";
+import { useAddPick } from "../hooks/api/usePicks";
 
 const TABS = [
 	{ id: "overview", label: "Overview" },
@@ -57,13 +57,8 @@ export function PlayerIntelPage() {
 		}
 	}, [qParam, selectedPlayer]);
 
-	const searchResults = useQuery(api.playerIntel.searchPlayers, {
-		searchTerm: searchTerm.length >= 2 ? searchTerm : "",
-	});
-	const profile = useQuery(
-		api.playerIntel.playerProfile,
-		selectedPlayer ? { playerName: selectedPlayer } : "skip",
-	);
+	const { data: searchResults } = usePlayerSearch(searchTerm.length >= 2 ? searchTerm : "");
+	const { data: profile } = usePlayerProfile(selectedPlayer ?? undefined);
 
 	return (
 		<div className="space-y-5">
@@ -159,12 +154,12 @@ function PropDetailDrawerWithPicks({
 	prop: any;
 	onClose: () => void;
 }) {
-	const addPick = useMutation(api.picks.addPick);
+	const addPick = useAddPick();
 
 	const handleAddToPicks = prop?.propId
 		? async () => {
 				try {
-					await addPick({ propId: prop.propId });
+					await addPick.mutateAsync({ propId: prop.propId });
 					onClose();
 				} catch {
 					// Prop may not have a valid propId (demo) — silently handle

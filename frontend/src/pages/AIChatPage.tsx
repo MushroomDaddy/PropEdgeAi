@@ -1,9 +1,8 @@
-import { useAction, useQuery } from "convex/react";
 import { Bot, Send, Sparkles, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { api } from "../../convex/_generated/api";
+import { useChatMessages, useAskAnalyst } from '../hooks/api/useChat';
 
 const PRESETS = [
 	{
@@ -82,8 +81,8 @@ const PRESETS = [
 export function AIChatPage() {
 	const [input, setInput] = useState("");
 	const [loading, setLoading] = useState(false);
-	const chatMessages = useQuery(api.chat.messages, {});
-	const askAnalyst = useAction(api.chat.askAnalyst);
+	const { data: chatMessages } = useChatMessages();
+	const askAnalyst = useAskAnalyst();
 	const messagesEnd = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -96,7 +95,7 @@ export function AIChatPage() {
 		setInput("");
 		setLoading(true);
 		try {
-			await askAnalyst({ question });
+			await askAnalyst.mutateAsync(question);
 		} catch {
 			// Error handled by fallback in backend
 		} finally {

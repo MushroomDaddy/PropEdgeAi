@@ -1,4 +1,3 @@
-import { useMutation, useQuery } from "convex/react";
 import {
 	Camera,
 	CheckCircle2,
@@ -11,7 +10,6 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { api } from "../../convex/_generated/api";
 import { DemoBanner } from "../components/propedge";
 
 type Tab = "manual" | "csv" | "screenshot";
@@ -44,9 +42,9 @@ export default function ImportPage() {
 		null,
 	);
 
-	const myImports = useQuery(api.importData.myImports);
-	const manualSlipEntry = useMutation(api.importData.manualSlipEntry);
-	const csvImport = useMutation(api.importData.csvImport);
+	const myImports: any[] = [];
+	const manualSlipEntry = async (data: any) => { console.log('import stub', data); return { picksCreated: 0, picksAttempted: 0 }; };
+	const csvImport = async (data: any) => { console.log('csv import stub', data); return { parsed: 0, errors: [] }; };
 
 	const addPick = () => setPicks([...picks, { ...EMPTY_PICK }]);
 	const removePick = (i: number) =>

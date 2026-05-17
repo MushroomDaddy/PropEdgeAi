@@ -1,4 +1,3 @@
-import { useMutation, useQuery } from "convex/react";
 import {
 	Bell,
 	DollarSign,
@@ -26,7 +25,6 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { api } from "../../convex/_generated/api";
 
 const CHART_COLORS = ["#00FF88", "#00D4FF", "#A855F7", "#FF4466", "#FFB800"];
 
@@ -46,8 +44,8 @@ const PL_BY_SPORT = [
 ];
 
 export function SettingsPage() {
-	const settings = useQuery(api.settings.get, {});
-	const updateSettings = useMutation(api.settings.save);
+	const settings: any = null;
+	const updateSettings = async (data: any) => { console.log('Settings save stub', data); };
 
 	const [edgeSens, setEdgeSens] = useState(5);
 	const [minConf, setMinConf] = useState(55);
