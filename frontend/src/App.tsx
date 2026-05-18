@@ -63,7 +63,9 @@ const SettingsPage = lazy(() =>
 const GameDetailPage = lazy(() =>
 	import("./pages/GameDetailPage").then((m) => ({ default: m.GameDetailPage })),
 );
-const DataSourcesPage = lazy(() => import("./pages/DataSourcesPage"));
+const DataSourcesPage = lazy(() =>
+	import("./pages/DataSourcesPage").then((m) => ({ default: m.DataSourcesPage })),
+);
 const ImportPage = lazy(() => import("./pages/ImportPage"));
 
 function PageLoading() {

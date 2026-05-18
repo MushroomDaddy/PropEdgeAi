@@ -1,732 +1,380 @@
 import {
-	ArrowUpDown,
-	BarChart3,
-	ChevronRight,
-	DollarSign,
-	Target,
-	TrendingUp,
-	Trophy,
-	X,
+  BarChart3,
+  CheckCircle2,
+  DollarSign,
+  LayoutGrid,
+  List,
+  MinusCircle,
+  Target,
+  TrendingUp,
+  Trophy,
+  X,
+  XCircle,
+  Brain,
 } from "lucide-react";
-import { useState } from "react";
-import {
-	DemoBanner,
-	EdgeBadge,
-	EmptyState,
-	ResultStatusBadge,
-	SkeletonCard,
-	SkeletonTable,
-} from "@/components/propedge";
-import { formatDirection, formatLabel } from "@/lib/labels";
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { formatLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { useResults, useResultsSummary } from "../hooks/api/useResults";
+import { AnimatedSportsBackground } from "@/components/shared/AnimatedBackground";
+import { PageTransition, FadeIn, StaggerContainer, StaggerItem } from "@/components/propedge/PageTransition";
+import { Button } from "@/components/ui/button";
 
 export function ResultsPage() {
-	const { data: results } = useResults();
-	const { data: summary } = useResultsSummary();
-	const [filterSport, setFilterSport] = useState("");
-	const [filterPlatform, setFilterPlatform] = useState("");
-	const [filterStatus, setFilterStatus] = useState("");
-	const [sortField, setSortField] = useState<string>("pickedAt");
-	const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-	const [detailRow, setDetailRow] = useState<any>(null);
+  const { data: results } = useResults();
+  const { data: summary } = useResultsSummary();
+  const [filterSport, setFilterSport] = useState("");
+  const [filterPlatform, setFilterPlatform] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [sortField] = useState<string>("pickedAt");
+  const [sortDir] = useState<"asc" | "desc">("desc");
 
-	const loading = results === undefined;
+  const loading = results === undefined;
 
-	const filteredResults = (results || [])
-		.filter((r: any) => {
-			if (filterSport && r.sport !== filterSport) return false;
-			if (filterPlatform && r.platform !== filterPlatform) return false;
-			if (filterStatus && r.resultStatus !== filterStatus) return false;
-			return true;
-		})
-		.sort((a: any, b: any) => {
-			const aVal = a[sortField] ?? 0;
-			const bVal = b[sortField] ?? 0;
-			return sortDir === "desc" ? (bVal > aVal ? 1 : -1) : aVal > bVal ? 1 : -1;
-		});
+  const filteredResults = useMemo(() => {
+    return (results || [])
+      .filter((r: any) => {
+        if (filterSport && r.sport !== filterSport) return false;
+        if (filterPlatform && r.platform !== filterPlatform) return false;
+        if (filterStatus && r.resultStatus !== filterStatus) return false;
+        return true;
+      })
+      .sort((a: any, b: any) => {
+        const aVal = a[sortField] ?? 0;
+        const bVal = b[sortField] ?? 0;
+        return sortDir === "desc" ? (bVal > aVal ? 1 : -1) : (aVal > bVal ? 1 : -1);
+      });
+  }, [results, filterSport, filterPlatform, filterStatus, sortField, sortDir]);
 
-	const sports = [
-		...new Set((results || []).map((r: any) => r.sport)),
-	] as string[];
-	const platforms = [
-		...new Set((results || []).map((r: any) => r.platform)),
-	] as string[];
+  const sports = [...new Set((results || []).map((r: any) => r.sport))].filter(Boolean);
+  const platforms = [...new Set((results || []).map((r: any) => r.platform))].filter(Boolean);
 
-	const toggleSort = (field: string) => {
-		if (sortField === field) setSortDir(sortDir === "desc" ? "asc" : "desc");
-		else {
-			setSortField(field);
-			setSortDir("desc");
-		}
-	};
+  const winCount = summary?.wins ?? filteredResults.filter((r: any) => r.resultStatus === 'win').length;
+  const lossCount = summary?.losses ?? filteredResults.filter((r: any) => r.resultStatus === 'loss').length;
+  const pushCount = filteredResults.filter((r: any) => r.resultStatus === 'push').length;
+  const totalGraded = winCount + lossCount + pushCount;
+  const winRate = totalGraded > 0 ? ((winCount / totalGraded) * 100).toFixed(1) : '0.0';
+  const totalROI = summary?.roi ?? 0;
+  const avgCLV = summary?.avgClv ?? 0;
 
-	// Compute best sport / best prop type from results
-	const computeBest = (field: string) => {
-		const graded = (results || []).filter(
-			(r: any) => r.resultStatus === "won" || r.resultStatus === "lost",
-		);
-		const buckets: Record<string, { w: number; t: number }> = {};
-		for (const r of graded) {
-			const key = (r as any)[field] || "Other";
-			if (!buckets[key]) buckets[key] = { w: 0, t: 0 };
-			buckets[key].t++;
-			if (r.resultStatus === "won") buckets[key].w++;
-		}
-		return Object.entries(buckets)
-			.map(([k, v]) => ({
-				label: k,
-				winRate: v.t > 0 ? Math.round((v.w / v.t) * 1000) / 10 : 0,
-				total: v.t,
-			}))
-			.sort((a, b) => b.winRate - a.winRate);
-	};
+  return (
+    <PageTransition>
+      <div className="relative min-h-screen pb-24">
+        <AnimatedSportsBackground />
+        
+        <div className="relative z-10 px-4 lg:px-8 space-y-6 pt-6 max-w-[1600px] mx-auto">
+          {/* Header */}
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-black tracking-tighter text-white flex items-center gap-3">
+                <Trophy className="size-8 text-amber-400" />
+                Results & Grading
+              </h1>
+              <p className="text-sm text-muted-foreground/50 mt-1">Track model performance and learn from every pick</p>
+            </div>
+            
+            <div className="flex items-center gap-2 bg-white/[0.03] p-1 rounded-xl border border-white/[0.06]">
+              <Button 
+                variant={viewMode === 'cards' ? 'secondary' : 'ghost'} 
+                size="sm" onClick={() => setViewMode('cards')}
+                className="h-8 gap-2 rounded-lg text-xs font-bold"
+              >
+                <LayoutGrid className="size-3.5" /> Cards
+              </Button>
+              <Button 
+                variant={viewMode === 'table' ? 'secondary' : 'ghost'} 
+                size="sm" onClick={() => setViewMode('table')}
+                className="h-8 gap-2 rounded-lg text-xs font-bold"
+              >
+                <List className="size-3.5" /> Advanced
+              </Button>
+            </div>
+          </motion.div>
 
-	const bestSports = computeBest("sport");
-	const bestPropTypes = computeBest("statType");
+          {/* Summary Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <SummaryCard label="Win Rate" value={`${winRate}%`} icon={<Target className="size-5" />} color="#00ff88" />
+            <SummaryCard label="Record" value={`${winCount}W - ${lossCount}L`} icon={<Trophy className="size-5" />} color="#ffb800" sub={pushCount > 0 ? `${pushCount} Push` : undefined} />
+            <SummaryCard label="Total ROI" value={`${totalROI > 0 ? '+' : ''}${totalROI}%`} icon={<DollarSign className="size-5" />} color={totalROI >= 0 ? "#00ff88" : "#ff4466"} />
+            <SummaryCard label="Avg CLV" value={`${avgCLV > 0 ? '+' : ''}${avgCLV}%`} icon={<TrendingUp className="size-5" />} color="#00d4ff" />
+            <SummaryCard label="Total Graded" value={totalGraded.toString()} icon={<BarChart3 className="size-5" />} color="#a855f7" />
+          </div>
 
-	return (
-		<div className="space-y-5">
-			<DemoBanner message="DEMO DATA — Results shown are mock grading data. Connect live stat APIs for real results." />
+          {/* Filter Bar */}
+          <div className="sticky-filter-bar">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Status Pills */}
+              <div className="pill-selector">
+                {[
+                  { value: '', label: 'All' },
+                  { value: 'win', label: '✓ Wins' },
+                  { value: 'loss', label: '✗ Losses' },
+                  { value: 'push', label: '— Push' },
+                ].map(s => (
+                  <button
+                    key={s.value}
+                    onClick={() => setFilterStatus(s.value)}
+                    className={cn("pill-item text-[10px]", filterStatus === s.value ? "pill-item-active" : "pill-item-inactive")}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
 
-			<div className="flex items-center justify-between">
-				<h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-					Results & Grading
-				</h1>
-			</div>
+              {/* Sport filter */}
+              {sports.length > 0 && (
+                <select
+                  value={filterSport}
+                  onChange={(e) => setFilterSport(e.target.value)}
+                  className="h-9 px-3 rounded-lg bg-white/[0.03] border border-white/[0.08] text-xs font-bold text-muted-foreground appearance-none cursor-pointer"
+                >
+                  <option value="">All Sports</option>
+                  {sports.map(s => <option key={s as string} value={s as string}>{s as string}</option>)}
+                </select>
+              )}
 
-			{/* Summary Cards */}
-			{summary ? (
-				<div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-					<SummaryCard
-						label="Win Rate"
-						value={`${summary.winRate}%`}
-						icon={<Trophy className="size-4" />}
-						color="text-emerald-400"
-						bgColor="from-emerald-500/5"
-					/>
-					<SummaryCard
-						label="Won / Lost"
-						value={`${summary.won}W — ${summary.lost}L`}
-						icon={<Target className="size-4" />}
-						color="text-white"
-						bgColor="from-white/5"
-					/>
-					<SummaryCard
-						label="Avg Edge"
-						value={`${summary.avgEdge > 0 ? "+" : ""}${summary.avgEdge}%`}
-						icon={<TrendingUp className="size-4" />}
-						color={summary.avgEdge > 0 ? "text-emerald-400" : "text-red-400"}
-						bgColor={
-							summary.avgEdge > 0 ? "from-emerald-500/5" : "from-red-500/5"
-						}
-					/>
-					<SummaryCard
-						label="Avg CLV"
-						value={`${summary.avgCLV > 0 ? "+" : ""}${summary.avgCLV}`}
-						icon={<DollarSign className="size-4" />}
-						color={summary.avgCLV > 0 ? "text-emerald-400" : "text-red-400"}
-						bgColor={
-							summary.avgCLV > 0 ? "from-emerald-500/5" : "from-red-500/5"
-						}
-					/>
-					<SummaryCard
-						label="Pending"
-						value={`${summary.pending}`}
-						icon={<BarChart3 className="size-4" />}
-						color="text-blue-400"
-						bgColor="from-blue-500/5"
-					/>
-				</div>
-			) : (
-				<div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-					{Array.from({ length: 5 }).map((_, i) => (
-						<SkeletonCard key={i} />
-					))}
-				</div>
-			)}
+              {/* Platform filter */}
+              {platforms.length > 0 && (
+                <select
+                  value={filterPlatform}
+                  onChange={(e) => setFilterPlatform(e.target.value)}
+                  className="h-9 px-3 rounded-lg bg-white/[0.03] border border-white/[0.08] text-xs font-bold text-muted-foreground appearance-none cursor-pointer"
+                >
+                  <option value="">All Platforms</option>
+                  {platforms.map(p => <option key={p as string} value={p as string}>{p as string}</option>)}
+                </select>
+              )}
 
-			{/* Charts Row */}
-			{summary && summary.total > 0 && (
-				<div className="grid md:grid-cols-3 gap-4">
-					{/* Status Donut */}
-					<div className="rounded-xl border border-white/5 bg-card/50 p-4">
-						<h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-							Status Breakdown
-						</h3>
-						<StatusDonut
-							won={summary.won}
-							lost={summary.lost}
-							push={summary.push}
-							voided={summary.voided}
-							pending={summary.pending}
-						/>
-					</div>
+              {(filterSport || filterPlatform || filterStatus) && (
+                <Button variant="ghost" size="sm" onClick={() => { setFilterSport(''); setFilterPlatform(''); setFilterStatus(''); }} className="h-9 text-xs text-muted-foreground">
+                  <X className="size-3 mr-1" /> Clear
+                </Button>
+              )}
 
-					{/* Best Sport */}
-					<div className="rounded-xl border border-white/5 bg-card/50 p-4">
-						<h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-							Win Rate by Sport
-						</h3>
-						<div className="space-y-2">
-							{bestSports.slice(0, 4).map((s) => (
-								<div key={s.label} className="flex items-center gap-2">
-									<span className="w-12 text-xs font-medium">{s.label}</span>
-									<div className="flex-1 h-5 rounded bg-white/5 overflow-hidden">
-										<div
-											className="h-full rounded bg-gradient-to-r from-emerald-500/30 to-emerald-500/50"
-											style={{ width: `${s.winRate}%` }}
-										/>
-									</div>
-									<span className="text-xs font-mono font-semibold w-14 text-right">
-										{s.winRate}%
-									</span>
-								</div>
-							))}
-						</div>
-					</div>
+              <div className="ml-auto text-[10px] font-bold text-muted-foreground/40">
+                {filteredResults.length} results
+              </div>
+            </div>
+          </div>
 
-					{/* Best Prop Type */}
-					<div className="rounded-xl border border-white/5 bg-card/50 p-4">
-						<h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-							Win Rate by Prop Type
-						</h3>
-						<div className="space-y-2">
-							{bestPropTypes.slice(0, 4).map((s) => (
-								<div key={s.label} className="flex items-center gap-2">
-									<span className="w-24 text-xs font-medium truncate">
-										{s.label}
-									</span>
-									<div className="flex-1 h-5 rounded bg-white/5 overflow-hidden">
-										<div
-											className="h-full rounded bg-gradient-to-r from-cyan-500/30 to-cyan-500/50"
-											style={{ width: `${s.winRate}%` }}
-										/>
-									</div>
-									<span className="text-xs font-mono font-semibold w-14 text-right">
-										{s.winRate}%
-									</span>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-			)}
-
-			{/* Filters */}
-			<div className="flex flex-wrap gap-2">
-				<FilterSelect
-					value={filterSport}
-					onChange={setFilterSport}
-					label="All Sports"
-					options={sports}
-				/>
-				<FilterSelect
-					value={filterPlatform}
-					onChange={setFilterPlatform}
-					label="All Platforms"
-					options={platforms}
-				/>
-				<FilterSelect
-					value={filterStatus}
-					onChange={setFilterStatus}
-					label="All Statuses"
-					options={["won", "lost", "push", "void", "pending"]}
-				/>
-				{(filterSport || filterPlatform || filterStatus) && (
-					<button
-						type="button"
-						onClick={() => {
-							setFilterSport("");
-							setFilterPlatform("");
-							setFilterStatus("");
-						}}
-						className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 px-2"
-					>
-						<X className="size-3" /> Clear
-					</button>
-				)}
-			</div>
-
-			{/* Results Table */}
-			{loading ? (
-				<SkeletonTable rows={8} />
-			) : filteredResults.length === 0 ? (
-				<EmptyState
-					icon={BarChart3}
-					title="No results found"
-					description="Try adjusting your filters"
-				/>
-			) : (
-				<div className="rounded-xl border border-white/5 bg-card/50 overflow-hidden">
-					<div className="overflow-x-auto">
-						<table className="w-full text-sm">
-							<thead>
-								<tr className="border-b border-white/10 text-left text-[10px] text-muted-foreground/60 uppercase tracking-wider">
-									<th className="px-4 py-3">Status</th>
-									<th className="px-4 py-3">Player</th>
-									<th className="px-4 py-3">Prop</th>
-									<th className="px-4 py-3">Dir</th>
-									<th className="px-4 py-3">Sport</th>
-									<th className="px-4 py-3">Platform</th>
-									<th
-										className="px-4 py-3 cursor-pointer hover:text-foreground transition-colors"
-										onClick={() => toggleSort("pickLine")}
-									>
-										<span className="flex items-center gap-1">
-											Line <ArrowUpDown className="size-3" />
-										</span>
-									</th>
-									<th
-										className="px-4 py-3 cursor-pointer hover:text-foreground transition-colors"
-										onClick={() => toggleSort("actualStat")}
-									>
-										<span className="flex items-center gap-1">
-											Actual <ArrowUpDown className="size-3" />
-										</span>
-									</th>
-									<th className="px-4 py-3">Margin</th>
-									<th
-										className="px-4 py-3 cursor-pointer hover:text-foreground transition-colors"
-										onClick={() => toggleSort("pickEdge")}
-									>
-										<span className="flex items-center gap-1">
-											Edge <ArrowUpDown className="size-3" />
-										</span>
-									</th>
-									<th
-										className="px-4 py-3 cursor-pointer hover:text-foreground transition-colors"
-										onClick={() => toggleSort("clv")}
-									>
-										<span className="flex items-center gap-1">
-											CLV <ArrowUpDown className="size-3" />
-										</span>
-									</th>
-									<th
-										className="px-4 py-3 cursor-pointer hover:text-foreground transition-colors"
-										onClick={() => toggleSort("roi")}
-									>
-										<span className="flex items-center gap-1">
-											ROI <ArrowUpDown className="size-3" />
-										</span>
-									</th>
-									<th className="px-4 py-3 w-8" />
-								</tr>
-							</thead>
-							<tbody>
-								{filteredResults.map((r: any, i: number) => {
-									// Fix impossible negative stats
-									const actualStat =
-										r.actualStat !== undefined
-											? Math.max(0, Math.round(r.actualStat * 10) / 10)
-											: undefined;
-									// Direction-aware margin: positive = pick beat the line
-									const margin =
-										actualStat !== undefined
-											? Math.round(
-													(r.overUnder === "over"
-														? actualStat - r.pickLine
-														: r.pickLine - actualStat) * 10,
-												) / 10
-											: undefined;
-
-									return (
-										<tr
-											key={i}
-											onClick={() => setDetailRow(detailRow === i ? null : i)}
-											className={cn(
-												"border-b border-white/[0.03] cursor-pointer transition-colors",
-												"hover:bg-white/[0.03]",
-												detailRow === i && "bg-white/[0.05]",
-											)}
-										>
-											<td className="px-4 py-2.5">
-												<ResultStatusBadge status={r.resultStatus} size="xs" />
-											</td>
-											<td className="px-4 py-2.5 font-medium text-sm">
-												{r.playerName}
-											</td>
-											<td className="px-4 py-2.5 text-muted-foreground text-xs">
-												{formatLabel(r.statType)}
-											</td>
-											<td className="px-4 py-2.5">
-												<span
-													className={cn(
-														"text-[10px] font-bold",
-														r.overUnder === "over"
-															? "text-emerald-400"
-															: "text-red-400",
-													)}
-												>
-													{r.overUnder === "over" ? "▲" : "▼"}{" "}
-													{formatDirection(r.overUnder)}
-												</span>
-											</td>
-											<td className="px-4 py-2.5 text-xs">{r.sport}</td>
-											<td className="px-4 py-2.5 text-xs text-muted-foreground">
-												{formatLabel(r.platform)}
-											</td>
-											<td className="px-4 py-2.5 font-mono text-sm">
-												{r.pickLine}
-											</td>
-											<td className="px-4 py-2.5 font-mono text-sm font-semibold">
-												{actualStat ?? "—"}
-											</td>
-											<td className="px-4 py-2.5 font-mono text-xs">
-												{margin !== undefined ? (
-													<span
-														className={
-															margin > 0
-																? "text-emerald-400"
-																: margin < 0
-																	? "text-red-400"
-																	: "text-muted-foreground"
-														}
-													>
-														{margin > 0 ? "+" : ""}
-														{margin}
-													</span>
-												) : (
-													"—"
-												)}
-											</td>
-											<td className="px-4 py-2.5">
-												<EdgeBadge edge={r.pickEdge} size="xs" />
-											</td>
-											<td className="px-4 py-2.5 font-mono text-xs">
-												{r.clv !== undefined ? (
-													<span
-														className={
-															r.clv > 0
-																? "text-emerald-400"
-																: r.clv < 0
-																	? "text-red-400"
-																	: ""
-														}
-													>
-														{r.clv > 0 ? "+" : ""}
-														{r.clv}
-													</span>
-												) : (
-													"—"
-												)}
-											</td>
-											<td className="px-4 py-2.5 font-mono text-xs font-semibold">
-												{r.roi !== undefined ? (
-													<span
-														className={
-															r.roi > 0
-																? "text-emerald-400"
-																: r.roi < 0
-																	? "text-red-400"
-																	: ""
-														}
-													>
-														{r.roi > 0 ? "+" : ""}
-														{r.roi}%
-													</span>
-												) : (
-													"—"
-												)}
-											</td>
-											<td className="px-4 py-2.5">
-												<ChevronRight
-													className={cn(
-														"size-3.5 text-muted-foreground/30 transition-transform",
-														detailRow === i && "rotate-90",
-													)}
-												/>
-											</td>
-										</tr>
-									);
-								})}
-							</tbody>
-						</table>
-					</div>
-
-					{/* Inline detail row */}
-					{detailRow !== null && filteredResults[detailRow] && (
-						<DetailDrawerInline
-							result={filteredResults[detailRow]}
-							onClose={() => setDetailRow(null)}
-						/>
-					)}
-				</div>
-			)}
-		</div>
-	);
+          {/* Card View */}
+          {viewMode === 'cards' ? (
+            loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-56 rounded-2xl shimmer border border-white/[0.04]" />
+                ))}
+              </div>
+            ) : filteredResults.length > 0 ? (
+              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" stagger={0.03}>
+                {filteredResults.map((r: any) => (
+                  <StaggerItem key={r._id || r.id}>
+                    <ResultCard result={r} />
+                  </StaggerItem>
+                ))}
+              </StaggerContainer>
+            ) : (
+              <EmptyResults />
+            )
+          ) : (
+            /* Table View */
+            loading ? (
+              <div className="space-y-2">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="h-14 rounded-xl shimmer border border-white/[0.04]" />
+                ))}
+              </div>
+            ) : filteredResults.length > 0 ? (
+              <div className="premium-card rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/[0.06]">
+                        {['Player', 'Prop', 'Line', 'Result', 'Edge', 'CLV', 'Sport', 'Platform'].map(h => (
+                          <th key={h} className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredResults.map((r: any) => (
+                        <tr key={r._id || r.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="size-7 rounded-lg bg-white/[0.04] flex items-center justify-center text-[9px] font-black text-white/20">
+                                {r.playerName?.split(' ').map((n: any) => n[0]).join('')}
+                              </div>
+                              <span className="text-sm font-bold text-white">{r.playerName}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground">{formatLabel(r.statType)}</td>
+                          <td className="px-4 py-3 text-sm font-mono font-bold text-white">{r.line}</td>
+                          <td className="px-4 py-3"><ResultBadge status={r.resultStatus} actual={r.actual} /></td>
+                          <td className="px-4 py-3">
+                            <span className={cn("text-sm font-mono font-bold", r.edge > 0 ? "text-primary" : "text-red-400")}>
+                              {r.edge > 0 ? '+' : ''}{r.edge?.toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm font-mono text-muted-foreground">{r.clv ? `${r.clv > 0 ? '+' : ''}${r.clv}%` : '—'}</td>
+                          <td className="px-4 py-3 text-[10px] font-bold text-muted-foreground/60 uppercase">{r.sport}</td>
+                          <td className="px-4 py-3 text-[10px] font-bold text-muted-foreground/60 uppercase">{r.platform}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <EmptyResults />
+            )
+          )}
+        </div>
+      </div>
+    </PageTransition>
+  );
 }
 
-/* ═══════ Summary Card ═══════ */
-function SummaryCard({
-	label,
-	value,
-	icon,
-	color,
-	bgColor,
-}: {
-	label: string;
-	value: string;
-	icon: React.ReactNode;
-	color: string;
-	bgColor: string;
-}) {
-	return (
-		<div
-			className={cn(
-				"rounded-xl border border-white/5 bg-gradient-to-br to-transparent p-4",
-				bgColor,
-			)}
-		>
-			<div className="flex items-center gap-2 text-muted-foreground/60 text-[10px] uppercase tracking-wider mb-2">
-				{icon} {label}
-			</div>
-			<p className={cn("text-xl font-bold font-mono", color)}>{value}</p>
-		</div>
-	);
+/* ═══ Result Card ═══ */
+function ResultCard({ result: r }: { result: any }) {
+  const isWin = r.resultStatus === 'win';
+  const isLoss = r.resultStatus === 'loss';
+  const _isPush = r.resultStatus === 'push'; void _isPush;
+  
+  const borderColor = isWin ? 'border-emerald-500/20' : isLoss ? 'border-red-500/20' : 'border-amber-500/20';
+  const bgAccent = isWin ? 'bg-emerald-500/[0.03]' : isLoss ? 'bg-red-500/[0.03]' : 'bg-amber-500/[0.03]';
+  const statusColor = isWin ? '#00ff88' : isLoss ? '#ff4466' : '#ffb800';
+
+  return (
+    <motion.div
+      whileHover={{ y: -4 }}
+      className={cn("relative rounded-2xl border overflow-hidden transition-all", borderColor, bgAccent)}
+    >
+      {/* Top accent line */}
+      <div className="h-[2px] w-full" style={{ background: `linear-gradient(90deg, transparent, ${statusColor}60, transparent)` }} />
+
+      <div className="p-5 space-y-4">
+        {/* Player + Status */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-11 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-sm font-black text-white/20 overflow-hidden">
+              {r.playerImage ? (
+                <img src={r.playerImage} className="h-full w-full object-cover" />
+              ) : (
+                r.playerName?.split(' ').map((n: any) => n[0]).join('')
+              )}
+            </div>
+            <div>
+              <p className="font-bold text-[15px] text-white leading-tight">{r.playerName}</p>
+              <p className="text-[10px] text-muted-foreground/50 font-bold uppercase tracking-wider mt-0.5">
+                {r.team} · {formatLabel(r.statType)}
+              </p>
+            </div>
+          </div>
+          <ResultBadge status={r.resultStatus} actual={r.actual} />
+        </div>
+
+        {/* Line vs Actual */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-white/[0.03] rounded-xl p-3 text-center">
+            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest mb-1">Line</p>
+            <p className="text-xl font-black text-white font-mono">{r.line}</p>
+          </div>
+          <div className="bg-white/[0.03] rounded-xl p-3 text-center">
+            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest mb-1">Actual</p>
+            <p className="text-xl font-black font-mono" style={{ color: statusColor }}>{r.actual ?? '—'}</p>
+          </div>
+          <div className="bg-white/[0.03] rounded-xl p-3 text-center">
+            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest mb-1">Margin</p>
+            <p className={cn("text-xl font-black font-mono", isWin ? "text-primary" : isLoss ? "text-red-400" : "text-amber-400")}>
+              {r.actual && r.line ? (r.actual - r.line > 0 ? '+' : '') + (r.actual - r.line).toFixed(1) : '—'}
+            </p>
+          </div>
+        </div>
+
+        {/* Edge + CLV + ROI chips */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={cn("text-[10px] font-black px-2 py-1 rounded-lg border", r.edge > 0 ? "text-primary bg-primary/5 border-primary/10" : "text-red-400 bg-red-500/5 border-red-500/10")}>
+            Edge: {r.edge > 0 ? '+' : ''}{r.edge?.toFixed(1)}%
+          </span>
+          {r.clv !== undefined && (
+            <span className="text-[10px] font-black px-2 py-1 rounded-lg border text-cyan-400 bg-cyan-500/5 border-cyan-500/10">
+              CLV: {r.clv > 0 ? '+' : ''}{r.clv}%
+            </span>
+          )}
+          <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.04] text-muted-foreground/50">
+            {r.sport} · {r.platform}
+          </span>
+        </div>
+
+        {/* Model Learning Note */}
+        <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-500/[0.04] border border-indigo-500/10">
+          <Brain className="size-3.5 text-indigo-400 mt-0.5 shrink-0" />
+          <p className="text-[10px] text-indigo-300/70 leading-relaxed">
+            {isWin 
+              ? `Model correctly identified ${r.edge?.toFixed(1)}% edge on ${formatLabel(r.statType)}. Pattern reinforced for future predictions.`
+              : isLoss 
+                ? `Outcome variance detected. Model recalibrating ${formatLabel(r.statType)} weights for similar matchup profiles.`
+                : `Push result — line was accurate. Model confidence maintained.`
+            }
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
-/* ═══════ Filter Select ═══════ */
-function FilterSelect({
-	value,
-	onChange,
-	label,
-	options,
-}: {
-	value: string;
-	onChange: (v: string) => void;
-	label: string;
-	options: string[];
-}) {
-	return (
-		<select
-			className="rounded-xl border border-white/10 bg-card/50 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
-			value={value}
-			onChange={(e) => onChange(e.target.value)}
-		>
-			<option value="">{label}</option>
-			{options.map((o) => (
-				<option key={o} value={o}>
-					{o}
-				</option>
-			))}
-		</select>
-	);
+/* ═══ Result Badge ═══ */
+function ResultBadge({ status }: { status: string; actual?: number }) {
+  const config: Record<string, any> = {
+    win: { icon: CheckCircle2, color: '#00ff88', bg: '#00ff8815', label: 'WIN' },
+    loss: { icon: XCircle, color: '#ff4466', bg: '#ff446615', label: 'LOSS' },
+    push: { icon: MinusCircle, color: '#ffb800', bg: '#ffb80015', label: 'PUSH' },
+  };
+  const c = config[status] || config.push;
+  const Icon = c.icon;
+  
+  return (
+    <div 
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider"
+      style={{ color: c.color, backgroundColor: c.bg }}
+    >
+      <Icon className="size-3.5" />
+      {c.label}
+    </div>
+  );
 }
 
-/* ═══════ Status Donut ═══════ */
-function StatusDonut({
-	won,
-	lost,
-	push,
-	voided,
-	pending,
-}: {
-	won: number;
-	lost: number;
-	push: number;
-	voided: number;
-	pending: number;
-}) {
-	const total = won + lost + push + voided + pending;
-	if (total === 0) return null;
-
-	const segments = [
-		{ count: won, color: "#10b981", label: "Won" },
-		{ count: lost, color: "#ef4444", label: "Lost" },
-		{ count: push, color: "#f59e0b", label: "Push" },
-		{ count: voided, color: "#71717a", label: "Void" },
-		{ count: pending, color: "#3b82f6", label: "Pending" },
-	];
-
-	let acc = 0;
-	const radius = 40;
-	const circumference = 2 * Math.PI * radius;
-
-	return (
-		<div className="flex items-center gap-4">
-			<div className="relative size-24 shrink-0">
-				<svg aria-hidden="true">
-					{segments.map((seg, i) => {
-						const pct = seg.count / total;
-						const offset = acc;
-						acc += pct;
-						if (pct === 0) return null;
-						return (
-							<circle
-								key={i}
-								cx="50"
-								cy="50"
-								r={radius}
-								fill="none"
-								stroke={seg.color}
-								strokeWidth="10"
-								strokeDasharray={`${pct * circumference} ${circumference}`}
-								strokeDashoffset={-offset * circumference}
-								className="transition-all duration-500"
-							/>
-						);
-					})}
-				</svg>
-				<div className="absolute inset-0 flex items-center justify-center">
-					<span className="text-lg font-bold">{total}</span>
-				</div>
-			</div>
-			<div className="space-y-1">
-				{segments
-					.filter((s) => s.count > 0)
-					.map((seg) => (
-						<div key={seg.label} className="flex items-center gap-2 text-xs">
-							<div
-								className="size-2 rounded-full"
-								style={{ background: seg.color }}
-							/>
-							<span className="text-muted-foreground">{seg.label}</span>
-							<span className="font-mono font-semibold">{seg.count}</span>
-						</div>
-					))}
-			</div>
-		</div>
-	);
+/* ═══ Summary Card ═══ */
+function SummaryCard({ label, value, icon, color, sub }: { label: string; value: string; icon: React.ReactNode; color: string; sub?: string }) {
+  return (
+    <FadeIn>
+      <motion.div 
+        whileHover={{ y: -3 }}
+        className="premium-card rounded-2xl p-5"
+      >
+        <div className="flex items-center gap-2 mb-3" style={{ color }}>
+          <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}10` }}>
+            {icon}
+          </div>
+        </div>
+        <p className="metric-label mb-1">{label}</p>
+        <p className="text-2xl font-black tracking-tighter text-white font-mono">{value}</p>
+        {sub && <p className="text-[10px] text-muted-foreground/40 mt-1">{sub}</p>}
+      </motion.div>
+    </FadeIn>
+  );
 }
 
-/* ═══════ Inline Detail Drawer ═══════ */
-function DetailDrawerInline({
-	result,
-	onClose,
-}: {
-	result: any;
-	onClose: () => void;
-}) {
-	const r = result;
-	const actualStat =
-		r.actualStat !== undefined
-			? Math.max(0, Math.round(r.actualStat * 10) / 10)
-			: undefined;
-	// Direction-aware margin: positive = pick beat the line
-	const margin =
-		actualStat !== undefined
-			? Math.round(
-					(r.overUnder === "over"
-						? actualStat - r.pickLine
-						: r.pickLine - actualStat) * 10,
-				) / 10
-			: undefined;
-
-	return (
-		<div className="border-t border-white/10 bg-white/[0.02] px-6 py-4">
-			<div className="flex items-center justify-between mb-3">
-				<h4 className="text-sm font-semibold">
-					{r.playerName} — {formatLabel(r.statType)}{" "}
-					{formatDirection(r.overUnder)}
-				</h4>
-				<button
-					type="button"
-					onClick={onClose}
-					className="text-muted-foreground hover:text-foreground"
-				>
-					<X className="size-3.5" />
-				</button>
-			</div>
-			<div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-				<DetailStat label="Line" value={r.pickLine} />
-				<DetailStat label="Actual" value={actualStat ?? "Pending"} />
-				<DetailStat
-					label="Margin"
-					value={
-						margin !== undefined ? `${margin > 0 ? "+" : ""}${margin}` : "—"
-					}
-					color={
-						margin && margin > 0
-							? "text-emerald-400"
-							: margin && margin < 0
-								? "text-red-400"
-								: undefined
-					}
-				/>
-				<DetailStat
-					label="Closing Line"
-					value={r.closingLine?.toFixed(1) ?? "—"}
-				/>
-				<DetailStat
-					label="Model Prob"
-					value={r.pickModelProb ? `${r.pickModelProb}%` : "—"}
-				/>
-				<DetailStat
-					label="Market Implied"
-					value={r.pickMarketImpliedProb ? `${r.pickMarketImpliedProb}%` : "—"}
-				/>
-				<DetailStat
-					label="Edge"
-					value={`${r.pickEdge > 0 ? "+" : ""}${r.pickEdge}%`}
-					color={r.pickEdge > 0 ? "text-emerald-400" : "text-red-400"}
-				/>
-				<DetailStat
-					label="CLV"
-					value={r.clv !== undefined ? `${r.clv > 0 ? "+" : ""}${r.clv}` : "—"}
-					color={
-						r.clv > 0
-							? "text-emerald-400"
-							: r.clv < 0
-								? "text-red-400"
-								: undefined
-					}
-				/>
-				<DetailStat
-					label="EV"
-					value={r.ev !== undefined ? `${r.ev > 0 ? "+" : ""}${r.ev}` : "—"}
-				/>
-				<DetailStat
-					label="ROI"
-					value={r.roi !== undefined ? `${r.roi > 0 ? "+" : ""}${r.roi}%` : "—"}
-					color={
-						r.roi > 0
-							? "text-emerald-400"
-							: r.roi < 0
-								? "text-red-400"
-								: undefined
-					}
-				/>
-				<DetailStat
-					label="Picked"
-					value={new Date(r.pickedAt).toLocaleDateString()}
-				/>
-				<DetailStat
-					label="Graded"
-					value={
-						r.gradedAt ? new Date(r.gradedAt).toLocaleDateString() : "Pending"
-					}
-				/>
-				<DetailStat label="Grading Source" value={r.gradingSource ?? "auto"} />
-				<DetailStat
-					label="Model Version"
-					value={r.modelVersion ?? "heuristic-v1"}
-				/>
-				<DetailStat
-					label="Quality"
-					value={r.qualityFlags?.join(", ") ?? "clean"}
-				/>
-				<DetailStat label="Data Source" value={r.dataSource ?? "demo"} />
-			</div>
-		</div>
-	);
-}
-
-function DetailStat({
-	label,
-	value,
-	color,
-}: {
-	label: string;
-	value: any;
-	color?: string;
-}) {
-	return (
-		<div className="rounded-lg bg-white/5 p-2">
-			<div className="text-[10px] text-muted-foreground/50 mb-0.5">{label}</div>
-			<div className={cn("font-mono font-semibold text-sm", color)}>
-				{value}
-			</div>
-		</div>
-	);
+/* ═══ Empty State ═══ */
+function EmptyResults() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 bg-white/[0.01] border border-dashed border-white/[0.08] rounded-3xl">
+      <div className="size-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
+        <Trophy className="size-8 text-muted-foreground/30" />
+      </div>
+      <h3 className="text-xl font-bold text-white">No Results Yet</h3>
+      <p className="text-sm text-muted-foreground/40 mt-1">Results will appear once picks are graded</p>
+    </div>
+  );
 }
