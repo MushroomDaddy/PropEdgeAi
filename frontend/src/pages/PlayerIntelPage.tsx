@@ -14,6 +14,7 @@ import {
   HitRateHeatmap,
   LineMovementTimeline,
   PlayerHeroCard,
+  PremiumPropCard,
   PropDetailDrawer,
   PropOpportunityCard,
   SkeletonCard,
@@ -29,8 +30,6 @@ import { useAddPick } from "../hooks/api/usePicks";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { AnimatedSportsBackground } from "@/components/shared/AnimatedBackground";
 
 const TABS = [
@@ -48,20 +47,32 @@ export function PlayerIntelPage() {
   const [searchParams] = useSearchParams();
   const qParam = searchParams.get("q") || "";
   const [searchTerm, setSearchTerm] = useState(qParam);
-  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(qParam || null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [selectedPlayerName, setSelectedPlayerName] = useState<string | null>(qParam || null);
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [drawerProp, setDrawerProp] = useState<any>(null);
 
+  // Resolve name from query param via search
+  const { data: searchResults } = usePlayerSearch(searchTerm.length >= 2 ? searchTerm : "");
+
   useEffect(() => {
-    if (qParam && qParam !== selectedPlayer) {
+    if (qParam && qParam !== selectedPlayerName) {
       setSearchTerm(qParam);
-      setSelectedPlayer(qParam);
+      setSelectedPlayerName(qParam);
+      setSelectedPlayerId(null);
       setActiveTab("overview");
     }
-  }, [qParam, selectedPlayer]);
+  }, [qParam, selectedPlayerName]);
 
-  const { data: searchResults } = usePlayerSearch(searchTerm.length >= 2 ? searchTerm : "");
-  const { data: profile } = usePlayerProfile(selectedPlayer ?? undefined);
+  // Auto-select from search when coming from query param (name-based)
+  useEffect(() => {
+    if (qParam && !selectedPlayerId && searchResults && searchResults.length > 0) {
+      const match = searchResults.find((p: any) => p.name.toLowerCase() === qParam.toLowerCase());
+      if (match) setSelectedPlayerId(match.id);
+    }
+  }, [qParam, selectedPlayerId, searchResults]);
+
+  const { data: profile } = usePlayerProfile(selectedPlayerId ?? undefined);
 
   return (
     <div className="relative min-h-screen">
@@ -84,13 +95,16 @@ export function PlayerIntelPage() {
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                if (selectedPlayer) setSelectedPlayer(null);
+                if (selectedPlayerId) {
+                  setSelectedPlayerId(null);
+                  setSelectedPlayerName(null);
+                }
               }}
               className="w-full h-12 rounded-xl bg-white/[0.03] border border-white/10 pl-11 pr-4 text-sm font-medium focus:ring-primary/20 transition-all placeholder:text-muted-foreground/30"
             />
             
             <AnimatePresence>
-                {searchResults && searchResults.length > 0 && !selectedPlayer && (
+                {searchResults && searchResults.length > 0 && !selectedPlayerId && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -99,9 +113,10 @@ export function PlayerIntelPage() {
                   >
                     {searchResults.map((p: any) => (
                       <button
-                        key={p._id}
+                        key={p.id}
                         onClick={() => {
-                          setSelectedPlayer(p.name);
+                          setSelectedPlayerId(p.id);
+                          setSelectedPlayerName(p.name);
                           setSearchTerm(p.name);
                           setActiveTab("overview");
                         }}
@@ -203,7 +218,7 @@ export function PlayerIntelPage() {
             </div>
 
           </div>
-        ) : selectedPlayer ? (
+        ) : selectedPlayerId ? (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 py-20">
              {[...Array(4)].map((_, i) => (
                  <div key={i} className="h-80 rounded-3xl bg-white/[0.03] border border-white/10 animate-pulse" />
@@ -218,7 +233,7 @@ export function PlayerIntelPage() {
              <p className="text-muted-foreground text-center max-w-sm mb-6 uppercase text-[10px] tracking-widest font-black">Search for a player above to initialize detailed scouts and statistical modeling.</p>
              <div className="flex gap-2">
                  {['LeBron James', 'Patrick Mahomes', 'Shohei Ohtani'].map(name => (
-                     <Button key={name} variant="ghost" onClick={() => setSearchTerm(name)} className="h-9 px-4 rounded-lg bg-white/5 text-[10px] font-bold uppercase tracking-widest">{name}</Button>
+                     <Button key={name} variant="ghost" onClick={() => { setSearchTerm(name); setSelectedPlayerId(null); setSelectedPlayerName(null); }} className="h-9 px-4 rounded-lg bg-white/5 text-[10px] font-bold uppercase tracking-widest">{name}</Button>
                  ))}
              </div>
           </div>
@@ -286,7 +301,7 @@ function OverviewRedesign({ profile, onOpenPropDrawer }: { profile: any, onOpenP
                         <div className="space-y-6">
                             <PremiumPropCard 
                                 prop={{
-                                    id: profile.currentProps[0]._id,
+                                    id: profile.currentProps[0].id,
                                     player: profile.player.name,
                                     propType: profile.currentProps[0].statType,
                                     line: profile.currentProps[0].line,
@@ -330,10 +345,10 @@ function PropsTabRedesign({ profile, onOpenPropDrawer }: any) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-in zoom-in-95 duration-500">
              {profile.currentProps?.map((p: any) => (
-                 <motion.div key={p._id} whileTap={{ scale: 0.98 }} onClick={() => onOpenPropDrawer({...p, playerName: profile.player.name})}>
+                 <motion.div key={p.id} whileTap={{ scale: 0.98 }} onClick={() => onOpenPropDrawer({...p, playerName: profile.player.name})}>
                      <PremiumPropCard 
                          prop={{
-                             id: p._id,
+                             id: p.id,
                              player: profile.player.name,
                              propType: p.statType,
                              line: p.line,
