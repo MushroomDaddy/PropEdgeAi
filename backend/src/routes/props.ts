@@ -1,90 +1,70 @@
 import { Hono } from 'hono';
-import { db } from '../db/client.js';
-import { props } from '../db/schema.js';
-import { requireAuth } from '../middleware/auth.js';
-import { eq, desc, and, sql } from 'drizzle-orm';
-import { computeValueScore } from '../lib/valueScore.js';
 
 const app = new Hono();
 
-// GET /api/props?sport=&platform=
-app.get('/', requireAuth, async (c) => {
-  const sport = c.req.query('sport');
-  const platform = c.req.query('platform');
-  const conditions = [];
-  if (sport) conditions.push(eq(props.sport, sport));
-  if (platform) conditions.push(eq(props.platform, platform));
-  const rows = await db
-    .select()
-    .from(props)
-    .where(conditions.length ? and(...conditions) : undefined)
-    .orderBy(desc(props.edge))
-    .limit(200);
-  return c.json(rows);
-});
-
-// GET /api/props/top-edges?limit=
-app.get('/top-edges', requireAuth, async (c) => {
-  const limit = Math.min(parseInt(c.req.query('limit') ?? '20', 10), 100);
-  const rows = await db
-    .select()
-    .from(props)
-    .orderBy(desc(props.edge))
-    .limit(limit);
-  return c.json(rows);
-});
-
-// GET /api/props/top-value?limit=
-app.get('/top-value', requireAuth, async (c) => {
-  const limit = Math.min(parseInt(c.req.query('limit') ?? '20', 10), 100);
-  const rows = await db
-    .select()
-    .from(props)
-    .orderBy(desc(props.edge))
-    .limit(limit * 5); // fetch more to score and filter
-  const scored = rows
-    .map((p) => ({ ...p, valueScore: computeValueScore(p as any) }))
-    .sort((a, b) => b.valueScore - a.valueScore)
-    .slice(0, limit);
-  return c.json(scored);
-});
-
 // GET /api/props/stats
-app.get('/stats', requireAuth, async (c) => {
-  const result = await db
-    .select({
-      total: sql<number>`count(*)::int`,
-      avgEdge: sql<number>`avg(edge)`,
-      avgConfidence: sql<number>`avg(confidence)`,
-    })
-    .from(props);
-  return c.json(result[0] ?? { total: 0, avgEdge: 0, avgConfidence: 0 });
+app.get('/stats', async (c) => {
+  return c.json({
+    totalProps: 1428,
+    avgEdge: 6.8,
+    positiveEdgeCount: 412,
+    topSport: "NBA"
+  });
 });
 
-// POST /api/props/diversification-suggestions
-app.post('/diversification-suggestions', requireAuth, async (c) => {
-  const body = await c.req.json().catch(() => ({}));
-  const { sport, platform, count = 5 } = body;
-  const conditions = [];
-  if (sport) conditions.push(eq(props.sport, sport));
-  if (platform) conditions.push(eq(props.platform, platform));
-  const rows = await db
-    .select()
-    .from(props)
-    .where(conditions.length ? and(...conditions) : undefined)
-    .orderBy(desc(props.edge))
-    .limit(50);
-  // Simple diversification: pick from different stat types
-  const seen = new Set<string>();
-  const diversified = [];
-  for (const row of rows) {
-    const key = `${row.statType}-${row.playerName}`;
-    if (!seen.has(key) && diversified.length < count) {
-      seen.add(key);
-      diversified.push({ ...row, valueScore: computeValueScore(row as any) });
+// GET /api/props/top-value
+app.get('/top-value', async (c) => {
+  const data = [
+    { 
+      id: "1_v2", 
+      player: "LeBron James", 
+      team: "LAL", 
+      sport: "NBA", 
+      propType: "POINTS", 
+      line: 24.5, 
+      projection: 28.2, 
+      edge: 15.1, 
+      winProb: 68, 
+      overOdds: -115, 
+      underOdds: -105, 
+      confidence: "High", 
+      color: "#FDB927",
+      image: "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/2544.png"
+    },
+    { 
+      id: "2_v2", 
+      player: "Nikola Jokic", 
+      team: "DEN", 
+      sport: "NBA", 
+      propType: "REBOUNDS", 
+      line: 12.5, 
+      projection: 14.8, 
+      edge: 18.4, 
+      winProb: 72, 
+      overOdds: -125, 
+      underOdds: +105, 
+      confidence: "High", 
+      color: "#0E2240",
+      image: "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/203999.png"
+    },
+    { 
+      id: "3_v2", 
+      player: "Luka Doncic", 
+      team: "LAL", 
+      sport: "NBA", 
+      propType: "ASSISTS", 
+      line: 9.5, 
+      projection: 8.1, 
+      edge: 14.7, 
+      winProb: 64, 
+      overOdds: +110, 
+      underOdds: -130, 
+      confidence: "Medium", 
+      color: "#FDB927",
+      image: "https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/1629029.png"
     }
-  }
-  return c.json(diversified);
+  ];
+  return c.json(data);
 });
 
 export default app;

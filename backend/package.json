@@ -13,14 +13,17 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.12.0",
-    "@supabase/supabase-js": "^2.47.0",
+    "@libsql/client": "^0.17.3",
+    "@supabase/supabase-js": "^2.105.4",
+    "better-sqlite3": "^12.10.0",
     "dotenv": "^16.4.0",
-    "drizzle-orm": "^0.38.0",
+    "drizzle-orm": "^0.38.4",
     "hono": "^4.6.0",
     "postgres": "^3.4.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.29.0",
     "tsx": "^4.19.0",

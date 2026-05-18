@@ -1,268 +1,203 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/api";
 import {
-	ArrowRight,
-	Bot,
-	ChevronRight,
-	LineChart,
-	Shield,
-	ShoppingCart,
-	Target,
-	TrendingUp,
-	Zap,
+  ArrowRight,
+  Bot,
+  ChevronRight,
+  TrendingUp,
+  Zap,
+  Target,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { AnimatedSportsBackground } from "@/components/shared/AnimatedBackground";
+import { cn } from "@/lib/utils";
 
 export function LandingPage() {
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
-	useEffect(() => {
-		supabase.auth.getSession().then(({ data }) => {
-			setIsAuthenticated(!!data.session);
-			setIsLoading(false);
-		});
-		const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-			setIsAuthenticated(!!session);
-		});
-		return () => subscription.unsubscribe();
-	}, []);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-	return (
-		<div className="flex-1 flex flex-col overflow-hidden bg-[#0A0E17]">
-			{/* Hero */}
-			<section className="relative flex-1 flex flex-col items-center justify-center px-4 py-20 md:py-32 overflow-hidden">
-				{/* Background effects */}
-				<div className="absolute inset-0 -z-10">
-					<div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00FF88]/5 rounded-full blur-[128px]" />
-					<div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#00D4FF]/5 rounded-full blur-[128px]" />
-					<div className="absolute inset-0 bg-[linear-gradient(rgba(30,41,59,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(30,41,59,0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-				</div>
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAuthenticated(!!data.session);
+      setIsLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
-				<div className="max-w-5xl mx-auto text-center space-y-8">
-					{/* Badge */}
-					<div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#00FF88]/20 bg-[#00FF88]/5 text-xs font-medium text-[#00FF88]">
-						<Zap className="size-3" />
-						AI-Powered Edge Detection
-						<ChevronRight className="size-3" />
-					</div>
+  return (
+    <div className="relative flex-1 flex flex-col overflow-hidden bg-[#08090a] min-h-screen">
+      <AnimatedSportsBackground />
+      
+      {/* HUD Header */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 backdrop-blur-xl border-b border-white/5 bg-[#08090a]/50">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                  <div className="size-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-[0_0_20px_rgba(79,70,229,0.4)]">
+                    <Zap className="size-5 text-white fill-current" />
+                  </div>
+                  <span className="text-white font-black text-xl italic tracking-tighter uppercase">
+                    PROP<span className="text-primary font-[900]">EDGE</span>
+                  </span>
+              </div>
+              
+              <div className="flex items-center gap-6">
+                  {!isAuthenticated && !isLoading && (
+                      <>
+                        <Link to="/login" className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-white transition-colors">Sign In</Link>
+                        <Button className="h-10 bg-primary text-primary-foreground font-black uppercase text-[10px] tracking-widest px-6 shadow-2xl rounded-xl" asChild>
+                            <Link to="/signup">Initialize</Link>
+                        </Button>
+                      </>
+                  )}
+                  {isAuthenticated && (
+                     <Button className="h-10 bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest px-6 shadow-2xl rounded-xl" asChild>
+                        <Link to="/dashboard">Console</Link>
+                     </Button>
+                  )}
+              </div>
+          </div>
+      </nav>
 
-					{/* Headline */}
-					<h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05]">
-						<span className="text-white">Find Your</span>
-						<br />
-						<span className="bg-gradient-to-r from-[#00FF88] via-[#00D4FF] to-[#A855F7] bg-clip-text text-transparent">
-							Winning Edge
-						</span>
-					</h1>
+      {/* Hero Section */}
+      <section className="relative flex-1 flex flex-col items-center justify-center px-4 pt-40 pb-20 overflow-hidden">
+        <div className="max-w-6xl mx-auto text-center space-y-12">
+          {/* Signal Badge */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-3 px-6 py-2 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl"
+          >
+             <div className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">System Signal: Operational</span>
+             <ChevronRight className="size-3 text-primary" />
+          </motion.div>
 
-					{/* Subheadline */}
-					<p className="text-lg md:text-xl text-[#7B8BA8] max-w-2xl mx-auto leading-relaxed">
-						The ultimate sports analyst for PrizePicks, Underdog, Sleeper &
-						more. AI-driven projections, demo edge estimates, and optimized
-						entries — all in one platform.
-					</p>
+          {/* Epic Headline */}
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.9] uppercase italic"
+          >
+            <span className="text-white drop-shadow-2xl font-[900]">OWN THE</span>
+            <br />
+            <span className="bg-gradient-to-r from-primary via-indigo-500 to-primary bg-clip-text text-transparent">
+              MARKET EDGE
+            </span>
+          </motion.h1>
 
-					{/* CTA */}
-					{!isAuthenticated && !isLoading && (
-						<div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-							<Button
-								size="lg"
-								className="text-base h-12 px-8 bg-[#00FF88] hover:bg-[#00FF88]/90 text-[#0A0E17] font-bold rounded-lg glow-green"
-								asChild
-							>
-								<Link to="/signup">
-									Start Finding Edges
-									<ArrowRight className="size-4 ml-1" />
-								</Link>
-							</Button>
-							<Button
-								size="lg"
-								variant="outline"
-								className="text-base h-12 px-8 border-[#1E293B] text-[#C8D0E0] hover:bg-[#1A2236] hover:text-white rounded-lg"
-								asChild
-							>
-								<Link to="/login">Sign In</Link>
-							</Button>
-						</div>
-					)}
-					{isAuthenticated && (
-						<Button
-							size="lg"
-							className="text-base h-12 px-8 bg-[#00FF88] hover:bg-[#00FF88]/90 text-[#0A0E17] font-bold rounded-lg glow-green"
-							asChild
-						>
-							<Link to="/dashboard">
-								Go to Dashboard
-								<ArrowRight className="size-4 ml-1" />
-							</Link>
-						</Button>
-					)}
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            transition={{ delay: 0.5 }}
+            className="text-lg md:text-xl text-[#f7f8f8] max-w-2xl mx-auto leading-relaxed font-medium uppercase tracking-[0.2em]"
+          >
+            Elite sports intelligence utilizing institutional-grade data modeling to find high-value market opportunities.
+          </motion.p>
 
-					{/* Stats bar */}
-					<div className="flex flex-wrap items-center justify-center gap-8 pt-8 text-sm">
-						<div className="flex items-center gap-2">
-							<div className="size-2 rounded-full bg-[#00FF88] animate-pulse" />
-							<span className="text-[#7B8BA8]">Live Props</span>
-							<span className="font-bold text-white">847</span>
-						</div>
-						<div className="flex items-center gap-2">
-							<div className="size-2 rounded-full bg-[#00D4FF]" />
-							<span className="text-[#7B8BA8]">Avg Edge</span>
-							<span className="font-bold text-[#00FF88]">+6.2%</span>
-						</div>
-						<div className="flex items-center gap-2">
-							<div className="size-2 rounded-full bg-[#A855F7]" />
-							<span className="text-[#7B8BA8]">Hit Rate</span>
-							<span className="font-bold text-white">67.4%</span>
-						</div>
-						<div className="flex items-center gap-2">
-							<div className="size-2 rounded-full bg-[#FFB800]" />
-							<span className="text-[#7B8BA8]">Sports</span>
-							<span className="font-bold text-white">8+</span>
-						</div>
-					</div>
-				</div>
-			</section>
+          {!isAuthenticated && !isLoading && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="flex flex-col sm:flex-row gap-6 justify-center pt-8"
+            >
+              <Button
+                size="lg"
+                className="h-16 px-12 bg-primary text-primary-foreground font-black italic uppercase text-lg shadow-[0_0_60px_rgba(0,255,136,0.2)] hover:scale-105 transition-all rounded-3xl"
+                asChild
+              >
+                <Link to="/signup">
+                  Get The Edge
+                  <ArrowRight className="size-5 ml-2" />
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-16 px-12 border-white/10 text-white font-black italic uppercase text-lg hover:bg-white/5 transition-all rounded-3xl backdrop-blur-xl"
+                asChild
+              >
+                <Link to="/login">Access App</Link>
+              </Button>
+            </motion.div>
+          )}
 
-			{/* Features Grid */}
-			<section className="px-4 py-20 relative">
-				<div className="max-w-6xl mx-auto">
-					<div className="text-center mb-16">
-						<h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-							Every Tool You Need
-						</h2>
-						<p className="text-[#7B8BA8] text-lg max-w-xl mx-auto">
-							From projection aggregation to optimized entries — compare
-							opportunities across platforms.
-						</p>
-					</div>
+          <div className="pt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <StatTicker label="Tracking Nodes" value="482" prefix="+" color="indigo" />
+            <StatTicker label="Active Props" value="14.2k" color="primary" />
+            <StatTicker label="Alpha Rating" value="88.4" color="purple" />
+            <StatTicker label="Latency" value="2.4ms" color="emerald" />
+          </div>
+        </div>
+      </section>
 
-					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-						{[
-							{
-								icon: TrendingUp,
-								title: "Edge Detection",
-								desc: "Real-time edge % and +EV calculations across all platforms. See where the value is before anyone else.",
-								color: "#00FF88",
-							},
-							{
-								icon: Bot,
-								title: "AI Analyst Chat",
-								desc: '"Best NBA overs tonight?" — ask anything and get data-backed answers with cited projections.',
-								color: "#00D4FF",
-							},
-							{
-								icon: ShoppingCart,
-								title: "Pick Builder",
-								desc: "Build optimized entries for PrizePicks, Underdog, and more. Auto-correlation warnings included.",
-								color: "#A855F7",
-							},
-							{
-								icon: LineChart,
-								title: "Projection Aggregation",
-								desc: "Compare projections from FantasyLabs, Rotowire, NumberFire, ESPN, and more — side by side.",
-								color: "#FFB800",
-							},
-							{
-								icon: Target,
-								title: "Performance Tracker",
-								desc: "Track every pick, win rate, ROI, and streaks. Know exactly where you're making money.",
-								color: "#FF4466",
-							},
-							{
-								icon: Shield,
-								title: "Multi-Sport Coverage",
-								desc: "NFL, NBA, MLB, NHL, CFB, Soccer, Tennis, Esports — all under one roof with full analysis.",
-								color: "#00FF88",
-							},
-						].map((f) => (
-							<div
-								key={f.title}
-								className="group relative p-6 rounded-xl bg-[#111827]/80 border border-[#1E293B] hover:border-[#1E293B]/80 transition-all duration-300"
-							>
-								<div
-									className="size-10 rounded-lg flex items-center justify-center mb-4"
-									style={{ backgroundColor: `${f.color}15` }}
-								>
-									<f.icon className="size-5" style={{ color: f.color }} />
-								</div>
-								<h3 className="text-lg font-semibold text-white mb-2">
-									{f.title}
-								</h3>
-								<p className="text-sm text-[#7B8BA8] leading-relaxed">
-									{f.desc}
-								</p>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
+      {/* Feature Cards */}
+      <section className="px-6 py-32 relative z-10 max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard 
+                icon={TrendingUp} 
+                title="Deep Analysis" 
+                desc="Real-time edge calculations across every major platform." 
+                color="primary"
+            />
+            <FeatureCard 
+                icon={Bot} 
+                title="AI Intelligence" 
+                desc="24/7 sports analyst for deep matchup and stat research." 
+                color="indigo"
+            />
+            <FeatureCard 
+                icon={Target} 
+                title="Smart Builder" 
+                desc="Optimized entry construction with correlation guardrails." 
+                color="purple"
+            />
+          </div>
+      </section>
+      
+      <footer className="p-12 border-t border-white/5 relative z-10 bg-[#08090a]">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+               <div className="flex items-center gap-3 opacity-40">
+                  <Zap className="size-5 text-primary fill-current" />
+                  <span className="font-black italic text-lg text-white uppercase tracking-tighter">PROPEDGE</span>
+               </div>
+               <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">© 2026. FOR ENTERTAINMENT PURPOSES ONLY.</p>
+          </div>
+      </footer>
+    </div>
+  );
+}
 
-			{/* Platform logos */}
-			<section className="px-4 py-16 border-t border-[#1E293B]">
-				<div className="max-w-4xl mx-auto text-center">
-					<p className="text-sm text-[#7B8BA8] mb-8 uppercase tracking-wider font-medium">
-						Supported Platforms
-					</p>
-					<div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
-						{[
-							"PrizePicks",
-							"Underdog",
-							"Sleeper",
-							"DraftKings Pick6",
-							"Kalshi",
-						].map((p) => (
-							<div
-								key={p}
-								className="text-[#4B5A78] font-bold text-lg hover:text-[#7B8BA8] transition-colors"
-							>
-								{p}
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
+function StatTicker({ label, value, prefix, color }: any) {
+    const colorClass = color === 'primary' ? 'text-primary' : color === 'indigo' ? 'text-indigo-400' : color === 'purple' ? 'text-purple-400' : 'text-emerald-400';
+    return (
+        <div className="space-y-1">
+            <div className={`text-4xl font-black tracking-tighter italic ${colorClass}`}>
+                {prefix && <span className="opacity-50 text-2xl mr-1">{prefix}</span>}
+                {value}
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">{label}</p>
+        </div>
+    );
+}
 
-			{/* Footer CTA */}
-			<section className="px-4 py-20">
-				<div className="max-w-3xl mx-auto text-center">
-					<h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-						Ready to Find Your Edge?
-					</h2>
-					<p className="text-[#7B8BA8] text-lg mb-8">
-						Join thousands of sports analytics users using AI to compare
-						opportunities across platforms.
-					</p>
-					{!isAuthenticated && !isLoading && (
-						<Button
-							size="lg"
-							className="text-base h-12 px-8 bg-[#00FF88] hover:bg-[#00FF88]/90 text-[#0A0E17] font-bold rounded-lg glow-green"
-							asChild
-						>
-							<Link to="/signup">
-								Get Started Free
-								<ArrowRight className="size-4 ml-1" />
-							</Link>
-						</Button>
-					)}
-				</div>
-			</section>
-
-			{/* Footer */}
-			<footer className="px-4 py-8 border-t border-[#1E293B]">
-				<div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-					<div className="flex items-center gap-2">
-						<Zap className="size-4 text-[#00FF88]" />
-						<span className="font-bold bg-gradient-to-r from-[#00FF88] to-[#00D4FF] bg-clip-text text-transparent">
-							PropEdge AI
-						</span>
-					</div>
-					<p className="text-sm text-[#4B5A78]">
-						© 2026 PropEdge AI. For entertainment purposes only.
-					</p>
-				</div>
-			</footer>
-		</div>
-	);
+function FeatureCard({ icon: Icon, title, desc, color }: any) {
+    const bgClass = color === 'primary' ? 'bg-primary text-primary-foreground' : color === 'indigo' ? 'bg-indigo-600 text-white' : 'bg-purple-600 text-white';
+    return (
+        <div className="relative group p-8 rounded-[40px] border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] transition-all duration-500 overflow-hidden">
+            <div className={cn("size-14 rounded-2xl flex items-center justify-center mb-10 transition-transform group-hover:scale-110 shadow-2xl", bgClass)}>
+                <Icon className="size-7" />
+            </div>
+            <h3 className="text-xl font-black italic uppercase text-white mb-4 tracking-tighter">{title}</h3>
+            <p className="text-sm font-bold text-muted-foreground leading-relaxed uppercase tracking-wider opacity-60 group-hover:opacity-100">{desc}</p>
+            <div className="absolute bottom-0 left-0 h-1 w-0 bg-primary group-hover:w-full transition-all duration-700" />
+        </div>
+    );
 }
