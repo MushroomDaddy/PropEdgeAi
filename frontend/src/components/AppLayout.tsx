@@ -50,7 +50,7 @@ function MobileBottomNav() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 block md:hidden">
       {/* Background with blur */}
-      <div className="absolute inset-0 bg-[#0c0d0e]/90 backdrop-blur-2xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]" />
+      <div className="absolute inset-0 bg-[#0c0d0e]/95 backdrop-blur-3xl border-t border-white/[0.06] shadow-[0_-20px_60px_rgba(0,0,0,0.7)]" />
       
       <nav className="relative flex items-center justify-around h-20 px-4 px-safe">
         {navItems.map((item) => {
@@ -65,7 +65,7 @@ function MobileBottomNav() {
             >
               {item.highlight ? (
                 <div className="absolute -top-10 flex flex-col items-center">
-                   <div className="size-16 rounded-3xl bg-indigo-600 border-4 border-[#08090a] flex items-center justify-center shadow-2xl relative overflow-hidden group">
+                   <div className="size-16 rounded-3xl bg-gradient-to-br from-indigo-600 to-indigo-400 border-4 border-[#08090a] flex items-center justify-center shadow-[0_0_30px_rgba(79,70,229,0.4)] relative overflow-hidden group">
                       <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent group-active:opacity-50" />
                       <Icon className="size-7 text-white fill-current" />
                    </div>
@@ -74,10 +74,13 @@ function MobileBottomNav() {
               ) : (
                 <>
                   <div className={cn(
-                    "transition-all duration-300",
+                    "relative transition-all duration-300",
                     isActive ? "text-primary scale-110" : "text-muted-foreground opacity-40"
                   )}>
                     <Icon className="size-6" />
+                    {isActive && (
+                      <div className="absolute inset-0 blur-lg bg-primary/40 -z-10" />
+                    )}
                   </div>
                   <span className={cn(
                     "text-[9px] font-black uppercase tracking-widest mt-1 transition-colors",
@@ -88,7 +91,7 @@ function MobileBottomNav() {
                   {isActive && (
                     <motion.div 
                       layoutId="bottom-nav-active"
-                      className="absolute -bottom-1 size-1 rounded-full bg-primary"
+                      className="absolute -bottom-1 h-1 w-6 rounded-full bg-primary shadow-[0_0_12px_rgba(94,106,210,0.6)]"
                     />
                   )}
                 </>
