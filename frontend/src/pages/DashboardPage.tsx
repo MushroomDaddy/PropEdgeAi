@@ -3,7 +3,7 @@ import { useTopEdges, useTopValue, usePropsStats, useProps } from '../hooks/api/
 import { useUpcomingGames } from '../hooks/api/useGames';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity,
   BarChart3,
@@ -19,6 +19,8 @@ import {
   Target,
   TrendingUp,
   Zap,
+  Shield,
+  Brain,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -30,7 +32,7 @@ import {
   StaggerItem,
 } from "@/components/propedge/PageTransition";
 import { PremiumEmptyState } from "@/components/propedge/PremiumEmptyState";
-import { AnimatedSportsBackground, GridGlowBackground } from "@/components/shared/AnimatedBackground";
+import { AnimatedSportsBackground } from "@/components/shared/AnimatedBackground";
 import { PremiumPropCard } from "@/components/dashboard/PremiumPropCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,8 @@ import {
 } from "@/lib/assets";
 import { formatDirection, formatLabel } from "@/lib/labels";
 import { cn } from '@/lib/utils';
+
+const SPORTS = ["All", "NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "Soccer"];
 
 export function DashboardPage() {
   const [activeSport, setActiveSport] = useState("All");
@@ -55,12 +59,10 @@ export function DashboardPage() {
   const liveGames = games?.filter((g: any) => g.status === "live") || [];
   const dataMode: "demo" | "live" | "hybrid" = "demo";
 
-  const topMovers = allProps
-    ? [...allProps]
-        .filter((p) => Math.abs(p.edge) > 8)
-        .sort((a, b) => Math.abs(b.edge) - Math.abs(a.edge))
-        .slice(0, 4)
-    : [];
+  // Filter by sport
+  const filteredProps = topValue?.filter((p: any) =>
+    activeSport === "All" ? true : p.sport?.toUpperCase() === activeSport.toUpperCase()
+  );
 
   return (
     <PageTransition>
@@ -117,6 +119,31 @@ export function DashboardPage() {
             </div>
           </div>
 
+          {/* ═══ Pill-Style Sport Selector (Rithmm-style) ═══ */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {SPORTS.map((sport) => (
+              <button
+                key={sport}
+                onClick={() => setActiveSport(sport)}
+                className={cn(
+                  "relative px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300 border",
+                  activeSport === sport
+                    ? "bg-primary/10 text-primary border-primary/30 shadow-[0_0_20px_rgba(94,106,210,0.15)]"
+                    : "bg-white/[0.02] text-muted-foreground/50 border-white/5 hover:bg-white/[0.05] hover:text-white/80"
+                )}
+              >
+                {activeSport === sport && (
+                  <motion.div
+                    layoutId="sport-pill-active"
+                    className="absolute inset-0 rounded-full bg-primary/10 border border-primary/30"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{sport}</span>
+              </button>
+            ))}
+          </div>
+
           {/* Core Stat Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <FadeIn delay={0.1}>
@@ -157,15 +184,21 @@ export function DashboardPage() {
             </FadeIn>
           </div>
 
-          {/* Today's Elite Edge Board */}
+          {/* ═══ Alpha Picks Board (Rithmm "Bolt" inspired) ═══ */}
           <div className="space-y-6">
             <div className="flex items-end justify-between px-2">
               <div>
                 <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Star className="size-5 text-amber-400 fill-amber-400" />
-                  Elite Edge Board
+                  <Zap className="size-5 text-amber-400 fill-amber-400" />
+                  Alpha Picks
+                  <Badge className="bg-amber-400/10 text-amber-400 border-amber-400/20 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 border">
+                    <Zap className="size-2.5 mr-1 fill-current" /> BOLT
+                  </Badge>
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">High-conviction projections from the PropEdge model</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Highest-confidence projections from the PropEdge model
+                  {activeSport !== "All" && <span className="text-primary ml-1">• {activeSport}</span>}
+                </p>
               </div>
               <Link to="/props" className="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
                 Explore Full Analyzer <ChevronRight className="size-3" />
@@ -180,28 +213,65 @@ export function DashboardPage() {
               </div>
             ) : (
               <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" stagger={0.05}>
-                {topValue?.map((p: any) => (
-                  <StaggerItem key={p.id}>
-                    <PremiumPropCard 
-                      prop={{
-                        id: p.id,
-                        player: p.playerName,
-                        image: p.playerImage || p.playerImageUrl,
-                        color: (p.playerTeamColors as any)?.primary || p.playerTeamColor,
-                        team: p.team,
-                        sport: p.sport,
-                        propType: p.statType,
-                        line: p.line,
-                        projection: p.projection || (p.line * (1 + p.edge / 100)),
-                        edge: p.edge,
-                        winProb: p.confidence || 65,
-                        overOdds: -110,
-                        underOdds: -110,
-                        confidence: (p.confidence ?? 65) > 70 ? 'High' : 'Medium',
-                      }}
-                    />
-                  </StaggerItem>
-                ))}
+                {filteredProps?.map((p: any) => {
+                  const isAlpha = (p.confidence ?? 0) > 75 || Math.abs(p.edge) > 12;
+                  return (
+                    <StaggerItem key={p.id}>
+                      <div className="relative">
+                        {/* Alpha Bolt Badge */}
+                        {isAlpha && (
+                          <div className="absolute -top-2 -right-2 z-20">
+                            <div className="relative">
+                              <div className="size-8 rounded-full bg-amber-400 flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.5)] animate-pulse">
+                                <Zap className="size-4 text-black fill-current" />
+                              </div>
+                              <div className="absolute inset-0 rounded-full bg-amber-400/30 animate-ping" />
+                            </div>
+                          </div>
+                        )}
+                        <PremiumPropCard 
+                          prop={{
+                            id: p.id,
+                            player: p.playerName,
+                            image: p.playerImage || p.playerImageUrl,
+                            color: (p.playerTeamColors as any)?.primary || p.playerTeamColor,
+                            team: p.team,
+                            sport: p.sport,
+                            propType: p.statType,
+                            line: p.line,
+                            projection: p.projection || (p.line * (1 + p.edge / 100)),
+                            edge: p.edge,
+                            winProb: p.confidence || 65,
+                            overOdds: -110,
+                            underOdds: -110,
+                            confidence: (p.confidence ?? 65) > 70 ? 'High' : 'Medium',
+                          }}
+                        />
+                        {/* Rithmm-style Value Bar */}
+                        <div className="mt-2 px-2">
+                          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest mb-1">
+                            <span className="text-muted-foreground/50">Value</span>
+                            <span className={p.edge > 0 ? "text-emerald-400" : "text-red-400"}>
+                              {p.edge > 0 ? "+" : ""}{p.edge?.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(100, Math.max(5, 50 + (p.edge || 0)))}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className={cn(
+                                "h-full rounded-full",
+                                p.edge > 10 ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]" :
+                                p.edge > 0 ? "bg-emerald-400/60" : "bg-red-400/60"
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </StaggerItem>
+                  );
+                })}
               </StaggerContainer>
             )}
           </div>
@@ -226,7 +296,7 @@ export function DashboardPage() {
   );
 }
 
-// ─── Restyled Local Components ───
+// ─── Stat Card ───
 
 function StatCard({ title, value, icon, color, sub }: { title: string, value: string, icon: React.ReactNode, color: string, sub: string }) {
   const colorMap: Record<string, string> = {

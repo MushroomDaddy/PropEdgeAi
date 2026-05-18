@@ -34,18 +34,23 @@ app.get('/summary', requireAuth, async (c) => {
       won: sql<number>`count(*) filter (where result_status = 'won')::int`,
       lost: sql<number>`count(*) filter (where result_status = 'lost')::int`,
       push: sql<number>`count(*) filter (where result_status = 'push')::int`,
+      voided: sql<number>`count(*) filter (where result_status = 'void')::int`,
       pending: sql<number>`count(*) filter (where result_status = 'pending')::int`,
-      avgRoi: sql<number>`avg(roi)`,
-      avgClv: sql<number>`avg(clv)`,
+      avgEdge: sql<number>`coalesce(round(avg(pick_edge)::numeric, 1), 0)`,
+      avgCLV: sql<number>`coalesce(round(avg(clv)::numeric, 2), 0)`,
+      avgRoi: sql<number>`coalesce(round(avg(roi)::numeric, 2), 0)`,
     })
     .from(pickResults)
     .where(eq(pickResults.userId, userId));
-  return c.json(result[0] ?? {});
+  const row = result[0] ?? { total: 0, won: 0, lost: 0, push: 0, voided: 0, pending: 0, avgEdge: 0, avgCLV: 0, avgRoi: 0 };
+  const graded = (row.won ?? 0) + (row.lost ?? 0);
+  const winRate = graded > 0 ? Math.round(((row.won ?? 0) / graded) * 1000) / 10 : 0;
+  return c.json({ ...row, winRate });
 });
 
 // GET /api/results/model-performance
 app.get('/model-performance', requireAuth, async (c) => {
-  const result = await db
+  const buckets = await db
     .select({
       confidenceBucket: modelPredictions.confidenceBucket,
       total: sql<number>`count(*)::int`,
@@ -54,7 +59,15 @@ app.get('/model-performance', requireAuth, async (c) => {
     })
     .from(modelPredictions)
     .groupBy(modelPredictions.confidenceBucket);
-  return c.json(result);
+
+  // Compute aggregate stats for the frontend
+  const totalPredictions = buckets.reduce((sum, b) => sum + (b.total ?? 0), 0);
+  const totalHits = buckets.reduce((sum, b) => sum + (b.hits ?? 0), 0);
+  const overallHitRate = totalPredictions > 0
+    ? Math.round((totalHits / totalPredictions) * 1000) / 10
+    : 0;
+
+  return c.json({ overallHitRate, totalPredictions, buckets });
 });
 
 export default app;
