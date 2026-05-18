@@ -19,7 +19,6 @@ import {
   Zap,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { APP_NAME } from "@/lib/constants";
 import { motion } from "framer-motion";
 
 import { Avatar, AvatarFallback } from "./ui/avatar";
@@ -260,14 +259,20 @@ function SidebarHeaderContent() {
       <Link
         to="/dashboard"
         onClick={() => setOpenMobile(false)}
-        className="flex items-center gap-3 font-black text-xl tracking-tighter"
+        className="flex items-center gap-3 font-black text-xl tracking-tighter group"
       >
-        <div className="size-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-[0_0_20px_rgba(79,70,229,0.4)]">
-          <Zap className="size-5 text-white fill-current" />
+        <div className="relative">
+          <div className="size-9 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-500 flex items-center justify-center shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] transition-shadow">
+            <Zap className="size-5 text-white fill-current" />
+          </div>
+          <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,255,136,0.5)]" />
         </div>
-        <span className="text-white">
-          PROP<span className="text-primary italic">EDGE</span>
-        </span>
+        <div className="flex flex-col">
+          <span className="text-white leading-none">
+            PROP<span className="text-primary italic">EDGE</span>
+          </span>
+          <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30 mt-0.5">Intelligence</span>
+        </div>
       </Link>
     </SidebarHeader>
   );

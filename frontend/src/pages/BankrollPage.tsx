@@ -4,13 +4,9 @@ import {
 	DollarSign,
 	Flame,
 	Minus,
-	Plus,
-	TrendingDown,
 	TrendingUp,
 	Trophy,
 	Wallet,
-	Target,
-	Zap,
 	PieChart as PieChartIcon,
 	BarChart3,
 	CreditCard,
@@ -23,10 +19,6 @@ import {
 	BarChart,
 	CartesianGrid,
 	Cell,
-	Line,
-	LineChart,
-	Pie,
-	PieChart,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -35,7 +27,6 @@ import {
 	AreaChart,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useBankroll, useBankrollSummary, useBankrollTransactions } from "../hooks/api/useBankroll";
 import { AnimatedSportsBackground } from "@/components/shared/AnimatedBackground";
@@ -66,7 +57,7 @@ export function BankrollPage() {
 			}))
 		: [];
 
-	// Generate mock equity curve data from transactions
+	// Generate equity curve data from transactions
 	const equityData = (() => {
 		if (!transactions || transactions.length === 0) return [];
 		let balance = summary?.totalBalance ?? 1000;

@@ -113,9 +113,11 @@ export function StaggerContainer({
 export function StaggerItem({
 	children,
 	className = "",
+	onClick,
 }: {
 	children: ReactNode;
 	className?: string;
+	onClick?: () => void;
 }) {
 	return (
 		<motion.div
@@ -128,6 +130,7 @@ export function StaggerItem({
 				},
 			}}
 			className={className}
+			onClick={onClick}
 		>
 			{children}
 		</motion.div>
