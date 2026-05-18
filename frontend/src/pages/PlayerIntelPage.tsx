@@ -272,7 +272,7 @@ function OverviewTab({ profile }: { profile: any }) {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Avg Points", value: profile.last10Avg?.points || "24.2", sub: "+2.1 vs Season", color: "#00ff88" },
+              { label: "Avg Points", value: profile.last10Avg?.points || "—", sub: profile.last10Avg?.points ? "+vs Season" : "No data", color: "#00ff88" },
               { label: "Floor", value: "18", sub: "Safety 92%", color: "#5e6ad2" },
               { label: "Ceiling", value: "44", sub: "Burst 8%", color: "#a855f7" },
               { label: "Hit Rate", value: "70%", sub: "Last 10", color: "#00d4ff" },
@@ -339,7 +339,7 @@ function OverviewTab({ profile }: { profile: any }) {
                   line: profile.currentProps[0].line,
                   projection: profile.currentProps[0].projection,
                   edge: profile.currentProps[0].edge,
-                  winProb: profile.currentProps[0].confidence || 65,
+                  winProb: profile.currentProps[0].confidence || 0,
                   overOdds: -110,
                   underOdds: -110,
                   confidence: (profile.currentProps[0].confidence ?? 65) > 70 ? 'High' : 'Medium',
@@ -381,7 +381,7 @@ function PropsTab({ profile }: { profile: any }) {
                   line: p.line,
                   projection: p.projection,
                   edge: p.edge,
-                  winProb: p.confidence || 65,
+                  winProb: p.confidence || 0,
                   overOdds: -110,
                   underOdds: -110,
                   confidence: (p.confidence ?? 65) > 70 ? 'High' : 'Medium',

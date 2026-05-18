@@ -39,13 +39,14 @@ export function DashboardPage() {
   const [activeSport, setActiveSport] = useState("All");
   const stats = usePropsStats().data;
   const _unusedGames = useUpcomingGames().data; void _unusedGames;
-  const allProps = useProps().data;
+  const { data: allProps, isLoading: propsLoading } = useProps();
   const topValue = useTopValue(12).data;
   const { data: providers } = useProviderStatus();
 
-  const loading = !allProps;
+  const loading = propsLoading;
   const hasData = (allProps?.length ?? 0) > 0;
-  const dataMode: "demo" | "live" | "hybrid" = "demo";
+  const hasProviders = (providers as any[])?.length > 0;
+  const dataMode: "demo" | "live" | "hybrid" = hasData ? "live" : hasProviders ? "hybrid" : "demo";
 
   const filteredProps = topValue?.filter((p: any) =>
     activeSport === "All" ? true : p.sport?.toUpperCase() === activeSport.toUpperCase()
@@ -101,7 +102,7 @@ export function DashboardPage() {
                   <p className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-[0.2em]">Sync Status</p>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                    <span className="text-sm font-bold text-white">{providers?.length || 4} APIs Active</span>
+                    <span className="text-sm font-bold text-white">{(providers as any[])?.length || 0} APIs Active</span>
                     <span className="text-[9px] text-muted-foreground/40 font-mono">2m ago</span>
                   </div>
                 </div>
@@ -181,10 +182,10 @@ export function DashboardPage() {
           {/* ═══ Core Stat Cards ═══ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {[
-              { title: "Active Props", value: stats?.totalProps?.toLocaleString() || "—", icon: Target, color: "emerald", sub: `${stats?.sportCount || 12} Sports Tracked`, glow: "#00ff88" },
+              { title: "Active Props", value: stats?.totalProps?.toLocaleString() || "—", icon: Target, color: "emerald", sub: `${stats?.sportCount || 0} Sports Tracked`, glow: "#00ff88" },
               { title: "Avg Edge", value: stats ? `+${stats.avgEdge}%` : "—", icon: TrendingUp, color: "cyan", sub: "High Conv Average", glow: "#00d4ff" },
               { title: "+EV Opportunities", value: stats?.positiveEdgeCount?.toString() || "—", icon: Sparkles, color: "purple", sub: "Builder Ready", glow: "#a855f7" },
-              { title: "Top Momentum", value: stats?.topSport || "NBA", icon: Zap, color: "amber", sub: "Highest Liquidity", glow: "#ffb800" },
+              { title: "Top Momentum", value: stats?.topSport || "—", icon: Zap, color: "amber", sub: "Highest Liquidity", glow: "#ffb800" },
             ].map((s, i) => (
               <FadeIn key={i} delay={0.1 * (i + 1)}>
                 <motion.div 
@@ -394,7 +395,7 @@ export function DashboardPage() {
                             line: p.line,
                             projection: p.projection || (p.line * (1 + p.edge / 100)),
                             edge: p.edge,
-                            winProb: p.confidence || 65,
+                            winProb: p.confidence || 0,
                             overOdds: -110,
                             underOdds: -110,
                             confidence: (p.confidence ?? 65) > 70 ? 'High' : 'Medium',

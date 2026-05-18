@@ -91,7 +91,7 @@ export function PropsAnalyzerPage() {
                 Prop Analyzer
               </h1>
               <p className="text-sm text-muted-foreground/50 mt-1">
-                Institutional-grade prop intelligence across {allProps?.length?.toLocaleString() || '14,000'}+ lines
+                Institutional-grade prop intelligence across {allProps?.length ? `${allProps.length.toLocaleString()}+` : '0'} lines
               </p>
             </div>
             
@@ -214,7 +214,7 @@ export function PropsAnalyzerPage() {
                           line: p.line,
                           projection: p.projection || (p.line * (1 + p.edge / 100)),
                           edge: p.edge,
-                          winProb: p.confidence || 65,
+                          winProb: p.confidence || 0,
                           overOdds: -110,
                           underOdds: -110,
                           confidence: (p.confidence ?? 65) > 70 ? 'High' : 'Medium',
@@ -264,9 +264,9 @@ export function PropsAnalyzerPage() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className="h-1.5 w-12 bg-white/[0.04] rounded-full overflow-hidden">
-                              <div className="h-full rounded-full bg-primary" style={{ width: `${p.confidence || 65}%` }} />
+                              <div className="h-full rounded-full bg-primary" style={{ width: `${p.confidence || 0}%` }} />
                             </div>
-                            <span className="text-xs font-mono text-muted-foreground/50">{p.confidence || 65}%</span>
+                            <span className="text-xs font-mono text-muted-foreground/50">{p.confidence || 0}%</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-[10px] font-bold text-muted-foreground/50 uppercase">{p.sport}</td>
@@ -320,7 +320,7 @@ export function PropsAnalyzerPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mb-1">Value Score</p>
-                      <div className="text-5xl font-black text-primary" style={{ textShadow: '0 0 30px rgba(0,255,136,0.3)' }}>{selectedProp.valueScore || 88}</div>
+                      <div className="text-5xl font-black text-primary" style={{ textShadow: '0 0 30px rgba(0,255,136,0.3)' }}>{selectedProp.valueScore || '—'}</div>
                     </div>
                   </div>
 
@@ -328,7 +328,7 @@ export function PropsAnalyzerPage() {
                     <DetailBox label="Current Line" value={selectedProp.line} />
                     <DetailBox label="AI Projection" value={(selectedProp.projection || (selectedProp.line * (1 + selectedProp.edge/100)))?.toFixed(1)} highlight />
                     <DetailBox label="Calculated Edge" value={`${selectedProp.edge > 0 ? '+' : ''}${selectedProp.edge?.toFixed(1)}%`} color="emerald" />
-                    <DetailBox label="Confidence" value={`${selectedProp.confidence || 65}%`} color="indigo" />
+                    <DetailBox label="Confidence" value={`${selectedProp.confidence || 0}%`} color="indigo" />
                   </div>
 
                   <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">

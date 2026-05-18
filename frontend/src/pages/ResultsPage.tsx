@@ -22,7 +22,7 @@ import { PageTransition, FadeIn, StaggerContainer, StaggerItem } from "@/compone
 import { Button } from "@/components/ui/button";
 
 export function ResultsPage() {
-  const { data: results } = useResults();
+  const { data: results, isLoading: resultsLoading } = useResults();
   const { data: summary } = useResultsSummary();
   const [filterSport, setFilterSport] = useState("");
   const [filterPlatform, setFilterPlatform] = useState("");
@@ -31,7 +31,7 @@ export function ResultsPage() {
   const [sortField] = useState<string>("pickedAt");
   const [sortDir] = useState<"asc" | "desc">("desc");
 
-  const loading = results === undefined;
+  const loading = resultsLoading;
 
   const filteredResults = useMemo(() => {
     return (results || [])

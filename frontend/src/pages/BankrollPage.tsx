@@ -57,7 +57,7 @@ export function BankrollPage() {
 			}))
 		: [];
 
-	// Generate mock equity curve data from transactions
+	// Generate equity curve data from transactions
 	const equityData = (() => {
 		if (!transactions || transactions.length === 0) return [];
 		let balance = summary?.totalBalance ?? 1000;

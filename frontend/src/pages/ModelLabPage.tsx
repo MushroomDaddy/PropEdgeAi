@@ -18,12 +18,12 @@ import { PageTransition, FadeIn } from "@/components/propedge/PageTransition";
 import { Badge } from "@/components/ui/badge";
 
 export function ModelLabPage() {
-  const { data: perf } = useModelPerformance();
+  const { data: perf, isLoading } = useModelPerformance();
   const { data: learningInsights } = useLearningInsights();
 
-  const loading = perf === undefined;
+  const hasData = !!perf && (perf as any).totalPredictions > 0;
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="relative min-h-screen pb-20">
         <AnimatedSportsBackground />
@@ -86,17 +86,17 @@ export function ModelLabPage() {
               <div className="flex items-center gap-6 bg-white/[0.03] p-4 rounded-2xl border border-white/[0.06]">
                 <div className="text-center">
                   <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Predictions</p>
-                  <p className="text-2xl font-black text-white font-mono">{perf?.totalPredictions?.toLocaleString() || "1.2M"}</p>
+                  <p className="text-2xl font-black text-white font-mono">{hasData ? perf?.totalPredictions?.toLocaleString() : "—"}</p>
                 </div>
                 <div className="h-10 w-px bg-white/[0.06]" />
                 <div className="text-center">
                   <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Accuracy</p>
-                  <p className="text-2xl font-black text-primary font-mono">{perf?.overallHitRate || 68}%</p>
+                  <p className="text-2xl font-black text-primary font-mono">{hasData ? `${perf?.overallHitRate}%` : "—"}</p>
                 </div>
                 <div className="h-10 w-px bg-white/[0.06]" />
                 <div className="text-center">
                   <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Brier Score</p>
-                  <p className="text-2xl font-black text-cyan-400 font-mono">{perf?.brierScore || '0.18'}</p>
+                  <p className="text-2xl font-black text-cyan-400 font-mono">{hasData ? (perf?.brierScore ?? '—') : "—"}</p>
                 </div>
               </div>
             </div>
@@ -104,10 +104,10 @@ export function ModelLabPage() {
 
           {/* ═══ Core Metric Cards ═══ */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <LabMetricCard label="Predictive Accuracy" value={`${perf?.overallHitRate || 68.4}%`} icon={<Target className="size-5" />} trend="+2.4%" color="#00ff88" />
-            <LabMetricCard label="Model Confidence" value="High" icon={<ShieldCheck className="size-5" />} trend="Stable" color="#5e6ad2" />
-            <LabMetricCard label="Market Edge" value="Positive" icon={<Activity className="size-5" />} trend="Live" color="#00d4ff" />
-            <LabMetricCard label="Neural Epochs" value="14.2k" icon={<Cpu className="size-5" />} trend="+82 today" color="#a855f7" />
+            <LabMetricCard label="Predictive Accuracy" value={hasData ? `${perf?.overallHitRate}%` : "—"} icon={<Target className="size-5" />} trend={hasData ? "Live" : "Awaiting data"} color="#00ff88" />
+            <LabMetricCard label="Model Confidence" value={hasData ? "High" : "—"} icon={<ShieldCheck className="size-5" />} trend={hasData ? "Stable" : "Awaiting data"} color="#5e6ad2" />
+            <LabMetricCard label="Market Edge" value={hasData ? "Positive" : "—"} icon={<Activity className="size-5" />} trend={hasData ? "Live" : "Awaiting data"} color="#00d4ff" />
+            <LabMetricCard label="Neural Epochs" value={hasData ? `${((perf?.totalPredictions ?? 0) / 1000).toFixed(1)}k` : "—"} icon={<Cpu className="size-5" />} trend={hasData ? "Processing" : "Awaiting data"} color="#a855f7" />
           </div>
 
           {/* ═══ Calibration Chart + Confidence Heatmap ═══ */}
@@ -326,7 +326,9 @@ export function ModelLabPage() {
                   <div className="mt-6 p-4 rounded-xl bg-black/40 border border-white/[0.06] relative z-10">
                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Model Verdict</p>
                     <p className="text-sm font-bold text-white/70 leading-relaxed">
-                      The system detects significant variance in NBA Points lines due to defensive rotations. Model confidence is currently skewed towards OVERS with a {perf?.overallHitRate || 68}% hit rate.
+                      {hasData
+                        ? `The system detects significant variance in NBA Points lines due to defensive rotations. Model confidence is currently at a ${perf?.overallHitRate}% hit rate.`
+                        : "Awaiting prediction data. Run syncs and build picks to populate the model."}
                     </p>
                   </div>
                 </div>
