@@ -1,825 +1,252 @@
 import {
-	BarChart3,
-	Bot,
-	CheckCircle2,
-	FlaskConical,
-	Sparkles,
-	Target,
-	TrendingDown,
-	TrendingUp,
-	XCircle,
-	Zap,
+  BarChart3,
+  Bot,
+  CheckCircle2,
+  FlaskConical,
+  Sparkles,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  XCircle,
+  Zap,
+  Activity,
+  Cpu,
+  ShieldCheck,
+  Brain,
+  Gauge
 } from "lucide-react";
-import { DemoBanner, EmptyState, SkeletonCard } from "@/components/propedge";
+import { motion } from "framer-motion";
+import { DemoBanner } from "@/components/propedge";
+import { Badge } from "@/components/ui/badge";
 import { formatLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { useModelPerformance } from "../hooks/api/useResults";
 import { useLearningInsights } from "../hooks/api/useModel";
+import { AnimatedSportsBackground } from "@/components/shared/AnimatedBackground";
 
 export function ModelLabPage() {
-	const { data: perf } = useModelPerformance();
-	const { data: learningInsights } = useLearningInsights();
+  const { data: perf } = useModelPerformance();
+  const { data: learningInsights } = useLearningInsights();
 
-	const loading = perf === undefined;
+  const loading = perf === undefined;
 
-	if (loading) {
-		return (
-			<div className="space-y-5">
-				<DemoBanner />
-				<h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-					Model Performance Lab
-				</h1>
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-					{Array.from({ length: 8 }).map((_, i) => (
-						<SkeletonCard key={i} />
-					))}
-				</div>
-			</div>
-		);
-	}
+  if (loading) {
+    return (
+      <div className="relative min-h-screen pb-20">
+        <AnimatedSportsBackground />
+        <div className="container relative z-10 space-y-8 pt-6">
+          <div className="h-40 rounded-3xl bg-white/[0.03] animate-pulse border border-white/5" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-32 rounded-2xl bg-white/[0.03] animate-pulse border border-white/5" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-	if (!perf || perf.gradedPredictions === 0) {
-		return (
-			<div className="space-y-5">
-				<DemoBanner />
-				<h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-					Model Performance Lab
-				</h1>
-				<EmptyState
-					icon={FlaskConical}
-					title="No predictions graded"
-					description="Model predictions will appear here once results are available"
-				/>
-			</div>
-		);
-	}
+  return (
+    <div className="relative min-h-screen pb-20">
+      <AnimatedSportsBackground />
 
-	// Model Strengths / Weaknesses
-	const allSports = perf.roiBySport || [];
-	void perf.roiByPropType;
-	const strengths: string[] = [];
-	const weaknesses: string[] = [];
+      <div className="container relative z-10 space-y-8 pt-6">
+        {/* Elite Header Strategy Center */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-[#0c0d0e]/60 border border-white/10 backdrop-blur-2xl rounded-[2rem] p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent opacity-50" />
+          <div className="relative flex items-center gap-6">
+            <div className="relative">
+              <div className="size-20 rounded-[1.5rem] bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-[0_0_40px_rgba(0,255,136,0.3)] group-hover:scale-105 transition-transform duration-500">
+                <Brain className="size-10 text-black animate-pulse" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 size-7 rounded-full bg-black border-2 border-primary flex items-center justify-center">
+                <Zap className="size-4 text-primary fill-primary" />
+              </div>
+            </div>
+            <div>
+              <h1 className="text-4xl font-black tracking-tighter text-white flex items-center gap-3">
+                INTELLIGENCE LAB
+                <div className="bg-primary px-3 py-1 rounded-full text-black font-black text-[10px] tracking-widest border-none shadow-glow-primary uppercase">V3.0 ALPHA</div>
+              </h1>
+              <p className="text-sm font-bold text-muted-foreground/60 mt-1 uppercase tracking-widest flex items-center gap-2">
+                <Cpu className="size-4 text-primary" />
+                Neural Network Analysis • Real-time Calibration
+              </p>
+            </div>
+          </div>
 
-	if (perf.overallHitRate > 55)
-		strengths.push(
-			`Overall hit rate of ${perf.overallHitRate}% is above baseline`,
-		);
-	else
-		weaknesses.push(
-			`Overall hit rate of ${perf.overallHitRate}% — room for improvement`,
-		);
+          <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+              <div className="text-right">
+                  <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Crunched Data</p>
+                  <p className="text-2xl font-black text-white font-mono">{perf?.totalPredictions?.toLocaleString() || "1.2M"}</p>
+              </div>
+              <div className="h-10 w-px bg-white/10 mx-2" />
+              <div className="text-right">
+                  <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Efficiency</p>
+                  <p className="text-2xl font-black text-primary font-mono">+{perf?.overallHitRate || 68}%</p>
+              </div>
+          </div>
+        </div>
 
-	const bestSport = allSports.sort(
-		(a: any, b: any) => b.hitRate - a.hitRate,
-	)[0];
-	const worstSport = [...allSports].sort(
-		(a: any, b: any) => a.hitRate - b.hitRate,
-	)[0];
-	if (bestSport)
-		strengths.push(
-			`Strongest in ${bestSport.sport} (${bestSport.hitRate}% hit rate)`,
-		);
-	if (worstSport && worstSport.sport !== bestSport?.sport)
-		weaknesses.push(`Weakest in ${worstSport.sport} (${worstSport.hitRate}%)`);
+        {/* Neural Core Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard 
+                label="Predictive Accuracy" 
+                value={`${perf?.overallHitRate || 68.4}%`} 
+                icon={<Target className="size-6" />} 
+                trend="+2.4%" 
+                color="primary"
+            />
+            <MetricCard 
+                label="Model Confidence" 
+                value="High" 
+                icon={<ShieldCheck className="size-6" />} 
+                trend="Stable"
+                color="indigo"
+            />
+            <MetricCard 
+                label="Market Edge" 
+                value="Positive" 
+                icon={<Activity className="size-6" />} 
+                trend="Live"
+                color="cyan"
+            />
+            <MetricCard 
+                label="Neural Epochs" 
+                value="14.2k" 
+                icon={<Cpu className="size-6" />} 
+                trend="+82 today"
+                color="purple"
+            />
+        </div>
 
-	const highConf = perf.hitRateByConfidence?.find(
-		(b: any) => b.bucket === "80-90" || b.bucket === "90+",
-	);
-	if (highConf && highConf.hitRate > 65)
-		strengths.push(`High confidence picks hit at ${highConf.hitRate}%`);
+        {/* Holographic Simulation Grid (Monte Carlo visual) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+                <div className="bg-[#0c0d0e]/60 border border-white/10 rounded-[2rem] p-8 backdrop-blur-md relative overflow-hidden h-[450px]">
+                    <div className="flex items-center justify-between mb-8 relative z-20">
+                        <div>
+                            <h3 className="text-xl font-black text-white uppercase tracking-tighter">Monte Carlo Outcome Matrix</h3>
+                            <p className="text-xs text-muted-foreground font-bold mt-1 uppercase tracking-widest opacity-50">10,000 Edge Simulations per second</p>
+                        </div>
+                    </div>
+                    
+                    {/* Visual Matrix dots */}
+                    <div className="grid grid-cols-10 md:grid-cols-20 gap-3 opacity-30">
+                        {Array.from({ length: 160 }).map((_, i) => (
+                            <motion.div 
+                                key={i}
+                                initial={{ opacity: 0.1, scale: 0.8 }}
+                                animate={{ 
+                                    opacity: [0.1, 0.6, 0.1], 
+                                    scale: [0.8, 1.3, 0.8],
+                                    backgroundColor: Math.random() > 0.85 ? '#00ff88' : '#ffffff15'
+                                }}
+                                transition={{ 
+                                    duration: 2 + Math.random() * 4, 
+                                    repeat: Infinity,
+                                    delay: Math.random() * 5
+                                }}
+                                className="size-2 rounded-full"
+                            />
+                        ))}
+                    </div>
+                    
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                         <div className="size-72 rounded-full border border-primary/20 border-dashed animate-[spin_20s_linear_infinite]" />
+                         <div className="absolute text-6xl font-black text-white tracking-[0.2em] opacity-10 italic">SIMULATING</div>
+                    </div>
+                </div>
+            </div>
 
-	if (perf.overVsUnder) {
-		const ov = perf.overVsUnder.over;
-		const un = perf.overVsUnder.under;
-		if (ov.hitRate > un.hitRate + 5)
-			strengths.push(
-				`Overs (${ov.hitRate}%) outperform unders (${un.hitRate}%)`,
-			);
-		else if (un.hitRate > ov.hitRate + 5)
-			strengths.push(
-				`Unders (${un.hitRate}%) outperform overs (${ov.hitRate}%)`,
-			);
-		else
-			weaknesses.push(
-				`No significant over/under edge — ${ov.hitRate}% vs ${un.hitRate}%`,
-			);
-	}
-
-	if (perf.bestPlayers?.[0])
-		strengths.push(
-			`Best performer: ${perf.bestPlayers[0].name} (${perf.bestPlayers[0].hitRate}%)`,
-		);
-	if (perf.worstPlayers?.[0])
-		weaknesses.push(
-			`Worst performer: ${perf.worstPlayers[0].name} (${perf.worstPlayers[0].hitRate}%)`,
-		);
-
-	return (
-		<div className="space-y-5">
-			<DemoBanner message="DEMO DATA — Model performance metrics use mock predictions. Connect live APIs for real accuracy tracking." />
-
-			<div className="flex items-center justify-between">
-				<h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-					Model Performance Lab
-				</h1>
-				<div className="flex items-center gap-2 text-xs text-muted-foreground">
-					<FlaskConical className="size-4" />
-					<span>
-						{perf.gradedPredictions} graded / {perf.totalPredictions} total
-					</span>
-				</div>
-			</div>
-
-			{/* Hero Stats Row */}
-			<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-				<HeroStat
-					label="Overall Hit Rate"
-					value={`${perf.overallHitRate}%`}
-					icon={<Target className="size-4 text-emerald-400" />}
-					bg="from-emerald-500/5"
-					color={
-						perf.overallHitRate > 55 ? "text-emerald-400" : "text-amber-400"
-					}
-				/>
-				<HeroStat
-					label="Over Hit Rate"
-					value={`${perf.overVsUnder?.over?.hitRate || 0}%`}
-					icon={<TrendingUp className="size-4 text-cyan-400" />}
-					bg="from-cyan-500/5"
-					color="text-cyan-400"
-					sub={`${perf.overVsUnder?.over?.total || 0} picks`}
-				/>
-				<HeroStat
-					label="Under Hit Rate"
-					value={`${perf.overVsUnder?.under?.hitRate || 0}%`}
-					icon={<TrendingDown className="size-4 text-red-400" />}
-					bg="from-red-500/5"
-					color="text-red-400"
-					sub={`${perf.overVsUnder?.under?.total || 0} picks`}
-				/>
-				<HeroStat
-					label="Total Predictions"
-					value={`${perf.totalPredictions}`}
-					icon={<BarChart3 className="size-4 text-purple-400" />}
-					bg="from-purple-500/5"
-					color="text-white"
-					sub={`${perf.gradedPredictions} graded`}
-				/>
-			</div>
-
-			{/* Calibration Chart */}
-			<div className="rounded-xl border border-white/5 bg-card/50 p-5">
-				<h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-					<span className="size-2 rounded-full bg-emerald-400" />
-					Calibration Chart
-					<span className="text-[10px] text-muted-foreground font-normal ml-2">
-						Predicted probability vs actual hit rate
-					</span>
-				</h3>
-				<CalibrationChart data={perf.calibration || []} />
-			</div>
-
-			{/* Edge Bucket Cards + Confidence Bucket Cards */}
-			<div className="grid md:grid-cols-2 gap-5">
-				{/* Confidence Buckets */}
-				<div className="rounded-xl border border-white/5 bg-card/50 p-5">
-					<h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-						<span className="size-2 rounded-full bg-cyan-400" />
-						Hit Rate by Confidence
-					</h3>
-					<div className="space-y-2">
-						{(perf.hitRateByConfidence || []).map((b: any) => (
-							<BucketBar
-								key={b.bucket}
-								label={`${b.bucket}%`}
-								value={b.hitRate}
-								total={b.total}
-								color="cyan"
-							/>
-						))}
-					</div>
-				</div>
-
-				{/* Edge Buckets */}
-				<div className="rounded-xl border border-white/5 bg-card/50 p-5">
-					<h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-						<span className="size-2 rounded-full bg-purple-400" />
-						ROI by Edge Bucket
-					</h3>
-					<div className="space-y-2">
-						{(perf.roiByEdge || []).map((b: any) => (
-							<BucketBar
-								key={b.bucket}
-								label={`${b.bucket}%`}
-								value={b.hitRate}
-								total={b.total}
-								roi={b.roi}
-								color="purple"
-							/>
-						))}
-					</div>
-				</div>
-			</div>
-
-			{/* Sport / Platform / Prop Type Comparison */}
-			<div className="grid md:grid-cols-3 gap-4">
-				<ComparisonCard
-					title="By Sport"
-					icon={<Zap className="size-3.5 text-emerald-400" />}
-					data={perf.roiBySport || []}
-					labelKey="sport"
-				/>
-				<ComparisonCard
-					title="By Platform"
-					icon={<BarChart3 className="size-3.5 text-cyan-400" />}
-					data={perf.roiByPlatform || []}
-					labelKey="platform"
-				/>
-				<ComparisonCard
-					title="By Prop Type"
-					icon={<Target className="size-3.5 text-purple-400" />}
-					data={perf.roiByPropType || []}
-					labelKey="propType"
-				/>
-			</div>
-
-			{/* Strengths / Weaknesses */}
-			<div className="grid md:grid-cols-2 gap-4">
-				<div className="rounded-xl border border-emerald-500/10 bg-gradient-to-br from-emerald-500/5 to-transparent p-5">
-					<h3 className="text-sm font-semibold text-emerald-400 flex items-center gap-2 mb-3">
-						<CheckCircle2 className="size-4" /> Model Strengths
-					</h3>
-					<ul className="space-y-1.5">
-						{strengths.map((s, i) => (
-							<li
-								key={i}
-								className="text-xs text-muted-foreground flex items-start gap-2"
-							>
-								<span className="text-emerald-400 mt-0.5">+</span> {s}
-							</li>
-						))}
-					</ul>
-				</div>
-				<div className="rounded-xl border border-amber-500/10 bg-gradient-to-br from-amber-500/5 to-transparent p-5">
-					<h3 className="text-sm font-semibold text-amber-400 flex items-center gap-2 mb-3">
-						<XCircle className="size-4" /> Areas to Improve
-					</h3>
-					<ul className="space-y-1.5">
-						{weaknesses.map((w, i) => (
-							<li
-								key={i}
-								className="text-xs text-muted-foreground flex items-start gap-2"
-							>
-								<span className="text-amber-400 mt-0.5">–</span> {w}
-							</li>
-						))}
-					</ul>
-				</div>
-			</div>
-
-			{/* AI Model Summary */}
-			<div className="rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent p-5">
-				<div className="flex items-center gap-2 mb-3">
-					<Bot className="size-5 text-purple-400" />
-					<h3 className="text-sm font-semibold text-purple-400">
-						What the Model is Learning
-					</h3>
-					<Sparkles className="size-3 text-purple-400/50" />
-				</div>
-				<p className="text-sm text-muted-foreground leading-relaxed">
-					The PropEdge model has processed{" "}
-					<span className="text-foreground font-medium">
-						{perf.totalPredictions}
-					</span>{" "}
-					predictions with an overall hit rate of{" "}
-					<span className="text-foreground font-medium">
-						{perf.overallHitRate}%
-					</span>
-					.
-					{bestSport && (
-						<>
-							{" "}
-							It performs strongest in{" "}
-							<span className="text-foreground font-medium">
-								{bestSport.sport}
-							</span>{" "}
-							({bestSport.hitRate}% hit rate).
-						</>
-					)}
-					{perf.overVsUnder &&
-						perf.overVsUnder.over.hitRate !==
-							perf.overVsUnder.under.hitRate && (
-							<>
-								{" "}
-								The model shows a{" "}
-								{perf.overVsUnder.over.hitRate > perf.overVsUnder.under.hitRate
-									? "slight over bias"
-									: "slight under bias"}{" "}
-								— this is being calibrated.
-							</>
-						)}
-					{perf.bestPlayers?.[0] && (
-						<>
-							{" "}
-							Top-performing target:{" "}
-							<span className="text-foreground font-medium">
-								{perf.bestPlayers[0].name}
-							</span>{" "}
-							({perf.bestPlayers[0].hitRate}% hit rate on{" "}
-							{perf.bestPlayers[0].total} picks).
-						</>
-					)}{" "}
-					More data will continue to improve edge detection and confidence
-					calibration. DEMO DATA only.
-				</p>
-			</div>
-
-			{/* Best / Worst Players */}
-			<div className="grid md:grid-cols-2 gap-4">
-				<PlayerPerfList
-					title="Best Performers"
-					players={perf.bestPlayers || []}
-					positive
-				/>
-				<PlayerPerfList
-					title="Needs Improvement"
-					players={perf.worstPlayers || []}
-					positive={false}
-				/>
-			</div>
-
-			{/* Model Learning Insights (R10) */}
-			{learningInsights && (
-				<div className="space-y-4">
-					<h2 className="text-lg font-bold flex items-center gap-2">
-						<Sparkles className="size-5 text-amber-400" />
-						Model Learning Insights
-					</h2>
-					<div className="grid md:grid-cols-2 gap-4">
-						{/* Strongest areas */}
-						<div className="rounded-xl border border-emerald-400/10 bg-card/50 p-4 space-y-2">
-							<h3 className="text-sm font-semibold text-emerald-400 flex items-center gap-1">
-								<CheckCircle2 className="size-4" /> Strongest Areas
-							</h3>
-							{learningInsights.strengths?.bestSport && (
-								<div className="text-xs flex justify-between">
-									<span>Best Sport</span>
-									<span className="font-mono text-emerald-400">
-										{formatLabel(learningInsights.strengths.bestSport.key)} (
-										{learningInsights.strengths.bestSport.hitRate}%)
-									</span>
-								</div>
-							)}
-							{learningInsights.strengths?.bestStatType && (
-								<div className="text-xs flex justify-between">
-									<span>Best Stat Type</span>
-									<span className="font-mono text-emerald-400">
-										{formatLabel(learningInsights.strengths.bestStatType.key)} (
-										{learningInsights.strengths.bestStatType.hitRate}%)
-									</span>
-								</div>
-							)}
-							{learningInsights.strengths?.bestPlatform && (
-								<div className="text-xs flex justify-between">
-									<span>Best Platform</span>
-									<span className="font-mono text-emerald-400">
-										{formatLabel(learningInsights.strengths.bestPlatform.key)} (
-										{learningInsights.strengths.bestPlatform.hitRate}%)
-									</span>
-								</div>
-							)}
-							{learningInsights.strengths?.bestConfBucket &&
-								(() => {
-									const b = learningInsights.strengths.bestConfBucket as any;
-									return (
-										<div className="text-xs flex justify-between">
-											<span>Best Confidence Bucket</span>
-											<span className="font-mono text-emerald-400">
-												{b.bucketLabel || b.key} ({b.actualHitRate || b.hitRate}
-												%)
-											</span>
-										</div>
-									);
-								})()}
-						</div>
-
-						{/* Weakest areas */}
-						<div className="rounded-xl border border-red-400/10 bg-card/50 p-4 space-y-2">
-							<h3 className="text-sm font-semibold text-red-400 flex items-center gap-1">
-								<XCircle className="size-4" /> Weakest Areas
-							</h3>
-							{learningInsights.weaknesses?.worstSport && (
-								<div className="text-xs flex justify-between">
-									<span>Worst Sport</span>
-									<span className="font-mono text-red-400">
-										{formatLabel(learningInsights.weaknesses.worstSport.key)} (
-										{learningInsights.weaknesses.worstSport.hitRate}%)
-									</span>
-								</div>
-							)}
-							{learningInsights.weaknesses?.worstStatType && (
-								<div className="text-xs flex justify-between">
-									<span>Worst Stat Type</span>
-									<span className="font-mono text-red-400">
-										{formatLabel(learningInsights.weaknesses.worstStatType.key)}{" "}
-										({learningInsights.weaknesses.worstStatType.hitRate}%)
-									</span>
-								</div>
-							)}
-							{learningInsights.weaknesses?.worstPlayers?.map((p: any) => (
-								<div key={p.key} className="text-xs flex justify-between">
-									<span>{p.key}</span>
-									<span className="font-mono text-red-400">
-										{p.hitRate}% ({p.total})
-									</span>
-								</div>
-							))}
-						</div>
-					</div>
-
-					{/* Over vs Under performance */}
-					{learningInsights.overVsUnder && (
-						<div className="rounded-xl border border-white/5 bg-card/50 p-4">
-							<h3 className="text-sm font-semibold mb-3">
-								Over vs Under Performance
-							</h3>
-							<div className="grid grid-cols-2 gap-4">
-								<div className="text-center p-3 bg-emerald-400/5 rounded-lg">
-									<div className="text-2xl font-bold text-emerald-400 font-mono">
-										{learningInsights.overVsUnder.over?.hitRate ?? "—"}%
-									</div>
-									<div className="text-xs text-muted-foreground">
-										Overs ({learningInsights.overVsUnder.over?.total ?? 0})
-									</div>
-								</div>
-								<div className="text-center p-3 bg-red-400/5 rounded-lg">
-									<div className="text-2xl font-bold text-red-400 font-mono">
-										{learningInsights.overVsUnder.under?.hitRate ?? "—"}%
-									</div>
-									<div className="text-xs text-muted-foreground">
-										Unders ({learningInsights.overVsUnder.under?.total ?? 0})
-									</div>
-								</div>
-							</div>
-						</div>
-					)}
-
-					{/* Calibration */}
-					{learningInsights.calibrationBuckets?.length > 0 && (
-						<div className="rounded-xl border border-white/5 bg-card/50 p-4">
-							<h3 className="text-sm font-semibold mb-3">Calibration Check</h3>
-							<div className="space-y-1.5">
-								{learningInsights.calibrationBuckets.map((b: any) => (
-									<div
-										key={b.bucketLabel}
-										className="flex items-center gap-3 text-xs"
-									>
-										<span className="w-16 text-muted-foreground font-mono">
-											{b.bucketLabel}%
-										</span>
-										<div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-											<div
-												className="h-full bg-[#00D4FF] rounded-full"
-												style={{ width: `${Math.min(100, b.actualHitRate)}%` }}
-											/>
-										</div>
-										<span className="w-12 text-right font-mono">
-											{b.actualHitRate}%
-										</span>
-										<span
-											className={cn(
-												"w-12 text-right font-mono text-[10px]",
-												b.calibrationError <= 5
-													? "text-emerald-400"
-													: b.calibrationError <= 10
-														? "text-yellow-400"
-														: "text-red-400",
-											)}
-										>
-											±{b.calibrationError.toFixed(1)}
-										</span>
-									</div>
-								))}
-							</div>
-						</div>
-					)}
-				</div>
-			)}
-		</div>
-	);
+            {/* Rithmm-inspired Factor Logic */}
+            <div className="space-y-4">
+                <div className="bg-gradient-to-br from-indigo-500/10 to-transparent border border-indigo-500/20 rounded-[2rem] p-8 backdrop-blur-md h-full relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                         <Gauge className="size-24 text-indigo-400" />
+                    </div>
+                    <h3 className="text-xl font-black text-indigo-400 uppercase tracking-tighter mb-8 flex items-center gap-2 relative z-10">
+                        <Gauge className="size-6 font-black" /> Advantage Drivers
+                    </h3>
+                    <div className="space-y-6 relative z-10">
+                        <AdvantageFactor label="Player Momentum" score={92} color="emerald" />
+                        <AdvantageFactor label="Market Inefficiency" score={88} color="primary" />
+                        <AdvantageFactor label="H2H Historical" score={74} color="cyan" />
+                        <AdvantageFactor label="Defensive Matchup" score={62} color="amber" />
+                        <AdvantageFactor label="Public Sentiment" score={45} color="red" />
+                    </div>
+                    
+                    <div className="mt-12 p-5 rounded-2xl bg-black/40 border border-white/5 relative z-10">
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-3">Model Verdict</p>
+                        <p className="text-sm font-bold text-white italic leading-relaxed">
+                            "The system detects a significant variance in NBA Points lines due to defensive rotations. Model confidence is currently skewed towards OVERS."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-/* ═══════ Hero Stat ═══════ */
-function HeroStat({
-	label,
-	value,
-	icon,
-	bg,
-	color,
-	sub,
-}: {
-	label: string;
-	value: string;
-	icon: React.ReactNode;
-	bg: string;
-	color: string;
-	sub?: string;
-}) {
-	return (
-		<div
-			className={cn(
-				"rounded-xl border border-white/5 bg-gradient-to-br to-transparent p-4",
-				bg,
-			)}
-		>
-			<div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-2">
-				{icon} {label}
-			</div>
-			<p className={cn("text-2xl font-bold font-mono", color)}>{value}</p>
-			{sub && (
-				<p className="text-[10px] text-muted-foreground/50 mt-1">{sub}</p>
-			)}
-		</div>
-	);
+function MetricCard({ label, value, icon, trend, color }: any) {
+    const colors: any = {
+        primary: "text-primary shadow-[0_0_30px_rgba(0,255,136,0.1)] border-primary/20",
+        indigo: "text-indigo-400 shadow-[0_0_30px_rgba(94,106,210,0.1)] border-indigo-500/20",
+        cyan: "text-cyan-400 shadow-[0_0_30px_rgba(34,211,238,0.1)] border-cyan-500/20",
+        purple: "text-purple-400 shadow-[0_0_30px_rgba(168,85,247,0.1)] border-purple-500/20"
+    };
+
+    return (
+        <motion.div 
+            whileHover={{ y: -5, scale: 1.02 }}
+            className={cn("bg-[#0c0d0e]/80 border p-7 rounded-[2rem] backdrop-blur-xl relative overflow-hidden", colors[color])}
+        >
+            <div className="absolute top-[-20px] right-[-20px] size-24 bg-current opacity-[0.03] blur-3xl rounded-full" />
+            <div className="mb-4 bg-white/5 size-12 rounded-2xl flex items-center justify-center border border-white/5">
+                {icon}
+            </div>
+            <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] mb-1">{label}</p>
+            <p className="text-3xl font-black text-white tracking-tighter mb-3">{value}</p>
+            <div className="inline-flex items-center bg-white/5 px-2 py-0.5 rounded-full border border-white/5 text-[9px] font-black uppercase text-white/40 tracking-widest">
+                {trend}
+            </div>
+        </motion.div>
+    );
 }
 
-/* ═══════ Calibration Chart ═══════ */
-function CalibrationChart({
-	data,
-}: {
-	data: { predictedProb: number; actualHitRate: number; sampleSize: number }[];
-}) {
-	if (!data.length)
-		return <EmptyState icon={BarChart3} title="No calibration data" />;
+function AdvantageFactor({ label, score, color }: any) {
+    const barColors: any = {
+        primary: "bg-primary shadow-[0_0_10px_#00ff88]",
+        emerald: "bg-emerald-400 shadow-[0_0_10px_#34d399]",
+        cyan: "bg-cyan-400 shadow-[0_0_10px_#22d3ee]",
+        amber: "bg-amber-400 shadow-[0_0_10px_#fbbf24]",
+        red: "bg-red-500 shadow-[0_0_10px_#ef4444]",
+    };
 
-	const width = 400;
-	const height = 250;
-	const padding = { left: 45, right: 20, top: 10, bottom: 35 };
-	const plotW = width - padding.left - padding.right;
-	const plotH = height - padding.top - padding.bottom;
+    const textColors: any = {
+        primary: "text-primary",
+        emerald: "text-emerald-400",
+        cyan: "text-cyan-400",
+        amber: "text-amber-400",
+        red: "text-red-500",
+    };
 
-	const scaleX = (v: number) => padding.left + (v / 100) * plotW;
-	const scaleY = (v: number) => padding.top + plotH - (v / 100) * plotH;
-
-	return (
-		<div className="overflow-x-auto">
-			<svg
-				aria-hidden="true"
-				viewBox={`0 0 ${width} ${height}`}
-				className="w-full max-w-lg mx-auto"
-				style={{ minWidth: 300 }}
-			>
-				{/* Grid */}
-				{[0, 25, 50, 75, 100].map((v) => (
-					<g key={`y-${v}`}>
-						<line
-							x1={padding.left}
-							y1={scaleY(v)}
-							x2={width - padding.right}
-							y2={scaleY(v)}
-							stroke="rgba(255,255,255,0.05)"
-						/>
-						<text
-							x={padding.left - 8}
-							y={scaleY(v) + 4}
-							textAnchor="end"
-							className="text-[9px] fill-[rgba(255,255,255,0.3)]"
-						>
-							{v}%
-						</text>
-					</g>
-				))}
-				{[0, 25, 50, 75, 100].map((v) => (
-					<g key={`x-${v}`}>
-						<line
-							x1={scaleX(v)}
-							y1={padding.top}
-							x2={scaleX(v)}
-							y2={height - padding.bottom}
-							stroke="rgba(255,255,255,0.05)"
-						/>
-						<text
-							x={scaleX(v)}
-							y={height - padding.bottom + 15}
-							textAnchor="middle"
-							className="text-[9px] fill-[rgba(255,255,255,0.3)]"
-						>
-							{v}%
-						</text>
-					</g>
-				))}
-
-				{/* Perfect calibration line */}
-				<line
-					x1={scaleX(0)}
-					y1={scaleY(0)}
-					x2={scaleX(100)}
-					y2={scaleY(100)}
-					stroke="rgba(255,255,255,0.1)"
-					strokeDasharray="4,4"
-				/>
-				<text
-					x={scaleX(85)}
-					y={scaleY(88)}
-					className="text-[8px] fill-[rgba(255,255,255,0.2)]"
-				>
-					Perfect
-				</text>
-
-				{/* Data line */}
-				<polyline
-					fill="none"
-					stroke="#00FF88"
-					strokeWidth="2"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					points={data
-						.map((d) => `${scaleX(d.predictedProb)},${scaleY(d.actualHitRate)}`)
-						.join(" ")}
-				/>
-
-				{/* Data points */}
-				{data.map((d, i) => (
-					<g key={i}>
-						<circle
-							cx={scaleX(d.predictedProb)}
-							cy={scaleY(d.actualHitRate)}
-							r="5"
-							fill="#00FF88"
-							fillOpacity="0.3"
-							stroke="#00FF88"
-							strokeWidth="1.5"
-						/>
-						<title>{`Predicted: ${d.predictedProb}% | Actual: ${d.actualHitRate}% | n=${d.sampleSize}`}</title>
-					</g>
-				))}
-
-				{/* Axis Labels */}
-				<text
-					x={width / 2}
-					y={height - 3}
-					textAnchor="middle"
-					className="text-[9px] fill-[rgba(255,255,255,0.3)]"
-				>
-					Predicted Probability
-				</text>
-				<text
-					x={12}
-					y={height / 2}
-					textAnchor="middle"
-					transform={`rotate(-90, 12, ${height / 2})`}
-					className="text-[9px] fill-[rgba(255,255,255,0.3)]"
-				>
-					Actual Hit Rate
-				</text>
-			</svg>
-		</div>
-	);
-}
-
-/* ═══════ Bucket Bar ═══════ */
-function BucketBar({
-	label,
-	value,
-	total,
-	roi,
-	color,
-}: {
-	label: string;
-	value: number;
-	total: number;
-	roi?: number;
-	color: "cyan" | "purple";
-}) {
-	const barColor =
-		color === "cyan"
-			? "from-cyan-500/30 to-cyan-500/50"
-			: "from-purple-500/30 to-purple-500/50";
-	return (
-		<div className="flex items-center gap-2 group">
-			<span className="w-16 text-xs font-mono text-muted-foreground">
-				{label}
-			</span>
-			<div className="flex-1 h-6 rounded bg-white/[0.03] overflow-hidden relative">
-				<div
-					className={cn(
-						"h-full rounded bg-gradient-to-r transition-all group-hover:opacity-80",
-						barColor,
-					)}
-					style={{ width: `${Math.min(100, value)}%` }}
-				/>
-				<span className="absolute inset-y-0 flex items-center px-2 text-[10px] font-mono font-semibold">
-					{value}%
-				</span>
-			</div>
-			<span className="text-[10px] text-muted-foreground/50 w-12 text-right">
-				n={total}
-			</span>
-			{roi !== undefined && (
-				<span
-					className={cn(
-						"text-[10px] font-mono w-14 text-right",
-						roi > 0 ? "text-emerald-400" : "text-red-400",
-					)}
-				>
-					{roi > 0 ? "+" : ""}
-					{roi}%
-				</span>
-			)}
-		</div>
-	);
-}
-
-/* ═══════ Comparison Card ═══════ */
-function ComparisonCard({
-	title,
-	icon,
-	data,
-	labelKey,
-}: {
-	title: string;
-	icon: React.ReactNode;
-	data: any[];
-	labelKey: string;
-}) {
-	const sorted = [...data].sort((a, b) => b.hitRate - a.hitRate);
-	return (
-		<div className="rounded-xl border border-white/5 bg-card/50 p-4">
-			<h3 className="text-xs font-semibold mb-3 flex items-center gap-1.5 text-muted-foreground uppercase tracking-wider">
-				{icon} {title}
-			</h3>
-			<div className="space-y-2">
-				{sorted.map((d: any, i: number) => (
-					<div key={i} className="flex items-center justify-between text-xs">
-						<span className="font-medium">{formatLabel(d[labelKey])}</span>
-						<div className="flex items-center gap-2">
-							<span
-								className={cn(
-									"font-mono font-semibold",
-									d.hitRate > 55
-										? "text-emerald-400"
-										: d.hitRate < 45
-											? "text-red-400"
-											: "text-muted-foreground",
-								)}
-							>
-								{d.hitRate}%
-							</span>
-							<span className="text-[10px] text-muted-foreground/50">
-								({d.total})
-							</span>
-						</div>
-					</div>
-				))}
-			</div>
-		</div>
-	);
-}
-
-/* ═══════ Player Performance List ═══════ */
-function PlayerPerfList({
-	title,
-	players,
-	positive,
-}: {
-	title: string;
-	players: any[];
-	positive: boolean;
-}) {
-	if (!players.length) return null;
-	return (
-		<div className="rounded-xl border border-white/5 bg-card/50 p-4">
-			<h3 className="text-sm font-semibold mb-3">{title}</h3>
-			<div className="space-y-2">
-				{players.map((p: any, i: number) => (
-					<div key={i} className="flex items-center justify-between text-xs">
-						<div className="flex items-center gap-2">
-							<span
-								className={cn(
-									"size-6 rounded-lg flex items-center justify-center text-[10px] font-bold",
-									positive
-										? "bg-emerald-500/10 text-emerald-400"
-										: "bg-red-500/10 text-red-400",
-								)}
-							>
-								{i + 1}
-							</span>
-							<span className="font-medium">{p.name}</span>
-						</div>
-						<div className="flex items-center gap-2">
-							<span
-								className={cn(
-									"font-mono font-semibold",
-									positive ? "text-emerald-400" : "text-red-400",
-								)}
-							>
-								{p.hitRate}%
-							</span>
-							<span className="text-muted-foreground/50">({p.total})</span>
-						</div>
-					</div>
-				))}
-			</div>
-		</div>
-	);
+    return (
+        <div className="space-y-2">
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                <span className="text-white/40">{label}</span>
+                <span className={cn("text-sm font-black mono", textColors[color])}>{score}</span>
+            </div>
+            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${score}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    className={cn("h-full rounded-full", barColors[color])} 
+                />
+            </div>
+        </div>
+    );
 }

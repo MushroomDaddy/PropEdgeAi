@@ -29,7 +29,8 @@ import { useAddPick } from "../hooks/api/usePicks";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, Drawer, DrawerContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { AnimatedSportsBackground } from "@/components/shared/AnimatedBackground";
 
 const TABS = [
