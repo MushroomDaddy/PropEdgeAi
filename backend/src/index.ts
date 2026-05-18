@@ -18,6 +18,7 @@ import importsRoutes from "./routes/imports.js";
 import adminRoutes from "./routes/admin.js";
 import providersRoutes from "./routes/providers.js";
 import usersRoutes from "./routes/users.js";
+import syncRoutes from "./routes/sync.js";
 
 const app = new Hono();
 
@@ -55,6 +56,7 @@ app.route("/api/imports", importsRoutes);
 app.route("/api/admin", adminRoutes);
 app.route("/api/providers", providersRoutes);
 app.route("/api/users", usersRoutes);
+app.route("/api/sync", syncRoutes);
 
 // ─── 404 Fallback ─────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: "Not found" }, 404));

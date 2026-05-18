@@ -1,6 +1,8 @@
 
 import { useTopEdges, useTopValue, usePropsStats, useProps } from '../hooks/api/useProps';
 import { useUpcomingGames } from '../hooks/api/useGames';
+import { api } from '../lib/api';
+import { toast } from 'sonner';
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -98,49 +100,13 @@ export function DashboardPage() {
               <Button 
                 size="sm" 
                 onClick={async () => {
-                    const apiKey = '6a21bc8e84c347301e00246a1c936d04';
-                    const sbUrl = 'https://eikyiqhkcutaxmsziuy.supabase.co';
-                    const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpa3lpcWhrY3V0Y2F4bXN6aXV5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTA1NDY2NiwiZXhwIjoyMDk0NjMwNjY2fQ.VIYYNcSwu2ZGArRqM-516sRqUflCYOfrsaql3wtcBb8';
-                    
-                    toast.info('Initializing System-Wide Sync From Browser...');
-                    
+                    toast.info('Initializing System-Wide Sync...');
                     try {
-                        const res = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${apiKey}&regions=us&markets=h2h`);
-                        const games = await res.json();
-                        
-                        const props = games.slice(0, 5).map((g:any) => ({
-                            player_name: g.home_team + ' Star',
-                            team: g.home_team,
-                            opponent: g.away_team,
-                            sport: 'NBA',
-                            stat_type: 'Points',
-                            line: 25.5,
-                            over_odds: -110,
-                            under_odds: -110,
-                            game_date: new Date().toISOString(),
-                            confidence: 88,
-                            edge: 14.5
-                        }));
-
-                        const sbRes = await fetch(`${sbUrl}/rest/v1/props`, {
-                            method: 'POST',
-                            headers: {
-                                'apikey': sbKey,
-                                'Authorization': `Bearer ${sbKey}`,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'return=minimal'
-                            },
-                            body: JSON.stringify(props)
-                        });
-
-                        if (sbRes.ok) {
-                            toast.success('SYNC COMPLETE: Market Variance Logged!');
-                            window.location.reload();
-                        } else {
-                            toast.error('Supabase Rejection: ' + await sbRes.text());
-                        }
-                    } catch (e:any) {
-                        toast.error('Sync Engine Failure: ' + e.message);
+                        const result = await api.post<any>('/api/sync/trigger', {});
+                        toast.success(`SYNC COMPLETE: ${result.message}`);
+                        window.location.reload();
+                    } catch (e: any) {
+                        toast.error('Sync Engine: ' + e.message);
                     }
                 }}
                 className="h-10 bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase text-[10px] tracking-widest px-4 shadow-[0_0_20px_rgba(79,70,229,0.3)]"
@@ -215,23 +181,23 @@ export function DashboardPage() {
             ) : (
               <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" stagger={0.05}>
                 {topValue?.map((p: any) => (
-                  <StaggerItem key={p.id || p._id}>
+                  <StaggerItem key={p.id}>
                     <PremiumPropCard 
                       prop={{
-                        id: p.id || p._id,
-                        player: p.player || p.playerName,
-                        image: p.image,
-                        color: p.color,
+                        id: p.id,
+                        player: p.playerName,
+                        image: p.playerImage || p.playerImageUrl,
+                        color: (p.playerTeamColors as any)?.primary || p.playerTeamColor,
                         team: p.team,
                         sport: p.sport,
-                        propType: p.propType || p.statType,
+                        propType: p.statType,
                         line: p.line,
-                        projection: p.projection || (p.line * (1 + p.edge/100)),
+                        projection: p.projection || (p.line * (1 + p.edge / 100)),
                         edge: p.edge,
-                        winProb: p.winProb || p.confidence || 65,
-                        overOdds: p.overOdds || -110,
-                        underOdds: p.underOdds || -110,
-                        confidence: (p.winProb || p.confidence) > 70 ? 'High' : 'Medium'
+                        winProb: p.confidence || 65,
+                        overOdds: -110,
+                        underOdds: -110,
+                        confidence: (p.confidence ?? 65) > 70 ? 'High' : 'Medium',
                       }}
                     />
                   </StaggerItem>

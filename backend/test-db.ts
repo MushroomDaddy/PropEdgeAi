@@ -1,7 +1,7 @@
 
 import 'dotenv/config';
 import { db } from './src/db/client.ts';
-import * as schema from '../db/schema.ts';
+import * as schema from './src/db/schema.ts';
 import { sql } from 'drizzle-orm';
 
 async function test() {
