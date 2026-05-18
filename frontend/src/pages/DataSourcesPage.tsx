@@ -659,7 +659,7 @@ export default function DataSourcesPage() {
 											<code className="bg-black/30 px-1 rounded">
 												THE_ODDS_API_KEY
 											</code>{" "}
-											to your Convex environment variables
+											to your backend environment variables
 										</div>
 										<div className="text-amber-400 mt-1">
 											Free tier: 500 requests/month • Covers NBA, NFL, MLB, NHL
@@ -683,7 +683,7 @@ export default function DataSourcesPage() {
 											<code className="bg-black/30 px-1 rounded">
 												API_SPORTS_KEY
 											</code>{" "}
-											to your Convex environment variables
+											to your backend environment variables
 										</div>
 										<div className="text-amber-400 mt-1">
 											Free tier: 100 requests/day • Teams, players, games,
@@ -708,7 +708,7 @@ export default function DataSourcesPage() {
 											<code className="bg-black/30 px-1 rounded">
 												THESPORTSDB_API_KEY
 											</code>{" "}
-											to your Convex environment variables
+											to your backend environment variables
 										</div>
 										<div className="text-amber-400 mt-1">
 											Team logos, player images, badges, fanart, jersey visuals

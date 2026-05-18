@@ -2,4 +2,4 @@
 
 Convex has been removed from this project. The backend now uses Hono + Drizzle ORM + Supabase Postgres.
 
-See `db/schema.ts` for the current database schema definition.
+See `backend/src/db/schema.ts` for the current database schema definition (28 tables).

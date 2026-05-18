@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { eq } from 'drizzle-orm'
-import { db } from '../lib/db'
-import { users } from '../db/schema'
-import { requireAuth } from '../middleware/auth'
+import { db } from '../db/client.js'
+import { users } from '../db/schema.js'
+import { requireAuth } from '../middleware/auth.js'
 import { adminOnly } from '../middleware/adminOnly'
 
 const usersRouter = new Hono()
